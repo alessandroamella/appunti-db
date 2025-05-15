@@ -1,0 +1,348 @@
+\documentclass{article}
+
+% --- Encoding e lingua ---
+\usepackage[utf8]{inputenc}
+\usepackage[italian]{babel}
+
+% --- Margini e layout ---
+\usepackage{geometry}
+\geometry{a4paper, margin=1in}
+
+% --- Font sans-serif ---
+\usepackage[scaled]{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+
+% --- Matematica ---
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+% --- Liste personalizzate ---
+\usepackage{enumitem}
+
+% --- Hyperlink ---
+\usepackage{hyperref}
+\hypersetup{
+	colorlinks=true,
+	linkcolor=white, % Cambiato per visibilità su sfondo nero
+	filecolor=magenta,
+	urlcolor=white,  % Cambiato per visibilità su sfondo nero
+	citecolor=green, % Aggiunto per completezza
+	pdftitle={Appunti su SQL Avanzato},
+	pdfpagemode=FullScreen,
+}
+
+% --- Colori e sfondo nero ---
+\usepackage{xcolor}
+\pagecolor{black}
+\color{white}
+
+% --- Evidenziazione del codice (richiede -shell-escape) ---
+% Compilare con: pdflatex -shell-escape nomefile.tex
+\usepackage{minted}
+\setminted{
+	frame=lines,     % Cornice attorno al codice
+	framesep=2mm,
+	fontsize=\small,
+	breaklines=true, % A capo automatico per linee lunghe
+	style=monokai   % Stile di highlighting (assicurati che pygments lo supporti)
+}
+\usemintedstyle{monokai} % Applica lo stile globalmente per minted
+
+
+% --- Titolo ---
+\title{Appunti su SQL Avanzato}
+\author{Basato sulle slide del Prof. Danilo Montesi}
+\date{\today}
+
+\begin{document}
+	
+	\maketitle
+	\tableofcontents
+	\newpage
+	
+	\section{Vincoli (Constraints)}
+	
+	\subsection{\texttt{CHECK}}
+	\begin{itemize}
+		\item \textbf{Concetto}: Specifica vincoli sui valori che una tupla (riga) può assumere. È una forma di validazione dei dati a livello di database.
+		\item \textbf{Sintassi}: \texttt{CHECK ( Predicate )}
+		\item \textbf{Esempi}:
+		\begin{itemize}
+			\item Semplice:
+			\begin{minted}{sql}
+			Gender CHARACTER NOT NULL CHECK (Gender IN ('M', 'F'))
+			\end{minted}
+			\item Semplice:
+			\begin{minted}{sql}
+			Salary INTEGER CHECK (Salary >= 0)
+			\end{minted}
+			\item Complesso (con subquery):
+			\begin{minted}{sql}
+			-- Assicura che lo stipendio di un impiegato non superi
+			-- quello del suo supervisore.
+			-- Nota: le subquery nei CHECK non sono supportate da tutti i DBMS.
+			CHECK (Salary <= (SELECT Salary
+			FROM EMPLOYEE J
+			WHERE Supervisor = J.Number))
+			\end{minted}
+			\item Derivato:
+			\begin{minted}{sql}
+			-- Assicura la coerenza per campi calcolati.
+			CHECK (Net = Salary - Withholding)
+			\end{minted}
+		\end{itemize}
+		\item \textbf{Importanza}: Se un \texttt{INSERT} o \texttt{UPDATE} viola un vincolo \texttt{CHECK}, l'operazione fallisce, mantenendo l'integrità dei dati.
+	\end{itemize}
+	
+	\subsection{\texttt{ASSERTION}}
+	\begin{itemize}
+		\item \textbf{Concetto}: Definisce vincoli a livello di schema, cioè che coinvolgono potenzialmente più tabelle o l'intero database, non solo una singola tupla.
+		\item \textbf{Sintassi}: \texttt{CREATE ASSERTION NomeAsserzione CHECK ( Predicate )}
+		\item \textbf{Esempio}:
+		\begin{minted}{sql}
+			-- Questa asserzione garantisce che la tabella EMPLOYEE
+			-- non sia mai completamente vuota.
+			CREATE ASSERTION AtLeastOneEmployee
+			CHECK (1 <= (SELECT COUNT(*) FROM EMPLOYEE));
+		\end{minted}
+		\item \textit{Nota Pratica}: Anche qui, il supporto completo (specialmente con subquery complesse) varia tra i DBMS.
+	\end{itemize}
+	
+	\section{Viste (Views)}
+	\begin{itemize}
+		\item \textbf{Concetto}: Una vista è una tabella virtuale il cui contenuto è definito da una query. Non memorizza dati fisicamente (generalmente), ma esegue la sua query sottostante ogni volta che viene interrogata.
+		\item \textbf{Sintassi}: \texttt{CREATE VIEW NomeVista [(ListaAttributi)] AS SelectStatement}
+		\item \textbf{Esempio}:
+		\begin{minted}{sql}
+			CREATE VIEW ADMINEMPLOYEES (Name, Surname, Salary) AS
+			SELECT Name, Surname, Salary
+			FROM EMPLOYEE
+			WHERE Dept = 'Administration' AND Salary > 10;
+		\end{minted}
+		\item \textbf{Utilizzi}:
+		\begin{itemize}
+			\item \textbf{Semplificazione}: Nascondere la complessità di query complesse.
+			\item \textbf{Sicurezza}: Limitare l'accesso a determinate colonne o righe di una tabella.
+			\item \textbf{Indipendenza logica dei dati}: Se la struttura delle tabelle sottostanti cambia, la vista può essere modificata per mantenere la stessa interfaccia per gli utenti/applicazioni.
+		\end{itemize}
+	\end{itemize}
+	
+	\subsection{Aggiornamento delle Viste e \texttt{WITH CHECK OPTION}}
+	\begin{itemize}
+		\item Le viste possono essere aggiornabili (tramite \texttt{INSERT}, \texttt{UPDATE}, \texttt{DELETE}) se definite su una singola tabella e soddisfano certe condizioni.
+		\item \texttt{WITH CHECK OPTION}: Se specificato, qualsiasi \texttt{INSERT} o \texttt{UPDATE} eseguito tramite la vista deve soddisfare la clausola \texttt{WHERE} della vista stessa.
+		\begin{itemize}
+			\item \textbf{Esempio}:
+			\begin{minted}{sql}
+			CREATE VIEW POORADMINEMPLOYEES AS
+			SELECT *
+			FROM ADMINEMPLOYEES -- Supponiamo sia una vista o tabella
+			WHERE Salary < 50
+			WITH CHECK OPTION;
+			\end{minted}
+			Se si tenta di fare \texttt{UPDATE POORADMINEMPLOYEES SET Salary = 60 WHERE Name = 'Ann'}, l'operazione fallirà.
+			\item \texttt{LOCAL} vs \texttt{CASCADED} (per viste su viste):
+			\begin{itemize}
+				\item \texttt{LOCAL}: Il \texttt{CHECK OPTION} si applica solo alla definizione della vista corrente.
+				\item \texttt{CASCADED}: Il \texttt{CHECK OPTION} si applica alla vista corrente E a tutte le viste sottostanti.
+			\end{itemize}
+		\end{itemize}
+	\end{itemize}
+	
+	\subsection{Interrogare le Viste}
+	\begin{itemize}
+		\item Si interrogano come normali tabelle. Il DBMS sostituisce la vista con la sua definizione.
+		\item \textbf{Utilità per query complesse}:
+		\begin{itemize}
+			\item \textbf{Problema}: "Calcolare la media del numero di uffici distinti per dipartimento". Una query come \texttt{SELECT AVG(COUNT(DISTINCT Office)) FROM EMPLOYEE GROUP BY Dept} è errata perché non si possono annidare funzioni aggregate direttamente.
+			\item \textbf{Soluzione con Vista}:
+			\begin{minted}{sql}
+			CREATE VIEW DEPTOFFICES (NameDept, OffNum) AS
+			SELECT Dept, COUNT(DISTINCT Office)
+			FROM EMPLOYEE
+			GROUP BY Dept;
+		
+			SELECT AVG(OffNum) FROM DEPTOFFICES;
+			\end{minted}
+		\end{itemize}
+	\end{itemize}
+	
+	\section{Query Ricorsive (\texttt{WITH RECURSIVE})}
+	\begin{itemize}
+		\item \textbf{Concetto}: Permettono di interrogare dati gerarchici o grafi. SQL:1999 ha introdotto le Common Table Expressions (CTE) ricorsive.
+		\item \textbf{Sintassi Base}:
+		\begin{minted}{sql}
+			WITH RECURSIVE NomeCTE (colonne) AS (
+			-- Membro Ancora (non ricorsivo, caso base)
+			SELECT ...
+			UNION ALL
+			-- Membro Ricorsivo (richiama NomeCTE)
+			SELECT ... FROM NomeCTE JOIN ...
+			)
+			SELECT * FROM NomeCTE;
+		\end{minted}
+		\item \textbf{Esempio (Trovare tutti gli antenati)}: Data una tabella \texttt{FATHERHOOD(Father, Child)}
+		\begin{minted}{sql}
+			WITH RECURSIVE ANCESTORS (Ancestor, Descendant) AS (
+			-- Caso base: padri diretti
+			SELECT Father, Child FROM FATHERHOOD
+			UNION ALL
+			-- Passo ricorsivo: il padre di un antenato
+			-- è anche un antenato
+			SELECT FH.Father, A.Descendant
+			FROM FATHERHOOD FH, ANCESTORS A
+			WHERE FH.Child = A.Ancestor
+			)
+			SELECT * FROM ANCESTORS;
+		\end{minted}
+	\end{itemize}
+	
+	\section{Funzioni Scalari}
+	Funzioni che operano su valori singoli e restituiscono un singolo valore per tupla.
+	
+	\subsection{Temporali}
+	\begin{itemize}
+		\item \texttt{CURRENT\_DATE()}: Data corrente.
+		\item \texttt{EXTRACT(parte FROM espressione\_data)}: Estrae una parte da una data (es. \texttt{EXTRACT(YEAR FROM OrderDate)}).
+		\item Esempio:
+		\begin{minted}{sql}
+			SELECT EXTRACT(YEAR FROM OrderDate) AS OrderYear
+			FROM ORDERS
+			WHERE DATE(OrderDate) = CURRENT_DATE();
+		\end{minted}
+	\end{itemize}
+	
+	\subsection{Stringhe}
+	\begin{itemize}
+		\item \texttt{CHAR\_LENGTH(stringa)}: Lunghezza della stringa.
+		\item \texttt{LOWER(stringa)}: Stringa in minuscolo.
+	\end{itemize}
+	
+	\subsection{Casting}
+	\begin{itemize}
+		\item \texttt{CAST(espressione AS NuovoTipo)}: Converte un valore in un altro tipo di dato.
+	\end{itemize}
+	
+	\subsection{Condizionali}
+	\begin{itemize}
+		\item \textbf{\texttt{COALESCE(expr1, expr2, ..., default)}}: Restituisce la prima espressione non-NULL nella lista.
+		\begin{itemize}
+			\item Esempio: \texttt{SELECT COALESCE(Mobile, PhoneHome, 'N/A') FROM EMPLOYEE;}
+		\end{itemize}
+		\item \textbf{\texttt{NULLIF(expr1, expr2)}}: Restituisce \texttt{NULL} se \texttt{expr1 = expr2}, altrimenti restituisce \texttt{expr1}.
+		\begin{itemize}
+			\item Esempio: \texttt{SELECT NULLIF(Dept, 'Unknown') FROM EMPLOYEE;}
+		\end{itemize}
+		\item \textbf{\texttt{CASE}}: Struttura if-then-else in SQL.
+		\begin{itemize}
+			\item \textbf{Sintassi "Searched"}:
+			\begin{minted}{sql}
+			CASE
+			WHEN condizione1 THEN risultato1
+			WHEN condizione2 THEN risultato2
+			...
+			ELSE risultato_default
+			END
+			\end{minted}
+			\item \textbf{Esempio}: Calcolo tasse veicoli
+			\begin{minted}{sql}
+			SELECT PlateNum,
+			(CASE Type
+			WHEN 'Car' THEN 2.58 * KWatt
+			WHEN 'Moto' THEN (22.00 + 1.00 * KWatt)
+			ELSE NULL
+			END) AS Tax
+			FROM VEHICLE
+			WHERE Year > 1975;
+			\end{minted}
+		\end{itemize}
+	\end{itemize}
+	
+	\section{Sicurezza del Database}
+	
+	\subsection{Privilegi}
+	\begin{itemize}
+		\item SQL permette di concedere privilegi specifici (es. \texttt{SELECT}, \texttt{INSERT}, \texttt{UPDATE}, \texttt{DELETE}, \texttt{REFERENCES}, \texttt{USAGE}) agli utenti.
+		\item I privilegi possono essere su: intero DB, tabelle, viste, colonne, domini.
+	\end{itemize}
+	
+	\subsection{\texttt{GRANT} e \texttt{REVOKE}}
+	\begin{itemize}
+		\item \textbf{\texttt{GRANT}}: Concede privilegi.
+		\begin{itemize}
+			\item Sintassi: \texttt{GRANT <Privilegi | ALL PRIVILEGES> ON Risorsa TO Utenti [WITH GRANT OPTION];}
+			\item \texttt{WITH GRANT OPTION}: Permette all'utente ricevente di propagare quel privilegio ad altri.
+			\item Esempio: \texttt{GRANT SELECT ON DEPARTMENT TO Jack;}
+		\end{itemize}
+		\item \textbf{\texttt{REVOKE}}: Rimuove privilegi.
+		\begin{itemize}
+			\item Sintassi: \texttt{REVOKE Privilegi ON Risorsa FROM Utenti [RESTRICT | CASCADE];}
+			\item \texttt{RESTRICT} (default): La revoca fallisce se altri utenti dipendono da quel grant.
+			\item \texttt{CASCADE}: La revoca si estende a tutti gli utenti a cui il privilegio è stato propagato.
+		\end{itemize}
+	\end{itemize}
+	
+	\subsection{Discussione sui Privilegi}
+	\begin{itemize}
+		\item Il sistema dovrebbe nascondere le parti del DB non accessibili senza dare indizi sulla loro esistenza.
+		\item Le \textbf{viste} sono uno strumento chiave per la sicurezza: si possono concedere privilegi su una vista che mostra solo certe righe/colonne.
+	\end{itemize}
+	
+	\section{Autorizzazioni: RBAC (Role-Based Access Control)}
+	\begin{itemize}
+		\item \textbf{Concetto}: SQL-3 introduce RBAC. Un \texttt{ROLE} (ruolo) è un contenitore di privilegi.
+		\begin{enumerate}
+			\item Si creano ruoli.
+			\item Si concedono privilegi AI RUOLI.
+			\item Si concedono I RUOLI AGLI UTENTI.
+		\end{enumerate}
+		\item \textbf{Comandi RBAC}:
+		\begin{itemize}
+			\item \texttt{CREATE ROLE NomeRuolo;}
+			\item \texttt{GRANT Privilegio ON Risorsa TO NomeRuolo;}
+			\item \texttt{GRANT NomeRuolo TO NomeUtente;}
+			\item \texttt{SET ROLE NomeRuolo;}
+		\end{itemize}
+		\item \textbf{Esempio RBAC}:
+		\begin{minted}{sql}
+			-- 1. Crea il ruolo
+			CREATE ROLE Employee;
+			-- 2. Concedi un privilegio al ruolo
+			GRANT CREATE TABLE TO Employee;
+			-- 3. Assegna il ruolo a un utente
+			GRANT Employee TO 'specific_user';
+		\end{minted}
+	\end{itemize}
+	
+	\section{Transazioni}
+	\begin{itemize}
+		\item \textbf{Concetto}: Una transazione è un'unità logica di elaborazione del database, trattata come un'operazione atomica.
+		\item \textbf{Proprietà ACID}:
+		\begin{itemize}
+			\item \textbf{Atomicity (Atomicità)}: O tutto o niente.
+			\item \textbf{Consistency (Consistenza)}: Porta il DB da uno stato valido a un altro.
+			\item \textbf{Isolation (Isolamento)}: Le transazioni concorrenti non interferiscono.
+			\item \textbf{Durability (Durabilità)}: Le modifiche confermate (\texttt{COMMIT}) sono permanenti.
+		\end{itemize}
+		\item \textbf{Supporto SQL per Transazioni}:
+		\begin{itemize}
+			\item \texttt{START TRANSACTION;} (o \texttt{BEGIN TRANSACTION;})
+			\item \texttt{COMMIT [WORK];}: Salva permanentemente le modifiche.
+			\item \texttt{ROLLBACK [WORK];}: Annulla tutte le modifiche.
+			\item \texttt{AUTOCOMMIT}: Modalità in cui ogni singola istruzione SQL è una transazione.
+		\end{itemize}
+		\item \textbf{Esempio Transazione}:
+		\begin{minted}{sql}
+			START TRANSACTION;
+			UPDATE BANKACCOUNT SET Balance = Balance - 10
+			WHERE AccountNumber = 42177;
+			UPDATE BANKACCOUNT SET Balance = Balance + 10
+			WHERE AccountNumber = 12202;
+			-- Se tutto va bene:
+			COMMIT WORK;
+			-- Se c'è un errore (da verificare in logica applicativa):
+			-- ROLLBACK WORK;
+		\end{minted}
+	\end{itemize}
+	
+\end{document}
