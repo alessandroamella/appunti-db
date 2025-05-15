@@ -1,0 +1,170 @@
+\documentclass{article}
+\usepackage{geometry}
+\usepackage[italian]{babel}
+\usepackage[utf8]{inputenc}
+\geometry{a4paper, margin=1in}
+\usepackage{amsmath} % For math environments if needed, though not strictly for this content
+\usepackage{amssymb} % For symbols if needed
+\usepackage{enumitem} % For better control over lists
+\usepackage{hyperref} % For links, useful if adding external references later
+
+\usepackage[scaled]{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+
+\usepackage{xcolor}
+\pagecolor{black}
+\color{white}
+
+
+\title{Databases: Introduzione ai Modelli Logici}
+\author{Based on slides from Danilo Montesi}
+\date{\today}
+
+\begin{document}
+	
+	\maketitle
+	
+	\section{Introduzione ai Modelli Logici}
+	
+	\subsection{Modelli Tradizionali}
+	\begin{itemize}
+		\item Gerarchico
+		\item Reticolare (Network)
+		\item \textbf{Relazionale}
+	\end{itemize}
+	
+	\subsection{Modelli Recenti}
+	\begin{itemize}
+		\item Orientato agli Oggetti (meno comune)
+		\item Basato su XML (complementare al relazionale)
+	\end{itemize}
+	
+	\subsection{Caratteristiche dei Modelli}
+	\begin{itemize}
+		\item Gerarchico e Reticolare: Usano \textbf{riferimenti espliciti} (puntatori) tra i record.
+		\item Relazionale: È "\textbf{value-based}". I riferimenti tra i dati in relazioni diverse sono rappresentati tramite i \textbf{valori} stessi all'interno delle tuple.
+	\end{itemize}
+	Il modello value-based offre indipendenza dalla struttura fisica e facilita la condivisione dei dati.
+	
+	\section{Il Modello Relazionale}
+	
+	\subsection{Fondamenti}
+	\begin{itemize}
+		\item Definito da \textbf{E. F. Codd} nel 1970 per l'indipendenza dei dati.
+		\item Implementato nei DBMS reali dal 1981.
+		\item Basato sul concetto logico di "\textit{relazione}" dalla teoria degli insiemi, ma con differenze pratiche.
+		\item Le relazioni sono rappresentate come \textbf{tabelle}.
+	\end{itemize}
+	
+	\subsection{Relazione Logica vs. Relazione (Modello Relazionale)}
+	\begin{itemize}
+		\item \textbf{Relazione Logica (Teoria Insiemi):} Sottoinsieme del prodotto cartesiano di domini. È un \textbf{insieme di tuple ordinate}.
+		\item \textbf{Relazione (Modello Relazionale):} È un \textbf{insieme} con proprietà specifiche:
+		\begin{itemize}
+			\item Non c'è \textbf{ordine tra le tuple} (righe).
+			\item Le \textbf{tuple sono tutte distinte}.
+			\item Gli attributi (colonne) sono identificati da nomi univoci e non dalla posizione (struttura \textbf{non posizionale}).
+			\item I valori all'interno di ogni colonna sono \textbf{omogenei} (dallo stesso dominio).
+		\end{itemize}
+	\end{itemize}
+	
+	\section{Informazione Parziale (Valori Mancanti)}
+	
+	\subsection{Il Problema}
+	\begin{itemize}
+		\item Il modello relazionale ha una struttura rigida.
+		\item Non tutte le informazioni sono sempre complete o disponibili.
+		\item Come rappresentare l'assenza di un valore?
+	\end{itemize}
+	
+	\subsection{Il Valore NULL}
+	\begin{itemize}
+		\item Tecnica \textbf{rough but effective} nel modello relazionale.
+		\item \textbf{NULL} indica l'\textbf{assenza di un valore} atteso.
+		\item \textbf{NULL non è un valore del dominio}.
+		\item Una tupla $t$ per un attributo $A$ può avere $t[A]$ pari ad un valore del dominio $\text{dom}(A)$ o NULL.
+		\item Esistono concettualmente diversi tipi di NULL (unknown, inexistent, uninformative), ma i DBMS moderni spesso non li distinguono.
+		\item Un eccessivo uso di NULL può complicare l'uso dei dati.
+	\end{itemize}
+	
+	\section{Vincoli di Integrità}
+	
+	\subsection{Scopo}
+	\begin{itemize}
+		\item Garantire che le istanze del database rappresentino \textbf{informazioni corrette} rispetto al mondo reale (anche se sintatticamente valide).
+		\item Supportare la \textbf{qualità dei dati}.
+		\item Utili nella \textbf{progettazione} del database e nell'ottimizzazione delle \textbf{query}.
+		\item Un vincolo può essere visto come un predicato (funzione booleana) sull'istanza.
+	\end{itemize}
+	I DBMS supportano ed enforcement alcuni tipi di vincoli; altri devono essere gestiti a livello applicativo.
+	
+	\subsection{Tipi di Vincoli}
+	\begin{itemize}
+		\item \textbf{Intra-relazionali:} Riguardano una singola relazione.
+		\begin{itemize}
+			\item Su \textbf{valori} (o di dominio): Regole sui singoli attributi (es. età $> 0$).
+			\item Su \textbf{tuple}: Regole sui valori all'interno di una singola tupla (es. stipendio lordo = netto + deduzioni).
+		\end{itemize}
+		\item \textbf{Inter-relazionali:} Riguardano più relazioni.
+	\end{itemize}
+	
+	\section{Identificazione delle Tuple (Chiavi)}
+	
+	\subsection{Concetti di Base}
+	\begin{itemize}
+		\item Ogni tupla in una relazione deve essere \textbf{identificabile univocamente}.
+		\item \textbf{Superkey:} Un insieme di attributi che identifica univocamente le tuple in una relazione. Non esistono due tuple distinte che abbiano gli stessi valori per tutti gli attributi della Superkey.
+		\item \textbf{Key (Chiave):} Una Superkey \textbf{minimale}. Rimuovendo qualsiasi attributo dalla Key, l'insieme rimanente non è più una Superkey.
+		\item Ogni relazione possiede \textbf{almeno una Key} (l'insieme di tutti gli attributi è sempre una Superkey).
+	\end{itemize}
+	
+	\subsection{Primary Key (PK)}
+	\begin{itemize}
+		\item Una delle Key di una relazione scelta per essere l'\textbf{identificatore principale} delle tuple.
+		\item Le \textbf{Primary Key non possono contenere valori NULL}.
+		\item Spesso indicata sottolineando gli attributi.
+	\end{itemize}
+	
+	\subsection{Importanza delle Chiavi}
+	\begin{itemize}
+		\item Garantiscono l'\textbf{accessibilità} di ogni singola tupla.
+		\item Sono cruciali per \textbf{correlare} le tuple tra relazioni diverse, fondamento del modello value-based.
+		\item La presenza di NULL nelle Keys compromette l'identificazione e la creazione di riferimenti.
+	\end{itemize}
+	
+	\section{Integrità Referenziale (Foreign Key)}
+	
+	\subsection{Concetto}
+	\begin{itemize}
+		\item Le correlazioni basate sui valori tra relazioni (tipicamente sulle PK) devono essere \textbf{coerenti}.
+		\item Assicura che i riferimenti tra tabelle siano validi.
+	\end{itemize}
+	
+	\subsection{Foreign Key (FK)}
+	\begin{itemize}
+		\item Un vincolo di integrità inter-relazionale.
+		\item Un insieme di attributi \textbf{FK} in una relazione $R_1$ \textbf{fa riferimento} alla \textbf{Primary Key PK} di un'altra relazione $R_2$.
+		\item \textbf{Regole per una FK:}
+		\begin{enumerate}
+			\item Gli attributi della FK devono avere lo stesso \textbf{dominio} degli attributi della PK a cui si riferiscono.
+			\item Un valore negli attributi FK di una tupla in $R_1$ deve essere:
+			\begin{itemize}
+				\item \textbf{NULL}
+				\item \textbf{OPPURE} deve \textbf{esistere come valore nella PK} di \textbf{qualche tupla} nella relazione $R_2$ (referenziata).
+			\end{itemize}
+		\end{enumerate}
+	\end{itemize}
+	
+	\subsection{Gestione delle Violazioni (su DELETE/UPDATE)}
+	Quando un'operazione sulla relazione referenziata $R_2$ causerebbe una violazione (es. cancellazione di una tupla in $R_2$ referenziata da $R_1$), il DBMS può agire:
+	\begin{itemize}
+		\item \textbf{Restrict (Comportamento Standard):} Impedisce l'operazione su $R_2$.
+		\item \textbf{Cascade:} Estende l'operazione alle tuple referenzianti in $R_1$ (es. cancella le tuple in $R_1$).
+		\item \textbf{Set NULL:} Imposta i valori della FK a NULL nelle tuple referenzianti in $R_1$.
+		\item \textbf{Set Default:} Imposta i valori della FK a un valore predefinito nelle tuple referenzianti in $R_1$.
+	\end{itemize}
+	
+	Per le Foreign Key composte da più attributi, l'\textbf{ordine} degli attributi è rilevante per il mapping con la Primary Key referenziata.
+	
+	
+\end{document}

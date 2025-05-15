@@ -1,0 +1,9 @@
+# Ignore everything
+*
+
+# But not these:
+!*.tex
+!*.pdf
+
+# Optional: exclude .gitignore itself from being ignored
+!.gitignore
