@@ -1,0 +1,4 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{+w}{			}\PYG{k}{SELECT}\PYG{+w}{ }\PYG{o}{*}\PYG{+w}{ }\PYG{k}{FROM}\PYG{+w}{ }\PYG{n}{Employee}\PYG{+w}{ }\PYG{k}{WHERE}\PYG{+w}{ }\PYG{n}{Salary}\PYG{+w}{ }\PYG{o}{\PYGZgt{}}\PYG{+w}{ }\PYG{l+m+mi}{50}\PYG{p}{;}
+\PYG{+w}{			}\PYG{c+c1}{\PYGZhy{}\PYGZhy{} Corrisponde a: sigma\PYGZus{}\PYGZob{}Salary \PYGZgt{} 50\PYGZcb{}(EMPLOYEE)}
+\end{Verbatim}

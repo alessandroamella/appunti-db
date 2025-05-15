@@ -1,0 +1,5 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{+w}{			}\PYG{k}{SELECT}\PYG{+w}{ }\PYG{o}{*}
+\PYG{+w}{			}\PYG{k}{FROM}\PYG{+w}{ }\PYG{n}{Employee}\PYG{+w}{ }\PYG{k}{JOIN}\PYG{+w}{ }\PYG{n}{Department}
+\PYG{+w}{			}\PYG{k}{ON}\PYG{+w}{ }\PYG{n}{Employee}\PYG{p}{.}\PYG{n}{Dept}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{Department}\PYG{p}{.}\PYG{n}{Code}\PYG{p}{;}
+\end{Verbatim}
