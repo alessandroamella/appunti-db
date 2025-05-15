@@ -1,0 +1,338 @@
+\documentclass{article}
+
+% --- Encoding e lingua ---
+\usepackage[utf8]{inputenc}
+\usepackage[italian]{babel}
+
+% --- Margini e layout ---
+\usepackage{geometry}
+\geometry{a4paper, margin=1in}
+
+% --- Font sans-serif ---
+\usepackage[scaled]{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage[T1]{fontenc}
+
+% --- Matematica ---
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+% --- Liste personalizzate ---
+\usepackage{enumitem}
+
+% --- Hyperlink ---
+\usepackage{hyperref}
+\hypersetup{
+	colorlinks=true,
+	linkcolor=white,     % Cambiato per visibilità su sfondo nero
+	filecolor=magenta,
+	urlcolor=blue,
+	pdftitle={Appunti sulla Modellazione Concettuale dei Dati},
+	pdfpagemode=FullScreen,
+}
+
+% --- Colori e sfondo nero ---
+\usepackage{xcolor}
+\pagecolor{black}
+\color{white}
+
+% --- Evidenziazione del codice (richiede -shell-escape) ---
+% Compilare con: pdflatex -shell-escape nomefile.tex
+\usepackage{minted}
+\setminted{
+	frame=lines,     % Cornice attorno al codice
+	framesep=2mm,
+	fontsize=\small,
+	breaklines=true, % A capo automatico per linee lunghe
+	style=monokai    % Stile di highlighting
+}
+\newminted{sql}{frame=lines, framesep=2mm, fontsize=\small, breaklines=true, style=monokai}
+\newminted{prisma}{frame=lines, framesep=2mm, fontsize=\small, breaklines=true, style=monokai}
+
+
+% --- Titolo ---
+\title{Appunti sulla Modellazione Concettuale dei Dati}
+\author{Basato sulle slide del Prof. Danilo Montesi}
+\date{\today}
+
+\begin{document}
+	
+	\maketitle
+	\tableofcontents
+	\newpage
+	
+	\section{Perché la Modellazione Concettuale?}
+	
+	Partire direttamente a definire tabelle SQL (modello logico) è difficile e rischioso. I problemi principali sono:
+	\begin{itemize}
+		\item Ci si perde nei dettagli troppo presto.
+		\item Il modello relazionale (tabelle, colonne, tipi) è troppo \textit{rigido} per le fasi iniziali di brainstorming e analisi dei requisiti.
+	\end{itemize}
+	
+	La soluzione è il \textbf{Modello Concettuale} (ad esempio, il diagramma Entità-Relazione - ERD):
+	\begin{itemize}
+		\item Permette di ragionare sulla \textit{realtà di interesse} in modo \textbf{indipendente dall'implementazione} specifica (quale DBMS useremo, come saranno le tabelle, ecc.).
+		\item Aiuta a definire le \textbf{classi di oggetti} (entità) e le loro \textbf{relazioni}.
+		\item Fornisce una \textbf{rappresentazione visuale} chiara, utile per la documentazione e la comunicazione con gli stakeholder (anche non tecnici).
+	\end{itemize}
+	
+	\paragraph{Esempio Pratico:} Immagina di dover creare un sistema per una biblioteca. Invece di pensare subito a \texttt{CREATE TABLE Libri (...)}, con il modello concettuale pensi: ``Ok, ho bisogno di \texttt{Libri}, \texttt{Utenti}, e una relazione che dice \textit{Un Utente prende in prestito un Libro}''. Questo è più astratto e flessibile.
+	
+	\section{Il Ciclo di Vita del Design del Database}
+	
+	Il design del database è una fase cruciale nello sviluppo di Sistemi Informativi (SI). Le fasi principali del design sono:
+	
+	\subsection{Design Concettuale}
+	\begin{itemize}
+		\item \textbf{Input:} Requisiti del database (cosa deve fare il sistema?).
+		\item \textbf{Output:} \textbf{Schema Concettuale} (es. un diagramma Entità-Relazione - ERD).
+		\item \textbf{Focus:} Il ``COSA?'' – quali informazioni ci servono e come sono collegate, ad alto livello.
+		\item \textit{Esempio Pratico:} ``Abbiamo Entità \texttt{Studente} e \texttt{Corso}. Uno \texttt{Studente} si \texttt{IscriveA} un \texttt{Corso}.''
+	\end{itemize}
+	
+	\subsection{Design Logico}
+	\begin{itemize}
+		\item \textbf{Input:} Schema Concettuale.
+		\item \textbf{Output:} \textbf{Schema Logico} (es. definizione di tabelle per un DB relazionale, o collezioni per un DB NoSQL come MongoDB).
+		\item \textbf{Focus:} Il ``COME?'' – come traduciamo il modello concettuale in un modello supportato da un tipo di DBMS (es. relazionale, a documenti, a grafo). È indipendente dal DBMS specifico, ma non dal \textit{tipo} di DBMS.
+		\item \textit{Esempio Pratico (Relazionale):} Dallo schema concettuale sopra, deriviamo:
+		\begin{minted}{sql}
+		CREATE TABLE Studenti (
+			ID_Studente INT PRIMARY KEY,
+			Nome VARCHAR(255),
+			Cognome VARCHAR(255)
+		);
+		CREATE TABLE Corsi (
+			ID_Corso INT PRIMARY KEY,
+			TitoloCorso VARCHAR(255)
+		);
+		CREATE TABLE Iscrizioni (
+			ID_Studente INT,
+			ID_Corso INT,
+			PRIMARY KEY (ID_Studente, ID_Corso),
+			FOREIGN KEY (ID_Studente) REFERENCES Studenti(ID_Studente),
+			FOREIGN KEY (ID_Corso) REFERENCES Corsi(ID_Corso)
+		);
+		\end{minted}
+		\item \textit{Esempio Pratico (MongoDB/Prisma):} Potresti avere una collezione \texttt{Studenti} con un array di \texttt{ID\_Corso} a cui sono iscritti, o una collezione \texttt{Corsi} con un array di \texttt{ID\_Studente} iscritti. Prisma ti permette di definire queste relazioni in modo più astratto:
+		\begin{minted}{graphql}
+		model Studente {
+			id    Int     @id @default(autoincrement())
+			nome  String
+			corsi Corso[] @relation("Iscrizioni")
+		}
+		model Corso {
+			id        Int        @id @default(autoincrement())
+			titolo    String
+			studenti  Studente[] @relation("Iscrizioni")
+		}
+		\end{minted}
+	\end{itemize}
+	
+	\subsection{Design Fisico}
+	\begin{itemize}
+		\item \textbf{Input:} Schema Logico.
+		\item \textbf{Output:} \textbf{Schema Fisico} (definizioni specifiche per il DBMS scelto: indici, partizionamento, filegroup, ecc.).
+		\item \textbf{Focus:} Ottimizzazione delle performance e dello storage.
+		\item \textit{Esempio Pratico:} ``Sulla tabella \texttt{Studenti}, creiamo un indice sulla colonna \texttt{Cognome} per velocizzare le ricerche.''
+	\end{itemize}
+	
+	\section{Modelli di Dati: Costrutti, Schemi e Istanze}
+	\begin{itemize}
+		\item \textbf{Modello di Dati:} Una collezione di ``costrutti'' (come i tipi di dato in programmazione) per categorizzare i dati e descrivere le operazioni su di essi.
+		\begin{itemize}
+			\item Esempio: il modello relazionale usa il costrutto \texttt{relazione} (tabella) per insiemi uniformi di \texttt{tuple} (righe).
+		\end{itemize}
+		\item \textbf{Schema:} La struttura invariante nel tempo dei dati (aspetto \textit{intensionale}).
+		\begin{itemize}
+			\item SQL: \texttt{CREATE TABLE Users (id INT, name VARCHAR(255));}
+			\item Prisma: \texttt{model User \{ id Int @id; name String; \}}
+		\end{itemize}
+		\item \textbf{Istanza:} I valori attuali dei dati in un certo momento, che cambiano nel tempo (aspetto \textit{estensionale}).
+		\begin{itemize}
+			\item SQL: Le righe effettive nella tabella \texttt{Users}: \texttt{(1, 'Alice'), (2, 'Bob')}.
+			\item MongoDB: I documenti effettivi nella collezione \texttt{users}.
+		\end{itemize}
+	\end{itemize}
+	
+	\section{Il Modello Entità-Relazione (ER Model)}
+	È il modello concettuale più usato. Ecco i suoi costrutti principali:
+	
+	\subsection{Entità (Entity)}
+	\begin{itemize}
+		\item Rappresenta una classe di ``oggetti'' (cose, persone, luoghi) del mondo reale che hanno proprietà comuni e un'esistenza autonoma.
+		\item \textbf{Esempi:} \texttt{Studente}, \texttt{Prodotto}, \texttt{Dipartimento}.
+		\item \textbf{Rappresentazione Grafica:} Rettangolo.
+		\item \textbf{Convenzioni:} Nomi singolari, significativi.
+		\item \textit{Paragone Pratico:} Simile a una classe in OOP, un \texttt{model} in Prisma, o una collezione in MongoDB.
+	\end{itemize}
+	
+	\subsection{Relazione (Relationship)}
+	\begin{itemize}
+		\item Un legame, un'associazione logica tra due o più tipi di entità.
+		\item \textbf{Esempi:} \texttt{Studente} \textit{Frequenta} \texttt{Corso}; \texttt{Impiegato} \textit{LavoraIn} \texttt{Dipartimento}.
+		\item \textbf{Rappresentazione Grafica:} Rombo.
+		\item \textbf{Convenzioni:} Nomi singolari (se possibile, nomi invece di verbi).
+		\item \textbf{Tipi:}
+		\begin{itemize}
+			\item \textbf{Binarie:} Coinvolgono due entità.
+			\item \textbf{N-arie:} Coinvolgono più di due entità (es. \texttt{Fornitore} \textit{Fornisce} \texttt{Prodotto} a un \texttt{Dipartimento}). Spesso si cerca di scomporle in binarie.
+			\item \textbf{Ricorsive:} Un'entità è in relazione con se stessa (es. \texttt{Impiegato} \textit{Supervisiona} \texttt{Impiegato}).
+			\begin{itemize}
+				\item \textit{Paragone Pratico (Ricorsiva):} In SQL, una tabella \texttt{Impiegati} con una colonna \texttt{ID\_Manager} che è una foreign key a \texttt{Impiegati.ID}.
+			\end{itemize}
+		\end{itemize}
+		\item \textbf{Ruoli:} Utili nelle relazioni ricorsive per chiarire il significato (es. \texttt{Presidente} -(Precedente/Successivo)-> \texttt{Successione}).
+	\end{itemize}
+	
+	\subsection{Promozione di Relazioni a Entità}
+	\textbf{Quando?}
+	\begin{itemize}
+		\item Se una relazione ha attributi propri (es. la relazione \texttt{Iscrizione} tra \texttt{Studente} e \texttt{Corso} ha attributi come \texttt{DataIscrizione} e \texttt{VotoEsame}).
+		\item Se uno studente può sostenere lo \textit{stesso} esame più volte (es. per migliorare il voto). La semplice relazione \texttt{Studente-Esame-Corso} non cattura i tentativi multipli.
+	\end{itemize}
+	\textbf{Come?} La relazione diventa un'entità ``associativa''.
+	\begin{itemize}
+		\item \textit{Esempio Pratico:} La relazione \texttt{Studente}-\texttt{Iscrizione}-\texttt{Corso} diventa: Entità \texttt{Studente} --- Relazione \texttt{HaSostenuto} --- Entità \texttt{IstanzaEsame} --- Relazione \texttt{Riguarda} --- Entità \texttt{Corso}. L'entità \texttt{IstanzaEsame} avrà attributi come \texttt{Data}, \texttt{Voto}.
+		\item \textit{SQL:} Questo si traduce in una ``join table'' o ``tabella associativa'':
+		\begin{minted}{sql}
+		CREATE TABLE EsamiSostenuti (
+		ID_Studente INT,
+		ID_Corso INT,
+		Data DATE,
+		Voto INT,
+		PRIMARY KEY (ID_Studente, ID_Corso, Data) -- Data inclusa per tentativi multipli
+		);
+		\end{minted}
+	\end{itemize}
+	
+	\subsection{Attributi (Attribute)}
+	\begin{itemize}
+		\item Una proprietà o caratteristica di un'entità o di una relazione.
+		\item Collega ogni istanza dell'entità/relazione a un valore da un ``dominio'' (insieme di valori possibili).
+		\item \textbf{Esempi:} \texttt{Nome} dell'entità \texttt{Studente}; \texttt{Data} della relazione \texttt{Esame}.
+		\item \textbf{Rappresentazione Grafica:} Ovale.
+		\item \textbf{Tipi:}
+		\begin{itemize}
+			\item \textbf{Semplici:} Atomici (es. \texttt{Età}).
+			\item \textbf{Composti:} Possono essere scomposti in sotto-attributi (es. \texttt{Indirizzo} composto da \texttt{Via}, \texttt{NumeroCivico}, \texttt{Città}).
+			\begin{itemize}
+				\item \textit{Paragone Pratico (Composto):} In MongoDB è naturale: \texttt{address: \{ street: "...", city: "..." \}}. In SQL, spesso si ``appiattiscono'' in colonne separate (\texttt{Via}, \texttt{NumeroCivico}, \texttt{Citta}) o, se complesso, si mette in una tabella separata.
+			\end{itemize}
+		\end{itemize}
+	\end{itemize}
+	
+	\subsection{Cardinalità (Cardinality)}
+	Specifica il numero minimo e massimo di istanze di un'entità che possono partecipare a una relazione, o il numero di valori che un attributo può assumere.
+	\begin{itemize}
+		\item \textbf{Notazione comune:} \texttt{(min, max)}
+		\begin{itemize}
+			\item \texttt{min = 0}: partecipazione opzionale.
+			\item \texttt{min = 1} (o più): partecipazione obbligatoria.
+			\item \texttt{max = 1}: al massimo una.
+			\item \texttt{max = N} (o \texttt{*}): molte.
+		\end{itemize}
+	\end{itemize}
+	
+	\subsubsection{Cardinalità delle Relazioni}
+	\begin{itemize}
+		\item \textbf{Esempio:} \texttt{Impiegato (1,1)} --- \texttt{LavoraPer} --- \texttt{(0,N) Dipartimento}
+		\begin{itemize}
+			\item Un \texttt{Impiegato} deve lavorare per \textbf{esattamente un} \texttt{Dipartimento}.
+			\item Un \texttt{Dipartimento} può avere \textbf{da zero a molti} \texttt{Impiegati}.
+		\end{itemize}
+		\item \textbf{Tipi comuni (basati su max):}
+		\begin{itemize}
+			\item \textbf{Uno-a-Uno (1:1):} Es. \texttt{Persona (0,1)} --- \texttt{Possiede} --- \texttt{(0,1) Pacemaker}.
+			\item \textbf{Uno-a-Molti (1:N):} Es. \texttt{Cliente (1,1)} --- \texttt{Effettua} --- \texttt{(0,N) Ordine}.
+			\item \textbf{Molti-a-Molti (M:N):} Es. \texttt{Studente (0,N)} --- \texttt{Frequenta} --- \texttt{(0,N) Corso}.
+			\begin{itemize}
+				\item \textit{Paragone Pratico (M:N):} In SQL, le relazioni M:N si implementano sempre con una tabella associativa intermedia. Prisma gestisce questo in modo più astratto.
+			\end{itemize}
+		\end{itemize}
+	\end{itemize}
+	
+	\subsubsection{Cardinalità degli Attributi}
+	\begin{itemize}
+		\item \texttt{(0,1)}: Attributo opzionale (può essere \texttt{NULL}). Es. \texttt{NumeroTelefonoSecondario}.
+		\item \texttt{(1,1)}: Attributo obbligatorio, singolo valore (default). Es. \texttt{CodiceFiscale}.
+		\item \texttt{(0,N)} o \texttt{(1,N)}: Attributo multivalore (un'entità può avere più valori per quell'attributo). Es. \texttt{NumeroTelefono} (una persona può avere più numeri).
+		\begin{itemize}
+			\item \textit{Paragone Pratico (Multivalore):} In SQL, si usa una tabella separata: \texttt{Persona(ID\_Persona)}, \texttt{NumeriTelefono(ID\_Persona\_FK, Numero)}. In MongoDB, si usa un array: \texttt{telefoni: ["123", "456"]}.
+		\end{itemize}
+	\end{itemize}
+	
+	\subsection{Identificatori (Chiavi - Keys)}
+	\begin{itemize}
+		\item Un attributo o un insieme di attributi che identificano univocamente ogni istanza di un'entità.
+		\item \textbf{Rappresentazione Grafica:} Attributo sottolineato.
+		\item \textbf{Tipi:}
+		\begin{itemize}
+			\item \textbf{Identificatore Interno:} Formato da attributi della stessa entità.
+			\begin{itemize}
+				\item Es. \texttt{CodiceFiscale} per l'entità \texttt{Persona}.
+				\item \textit{Paragone Pratico:} \texttt{PRIMARY KEY} in SQL; \texttt{\_id} in MongoDB; \texttt{@id} in Prisma.
+			\end{itemize}
+			\item \textbf{Identificatore Esterno:} Formato da attributi dell'entità più l'identificatore di un'entità esterna a cui è collegata tramite una relazione con cardinalità \texttt{(1,1)} dal lato dell'entità da identificare. Usato per ``entità deboli'' che non possono esistere o essere identificate senza l'entità ``forte''.
+			\begin{itemize}
+				\item Es. \texttt{NumeroRiga} (attributo di \texttt{RigaOrdine}) + \texttt{ID\_Ordine} (dall'entità \texttt{Ordine}) identifica univocamente una \texttt{RigaOrdine}. \texttt{RigaOrdine} è un'entità debole rispetto a \texttt{Ordine}.
+			\end{itemize}
+		\end{itemize}
+		\item Ogni entità deve avere almeno un identificatore.
+		\item Le relazioni di solito non hanno identificatori (se ne hanno bisogno, si promuovono a entità).
+	\end{itemize}
+	
+	\subsection{Generalizzazione/Specializzazione (Inheritance)}
+	\begin{itemize}
+		\item Una relazione tra un'entità genitore (superclasse, es. \texttt{Veicolo}) e una o più entità figlie (sottoclassi, es. \texttt{Automobile}, \texttt{Motocicletta}).
+		\item Le figlie sono ``tipi di'' genitore: ereditano attributi e relazioni del genitore e possono averne di propri.
+		\item \textbf{Rappresentazione Grafica:} Freccia (triangolo vuoto) dalle figlie al genitore.
+		\item \textbf{Proprietà:}
+		\begin{itemize}
+			\item \textbf{Ereditarietà:} Le proprietà del genitore sono implicitamente presenti nelle figlie.
+			\item \textbf{Copertura (Total/Partial):}
+			\begin{itemize}
+				\item \textbf{Totale:} Ogni istanza del genitore DEVE essere un'istanza di (almeno) una delle figlie. (Es. \texttt{Persona} -> \texttt{Maschio}, \texttt{Femmina}).
+				\item \textbf{Parziale:} Un'istanza del genitore PUÒ essere un'istanza di una figlia (o solo del tipo genitore). (Es. \texttt{Veicolo} -> \texttt{Automobile}, \texttt{Motocicletta}).
+			\end{itemize}
+			\item \textbf{Disgiunzione (Disjoint/Overlapping):}
+			\begin{itemize}
+				\item \textbf{Disgiunta:} Un'istanza del genitore può essere al massimo un tipo di figlia. (Es. \texttt{Persona} è \texttt{Maschio} O \texttt{Femmina}).
+				\item \textbf{Sovrapposta:} Un'istanza del genitore può essere più tipi di figlia contemporaneamente (raro e più complesso da modellare).
+			\end{itemize}
+			\item Di solito ci si concentra su generalizzazioni \textbf{Disgiunte (Totali o Parziali)}.
+		\end{itemize}
+		\item \textit{Paragone Pratico:}
+		\begin{itemize}
+			\item OOP: \texttt{class Veicolo \{\}}, \texttt{class Automobile extends Veicolo \{\}}.
+			\item SQL: Ci sono diversi pattern per implementare l'ereditarietà.
+			\item Prisma: Può essere modellato con campi discriminatori o modelli separati con relazioni.
+		\end{itemize}
+	\end{itemize}
+	
+	\section{Documentazione}
+	\begin{itemize}
+		\item \textbf{Dizionario dei Dati:} Descrive in dettaglio ogni entità, relazione e attributo.
+		\item \textbf{Vincoli Non Esprimibili:} Alcuni vincoli di business non possono essere rappresentati graficamente nell'ERD (es. ``Lo stipendio di un impiegato non può superare quello del suo manager''). Vanno documentati a parte.
+		\begin{itemize}
+			\item \textit{Paragone Pratico:} Questi vincoli si implementano spesso con \texttt{CHECK constraints} in SQL, \texttt{triggers}, o a livello applicativo.
+		\end{itemize}
+	\end{itemize}
+	
+	\section{UML (Unified Modeling Language) come Alternativa}
+	\begin{itemize}
+		\item UML è un linguaggio di modellazione più ampio, usato per vari aspetti dello sviluppo software.
+		\item Per la modellazione dei dati, si usano principalmente i \textbf{Diagrammi delle Classi (Class Diagrams)}.
+		\item Molti concetti ER hanno un equivalente in UML:
+		\begin{itemize}
+			\item \textbf{Entità} -> \textbf{Classe}
+			\item \textbf{Relazione} -> \textbf{Associazione}
+			\item \textbf{Relazione con attributi} -> \textbf{Classe di Associazione}
+			\item \textbf{Cardinalità:} \texttt{1}, \texttt{0..1}, \texttt{*}, \texttt{1..*}
+			\item \textbf{Identificatori:} \texttt{\{id\}} accanto all'attributo.
+			\item \textbf{Generalizzazione/Specializzazione:} Freccia con triangolo vuoto verso la superclasse.
+			\item \textbf{Concetti specifici UML:} Aggregazione (rombo vuoto), Composizione (rombo pieno).
+		\end{itemize}
+	\end{itemize}
+	
+\end{document}
