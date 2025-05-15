@@ -100,13 +100,18 @@ async function createGitHubRelease(pdfInfo) {
   try {
     console.log("Creating GitHub release...");
 
+    // Generate release body with PDF file names in Italian
+    const pdfFiles = findPDFFiles();
+    const fileList = pdfFiles.map(file => `- ${path.basename(file)}`).join("\n");
+    const releaseBody = `Appunti aggiornati al ${formattedDate}\n\nFile inclusi in questa pubblicazione:\n${fileList}`;
+
     // Create the release
     const release = await octokit.repos.createRelease({
       owner: REPO_OWNER,
       repo: REPO_NAME,
       tag_name: releaseTag,
       name: releaseName,
-      body: "Automatically generated release with combined PDFs.",
+      body: releaseBody,
       draft: false,
       prerelease: false
     });
