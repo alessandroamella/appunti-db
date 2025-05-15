@@ -167,7 +167,7 @@
 		SELECT DISTINCT Nome, Cognome
 		FROM Impiegati;
 	\end{minted}
-	Nota l'uso di `DISTINCT` in SQL per replicare il comportamento insiemistico della proiezione.
+	Nota l'uso di $DISTINCT$ in SQL per replicare il comportamento insiemistico della proiezione.
 	
 	\subsection{Combinazione di Selezione e Proiezione}
 	Questi operatori sono spesso usati insieme per estrarre dati specifici.
@@ -185,7 +185,7 @@
 	\begin{itemize}
 		\item \textbf{Prodotto Cartesiano ($\Rel{R1} \mycartesian \Rel{R2}$):}
 		Combina ogni tupla di $\Rel{R1}$ con ogni tupla di $\Rel{R2}$. Il numero di tuple risultanti è $|\Rel{R1}| \times |\Rel{R2}|$. Lo schema è la concatenazione degli schemi di $\Rel{R1}$ e $\Rel{R2}$.
-		In SQL, è spesso scritto come `FROM R1, R2` (sintassi più vecchia) o `FROM R1 CROSS JOIN R2`. Di solito è seguito da una selezione per filtrare le combinazioni significative.
+		In SQL, è spesso scritto come $FROM R1, R2$ (sintassi più vecchia) o $FROM R1 CROSS JOIN R2$. Di solito è seguito da una selezione per filtrare le combinazioni significative.
 		
 		\item \textbf{Theta-Join ($\mythetajoin{\Rel{R1}}{condizione}{\Rel{R2}}$):}
 		È un prodotto cartesiano seguito da una selezione. La \textit{condizione} è un predicato che coinvolge attributi di $\Rel{R1}$ e $\Rel{R2}$.
@@ -210,18 +210,18 @@
 			SELECT *
 			FROM Impiegati NATURAL JOIN Assegnazioni;
 		\end{minted}
-		\textit{Attenzione:} Il Natural Join può essere pericoloso se ci sono attributi con lo stesso nome ma significato diverso, o se si aggiungono/rimuovono colonne. È spesso preferibile usare join espliciti con clausola `ON`.
+		\textit{Attenzione:} Il Natural Join può essere pericoloso se ci sono attributi con lo stesso nome ma significato diverso, o se si aggiungono/rimuovono colonne. È spesso preferibile usare join espliciti con clausola $ON$.
 	\end{itemize}
 	
 	\subsection{Outer Join (Join Esterni)}
-	I join visti finora (inner join) scartano le tuple che non trovano una corrispondenza nell'altra relazione. Gli outer join includono queste tuple, riempiendo con `NULL` gli attributi mancanti.
+	I join visti finora (inner join) scartano le tuple che non trovano una corrispondenza nell'altra relazione. Gli outer join includono queste tuple, riempiendo con $NULL$ gli attributi mancanti.
 	\begin{itemize}
-		\item \textbf{Left Outer Join ($\Rel{R1} \myleftouterjoin \Rel{R2}$):} Mantiene tutte le tuple di $\Rel{R1}$. Se una tupla di $\Rel{R1}$ non ha corrispondenze in $\Rel{R2}$, viene inclusa nel risultato con valori `NULL` per gli attributi di $\Rel{R2}$.
-		SQL: `R1 LEFT OUTER JOIN R2 ON condizione`
+		\item \textbf{Left Outer Join ($\Rel{R1} \myleftouterjoin \Rel{R2}$):} Mantiene tutte le tuple di $\Rel{R1}$. Se una tupla di $\Rel{R1}$ non ha corrispondenze in $\Rel{R2}$, viene inclusa nel risultato con valori $NULL$ per gli attributi di $\Rel{R2}$.
+		SQL: $R1 LEFT OUTER JOIN R2 ON condizione$
 		\item \textbf{Right Outer Join ($\Rel{R1} \myrightouterjoin \Rel{R2}$):} Mantiene tutte le tuple di $\Rel{R2}$. Simmetrico al left outer join.
-		SQL: `R1 RIGHT OUTER JOIN R2 ON condizione`
-		\item \textbf{Full Outer Join ($\Rel{R1} \myfullouterjoin \Rel{R2}$):} Mantiene tutte le tuple di entrambe le relazioni. Se non c'è corrispondenza, i campi dell'altra relazione sono `NULL`.
-		SQL: `R1 FULL OUTER JOIN R2 ON condizione`
+		SQL: $R1 RIGHT OUTER JOIN R2 ON condizione$
+		\item \textbf{Full Outer Join ($\Rel{R1} \myfullouterjoin \Rel{R2}$):} Mantiene tutte le tuple di entrambe le relazioni. Se non c'è corrispondenza, i campi dell'altra relazione sono $NULL$.
+		SQL: $R1 FULL OUTER JOIN R2 ON condizione$
 	\end{itemize}
 	\textbf{Esempio pratico:} Trovare tutti gli impiegati e, se assegnati a un dipartimento, il nome del dipartimento. Se un impiegato non ha dipartimento, vogliamo comunque vederlo.
 	$\Rel{Impiegati} \myleftouterjoin \Rel{Dipartimenti}$ (assumendo un join su $\Attr{IDDip}$)
@@ -234,7 +234,7 @@
 	
 	\subsection{Espressioni Equivalenti e Ottimizzazione}
 	Esistono diverse espressioni algebriche che producono lo stesso risultato. I DBMS (Database Management Systems) utilizzano regole di equivalenza per trasformare una query in una forma equivalente ma più efficiente da eseguire.
-	Ad esempio, "spingere" le selezioni il più presto possibile (`pushdown selection`) riduce la dimensione delle relazioni intermedie, velocizzando i join successivi.
+	Ad esempio, "spingere" le selezioni il più presto possibile ($pushdown selection$) riduce la dimensione delle relazioni intermedie, velocizzando i join successivi.
 	\textbf{Esempio:}
 	$\myselectop{\Attr{Stipendio}>100K}{(\Rel{Impiegati} \mynaturaljoin \Rel{Dipartimenti})}$
 	potrebbe essere più efficiente se riscritta come:
@@ -242,12 +242,12 @@
 	(se $\Attr{Stipendio}$ è solo in $\Rel{Impiegati}$). Il DBMS fa queste ottimizzazioni automaticamente.
 	
 	\subsection{Selezione con Valori NULL}
-	I valori `NULL` rappresentano l'assenza di un valore o un valore sconosciuto.
+	I valori $NULL$ rappresentano l'assenza di un valore o un valore sconosciuto.
 	Nei predicati di selezione:
 	\begin{itemize}
-		\item Un confronto con `NULL` (es. $\Attr{Eta} > \text{NULL}$ o $\Attr{Stipendio} = \text{NULL}$) restituisce `UNKNOWN`.
-		\item L'operatore $\sigma$ seleziona solo le tuple per cui il predicato è `TRUE`.
-		\item Per testare esplicitamente i `NULL`, si usano i predicati $\Attr{Attributo} \text{ IS NULL}$ e $\Attr{Attributo} \text{ IS NOT NULL}$.
+		\item Un confronto con $NULL$ (es. $\Attr{Eta} > \text{NULL}$ o $\Attr{Stipendio} = \text{NULL}$) restituisce $UNKNOWN$.
+		\item L'operatore $\sigma$ seleziona solo le tuple per cui il predicato è $TRUE$.
+		\item Per testare esplicitamente i $NULL$, si usano i predicati $\Attr{Attributo} \text{ IS NULL}$ e $\Attr{Attributo} \text{ IS NOT NULL}$.
 	\end{itemize}
 	\textbf{Esempio pratico (SQL):} Trovare gli impiegati senza un numero di telefono assegnato.
 	$\myselectop{\Attr{Telefono} \text{ IS NULL}}{(\Rel{Impiegati})}$
@@ -316,7 +316,7 @@
 		{ Nome:n, Eta:a |
 			existsop w (IMPIEGATO(Numero:m, Nome:n, Eta:a, Salario:w)  w > 40) }
 	\end{verbatim}
-	(Il `Numero:m` nella seconda query è una variabile libera nella formula `IMPIEGATO`, ma non nella target list, quindi la sua esistenza è implicitamente richiesta. Le slide mostrano `EMPLOYEE(Number:m, Name:n, Age:a, Wage:w)` anche quando `m` non è nella target list; questo significa che deve esistere una tupla con qualche `m` che soddisfi il resto. Per essere più precisi, si quantificherebbero le variabili non nella target list).
+	(Il $Numero:m$ nella seconda query è una variabile libera nella formula $IMPIEGATO$, ma non nella target list, quindi la sua esistenza è implicitamente richiesta. Le slide mostrano $EMPLOYEE(Number:m, Name:n, Age:a, Wage:w)$ anche quando $m$ non è nella target list; questo significa che deve esistere una tupla con qualche $m$ che soddisfi il resto. Per essere più precisi, si quantificherebbero le variabili non nella target list).
 	
 	\subsection{Tuple Relational Calculus (TRC) with Range Declarations}
 	Una query TRC ha la forma:
@@ -345,7 +345,7 @@
 	\section{Limiti dell'Algebra e del Calcolo Relazionale Standard}
 	Nonostante la loro potenza, l'algebra e il calcolo relazionale standard hanno dei limiti:
 	\begin{itemize}
-		\item \textbf{No Calcoli Aritmetici/Nuovi Valori:} Non possono calcolare nuovi valori (es. stipendio + bonus) o eseguire aggregazioni (somma, media, conteggio). SQL estende queste capacità con funzioni aritmetiche e di aggregazione (`SUM()`, `AVG()`, `COUNT()`, `GROUP BY`).
+		\item \textbf{No Calcoli Aritmetici/Nuovi Valori:} Non possono calcolare nuovi valori (es. stipendio + bonus) o eseguire aggregazioni (somma, media, conteggio). SQL estende queste capacità con funzioni aritmetiche e di aggregazione ($SUM()$, $AVG()$, $COUNT()$, $GROUP BY$).
 		\item \textbf{No Chiusura Transitiva (Recursion):} Non possono esprimere query ricorsive, come trovare tutti i superiori di un impiegato (il capo, il capo del capo, ecc.) o tutte le tratte aeree possibili tra due città (dirette e indirette). Questo richiederebbe un numero potenzialmente illimitato di join.
 	\end{itemize}
 	
@@ -355,10 +355,10 @@
 	\begin{itemize}
 		\item \textbf{Predicati Estensionali (EDB - Extensional Database):} Corrispondono alle relazioni base del database (fatti).
 		\item \textbf{Predicati Intensionali (IDB - Intensional Database):} Corrispondono a viste o relazioni derivate, definite tramite \textbf{regole}.
-		\item \textbf{Regole:} Hanno la forma `testa :- corpo.` (o `testa <- corpo` nelle slide).
+		\item \textbf{Regole:} Hanno la forma $testa :- corpo.$ (o $testa <- corpo$ nelle slide).
 		Significa: "la \textit{testa} è vera se il \textit{corpo} è vero".
 		La testa è un singolo predicato intensionale. Il corpo è una congiunzione (AND) di predicati (estensionali o intensionali) e condizioni.
-		\item \textbf{Query:} Indicate con un prefisso `?` davanti a un predicato.
+		\item \textbf{Query:} Indicate con un prefisso \textbf{?} davanti a un predicato.
 	\end{itemize}
 	
 	\textbf{Esempio Datalog (non ricorsivo):} Trovare i capi degli impiegati che guadagnano più di 40.
@@ -389,7 +389,7 @@
 		% Query: trovare tutti i superiori di 'Rossi' (assumendo che 'Rossi' sia un ID)
 		? SUPERIORE(Capo, 'Rossi').
 	\end{minted}
-	Datalog, grazie alla sua capacità di esprimere la ricorsione, è più potente dell'algebra e del calcolo relazionale standard. Le estensioni ricorsive di SQL (come `WITH RECURSIVE`) sono ispirate a Datalog.
+	Datalog, grazie alla sua capacità di esprimere la ricorsione, è più potente dell'algebra e del calcolo relazionale standard. Le estensioni ricorsive di SQL (come $WITH RECURSIVE$) sono ispirate a Datalog.
 	
 	\section{Conclusioni}
 	L'Algebra Relazionale e il Calcolo Relazionale forniscono le fondamenta teoriche per i linguaggi di query dei database relazionali come SQL.
