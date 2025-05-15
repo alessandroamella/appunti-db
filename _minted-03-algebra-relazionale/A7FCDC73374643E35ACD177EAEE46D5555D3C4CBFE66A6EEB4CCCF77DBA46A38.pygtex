@@ -1,5 +1,0 @@
-\begin{Verbatim}[commandchars=\\\{\}]
-\PYG{+w}{			}\PYG{k}{SELECT}\PYG{+w}{ }\PYG{o}{*}
-\PYG{+w}{			}\PYG{k}{FROM}\PYG{+w}{ }\PYG{n}{People}
-\PYG{+w}{			}\PYG{k}{WHERE}\PYG{+w}{ }\PYG{n}{Age}\PYG{+w}{ }\PYG{o}{\PYGZgt{}}\PYG{+w}{ }\PYG{l+m+mi}{40}\PYG{+w}{ }\PYG{k}{OR}\PYG{+w}{ }\PYG{n}{Age}\PYG{+w}{ }\PYG{k}{IS}\PYG{+w}{ }\PYG{k}{NULL}\PYG{p}{;}
-\end{Verbatim}

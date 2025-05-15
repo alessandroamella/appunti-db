@@ -1,7 +1,0 @@
-\begin{Verbatim}[commandchars=\\\{\}]
-\PYG{+w}{			}\PYG{k}{SELECT}\PYG{+w}{ }\PYG{o}{*}
-\PYG{+w}{			}\PYG{k}{FROM}\PYG{+w}{ }\PYG{n}{Employee}\PYG{+w}{ }\PYG{k}{NATURAL}\PYG{+w}{ }\PYG{k}{JOIN}\PYG{+w}{ }\PYG{n}{Department}\PYG{p}{;}\PYG{+w}{ }\PYG{c+c1}{\PYGZhy{}\PYGZhy{} Joins on \PYGZsq{}Dept\PYGZsq{}}
-\PYG{+w}{			}\PYG{c+c1}{\PYGZhy{}\PYGZhy{} Equivalente (spesso preferito per chiarezza):}
-\PYG{+w}{			}\PYG{k}{SELECT}\PYG{+w}{ }\PYG{o}{*}
-\PYG{+w}{			}\PYG{k}{FROM}\PYG{+w}{ }\PYG{n}{Employee}\PYG{+w}{ }\PYG{k}{JOIN}\PYG{+w}{ }\PYG{n}{Department}\PYG{+w}{ }\PYG{k}{USING}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Dept}\PYG{p}{);}
-\end{Verbatim}

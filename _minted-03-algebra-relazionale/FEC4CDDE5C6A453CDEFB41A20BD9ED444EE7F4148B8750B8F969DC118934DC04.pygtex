@@ -1,5 +1,0 @@
-\begin{Verbatim}[commandchars=\\\{\}]
-			\PYG{n+nf}{richer}\PYG{p}{(}\PYG{n+nv}{M}\PYG{p}{,} \PYG{n+nv}{N}\PYG{p}{,} \PYG{n+nv}{A}\PYG{p}{,} \PYG{n+nv}{W}\PYG{p}{)} \PYG{p}{:\PYGZhy{}} \PYG{n+nf}{employee}\PYG{p}{(}\PYG{n+nv}{M}\PYG{p}{,} \PYG{n+nv}{N}\PYG{p}{,} \PYG{n+nv}{A}\PYG{p}{,} \PYG{n+nv}{W}\PYG{p}{),} \PYG{n+nv}{W} \PYG{o}{\PYGZgt{}} \PYG{l+m+mf}{40.}
-			\PYG{l+s+sAtom}{\PYGZhy{}\PYGZhy{}} \PYG{n+nv}{Leggi}\PYG{l+s+sAtom}{:} \PYG{l+s+s2}{\PYGZdq{}Una tupla (M,N,A,W) e\PYGZsq{} nel predicato richer SE una tupla (M,N,A,W) e\PYGZsq{} nel predicato employee E W \PYGZgt{} 40.\PYGZdq{}}
-			\PYG{l+s+sAtom}{\PYGZhy{}\PYGZhy{}} \PYG{n+nv}{Corrisponde} \PYG{n+nn}{a}\PYG{p}{:} \PYG{n+nv}{RICH} \PYG{n+nv}{PEOPLE} \PYG{o}{=} \PYG{l+s+sAtom}{select\PYGZus{}}\PYG{p}{\PYGZob{}}\PYG{n+nv}{Wage} \PYG{o}{\PYGZgt{}} \PYG{l+m+mi}{40}\PYG{p}{\PYGZcb{}(}\PYG{n+nv}{EMPLOYEE}\PYG{p}{)}
-\end{Verbatim}
