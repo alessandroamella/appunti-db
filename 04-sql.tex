@@ -142,8 +142,8 @@
 		\item Sintassi base:
 		\begin{minted}{sql}
 CREATE TABLE table_name (
-colonna1 TIPO_DATI [vincoli],
-colonna2 TIPO_DATI [vincoli],
+	colonna1 TIPO_DATI [vincoli],
+	colonna2 TIPO_DATI [vincoli],
 ...
 );
 		\end{minted}
@@ -161,20 +161,20 @@ model User {
 		\begin{minted}{sql}
 -- SQL (es. PostgreSQL)
 CREATE TABLE User (
-id SERIAL PRIMARY KEY,
-email VARCHAR(255) UNIQUE NOT NULL,
-name VARCHAR(255)
+	id SERIAL PRIMARY KEY,
+	email VARCHAR(255) UNIQUE NOT NULL,
+	name VARCHAR(255)
 );
 		\end{minted}
 		\item Esempio dalla slide:
 		\begin{minted}{sql}
 CREATE TABLE EMPLOYEE (
-Number CHARACTER(6) PRIMARY KEY,
-Name CHARACTER(20) NOT NULL,
-Surname CHARACTER(20) NOT NULL,
-Dept CHARACTER(15),
-Wage NUMERIC(9) DEFAULT 0,
-FOREIGN KEY(Dept) REFERENCES DEPARTMENT(Dept)
+	Number CHARACTER(6) PRIMARY KEY,
+	Name CHARACTER(20) NOT NULL,
+	Surname CHARACTER(20) NOT NULL,
+	Dept CHARACTER(15),
+	Wage NUMERIC(9) DEFAULT 0,
+	FOREIGN KEY(Dept) REFERENCES DEPARTMENT(Dept)
 );
 		\end{minted}
 	\end{itemize}
