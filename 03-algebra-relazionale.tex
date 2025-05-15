@@ -154,9 +154,9 @@
 	$\myselectop{\Attr{Eta} > 30 \mylandop \Attr{Dipartimento} = \text{'IT'}}{(\Rel{Impiegati})}$
 	è equivalente a:
 	\begin{minted}{sql}
-		SELECT *
-		FROM Impiegati
-		WHERE Eta > 30 AND Dipartimento = 'IT';
+SELECT *
+FROM Impiegati
+WHERE Eta > 30 AND Dipartimento = 'IT';
 	\end{minted}
 	
 	\subsection{Proiezione ($\myproject{lista\_attributi}{R}$)}
@@ -166,8 +166,8 @@
 	$\myproject{\Attr{Nome}, \Attr{Cognome}}{(\Rel{Impiegati})}$
 	è equivalente a:
 	\begin{minted}{sql}
-		SELECT DISTINCT Nome, Cognome
-		FROM Impiegati;
+SELECT DISTINCT Nome, Cognome
+FROM Impiegati;
 	\end{minted}
 	Nota l'uso di `DISTINCT` in SQL per replicare il comportamento insiemistico della proiezione.
 	
@@ -177,9 +177,9 @@
 	Algebra: $\myproject{\Attr{Nome}, \Attr{Cognome}}{(\myselectop{\Attr{Dipartimento} = \text{'Vendite'} \mylandop \Attr{Stipendio} > 50000}{(\Rel{Impiegati})})}$
 	SQL:
 	\begin{minted}{sql}
-		SELECT DISTINCT Nome, Cognome
-		FROM Impiegati
-		WHERE Dipartimento = 'Vendite' AND Stipendio > 50000;
+SELECT DISTINCT Nome, Cognome
+FROM Impiegati
+WHERE Dipartimento = 'Vendite' AND Stipendio > 50000;
 	\end{minted}
 	
 	\subsection{Join}
@@ -196,9 +196,9 @@
 		$\mythetajoin{\Rel{Impiegati}}{\Attr{Impiegati.IDDip} = \Attr{Dipartimenti.ID}}{\Rel{Dipartimenti}}$
 		è equivalente a:
 		\begin{minted}{sql}
-			SELECT *
-			FROM Impiegati, Dipartimenti -- o Impiegati JOIN Dipartimenti
-			WHERE Impiegati.IDDip = Dipartimenti.ID;
+SELECT *
+FROM Impiegati, Dipartimenti -- o Impiegati JOIN Dipartimenti
+WHERE Impiegati.IDDip = Dipartimenti.ID;
 		\end{minted}
 		
 		\item \textbf{Equi-Join:} Un Theta-Join in cui la condizione contiene solo confronti di uguaglianza ($=$). L'esempio precedente è un equi-join.
@@ -209,8 +209,8 @@
 		$\Rel{Impiegati} \mynaturaljoin \Rel{Assegnazioni}$
 		è equivalente a:
 		\begin{minted}{sql}
-			SELECT *
-			FROM Impiegati NATURAL JOIN Assegnazioni;
+SELECT *
+FROM Impiegati NATURAL JOIN Assegnazioni;
 		\end{minted}
 		\textit{Attenzione:} Il Natural Join può essere pericoloso se ci sono attributi con lo stesso nome ma significato diverso, o se si aggiungono/rimuovono colonne. È spesso preferibile usare join espliciti con clausola `ON`.
 	\end{itemize}
@@ -229,9 +229,9 @@
 	$\Rel{Impiegati} \myleftouterjoin \Rel{Dipartimenti}$ (assumendo un join su $\Attr{IDDip}$)
 	SQL:
 	\begin{minted}{sql}
-		SELECT Impiegati.Nome, Dipartimenti.NomeDip
-		FROM Impiegati
-		LEFT OUTER JOIN Dipartimenti ON Impiegati.IDDip = Dipartimenti.ID;
+SELECT Impiegati.Nome, Dipartimenti.NomeDip
+FROM Impiegati
+LEFT OUTER JOIN Dipartimenti ON Impiegati.IDDip = Dipartimenti.ID;
 	\end{minted}
 	
 	\subsection{Espressioni Equivalenti e Ottimizzazione}
@@ -255,7 +255,7 @@
 	$\myselectop{\Attr{Telefono} \text{ IS NULL}}{(\Rel{Impiegati})}$
 	SQL:
 	\begin{minted}{sql}
-		SELECT * FROM Impiegati WHERE Telefono IS NULL;
+SELECT * FROM Impiegati WHERE Telefono IS NULL;
 	\end{minted}
 	
 	\section{Views (Viste)}
@@ -273,13 +273,13 @@
 	Algebra: $\Rel{ImpiegatiIT} := \myselectop{\Attr{Dipartimento} = \text{'IT'}}{(\Rel{Impiegati})}$
 	SQL:
 	\begin{minted}{sql}
-		CREATE VIEW ImpiegatiIT AS
-		SELECT *
-		FROM Impiegati
-		WHERE Dipartimento = 'IT';
-		
-		-- Successivamente si può interrogare la vista:
-		SELECT Nome, Cognome FROM ImpiegatiIT WHERE Stipendio > 60000;
+CREATE VIEW ImpiegatiIT AS
+SELECT *
+FROM Impiegati
+WHERE Dipartimento = 'IT';
+
+-- Successivamente si può interrogare la vista:
+SELECT Nome, Cognome FROM ImpiegatiIT WHERE Stipendio > 60000;
 	\end{minted}
 	Il DBMS traduce la query sulla vista in una query sulle tabelle base (es. $\myselectop{\Attr{Stipendio} > 60000}{(\myselectop{\Attr{Dipartimento} = \text{'IT'}}{(\Rel{Impiegati})})}$ ).
 	
@@ -382,10 +382,10 @@ SUPERVISORE(NumCapo, NumImp).
 	\begin{minted}{prolog}
 % Caso base: un capo diretto e' un superiore
 SUPERIORE(X, Y) :- CAPO_DIRETTO(X, Y).
-		
+
 % Caso ricorsivo: il superiore di un mio superiore e' anche mio superiore
 SUPERIORE(X, Y) :- CAPO_DIRETTO(X, Z), SUPERIORE(Z, Y).
-		
+
 % Query: trovare tutti i superiori di 'Rossi' (assumendo che 'Rossi' sia un ID)
 ? SUPERIORE(Capo, 'Rossi').
 	\end{minted}

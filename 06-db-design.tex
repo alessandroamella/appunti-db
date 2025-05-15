@@ -97,35 +97,35 @@
 		\item \textbf{Focus:} Il ``COME?'' – come traduciamo il modello concettuale in un modello supportato da un tipo di DBMS (es. relazionale, a documenti, a grafo). È indipendente dal DBMS specifico, ma non dal \textit{tipo} di DBMS.
 		\item \textit{Esempio Pratico (Relazionale):} Dallo schema concettuale sopra, deriviamo:
 		\begin{minted}{sql}
-		CREATE TABLE Studenti (
-			ID_Studente INT PRIMARY KEY,
-			Nome VARCHAR(255),
-			Cognome VARCHAR(255)
-		);
-		CREATE TABLE Corsi (
-			ID_Corso INT PRIMARY KEY,
-			TitoloCorso VARCHAR(255)
-		);
-		CREATE TABLE Iscrizioni (
-			ID_Studente INT,
-			ID_Corso INT,
-			PRIMARY KEY (ID_Studente, ID_Corso),
-			FOREIGN KEY (ID_Studente) REFERENCES Studenti(ID_Studente),
-			FOREIGN KEY (ID_Corso) REFERENCES Corsi(ID_Corso)
-		);
+CREATE TABLE Studenti (
+	ID_Studente INT PRIMARY KEY,
+	Nome VARCHAR(255),
+	Cognome VARCHAR(255)
+);
+CREATE TABLE Corsi (
+	ID_Corso INT PRIMARY KEY,
+	TitoloCorso VARCHAR(255)
+);
+CREATE TABLE Iscrizioni (
+	ID_Studente INT,
+	ID_Corso INT,
+	PRIMARY KEY (ID_Studente, ID_Corso),
+	FOREIGN KEY (ID_Studente) REFERENCES Studenti(ID_Studente),
+	FOREIGN KEY (ID_Corso) REFERENCES Corsi(ID_Corso)
+);
 		\end{minted}
 		\item \textit{Esempio Pratico (MongoDB/Prisma):} Potresti avere una collezione \texttt{Studenti} con un array di \texttt{ID\_Corso} a cui sono iscritti, o una collezione \texttt{Corsi} con un array di \texttt{ID\_Studente} iscritti. Prisma ti permette di definire queste relazioni in modo più astratto:
 		\begin{minted}{graphql}
-		model Studente {
-			id    Int     @id @default(autoincrement())
-			nome  String
-			corsi Corso[] @relation("Iscrizioni")
-		}
-		model Corso {
-			id        Int        @id @default(autoincrement())
-			titolo    String
-			studenti  Studente[] @relation("Iscrizioni")
-		}
+model Studente {
+	id    Int     @id @default(autoincrement())
+	nome  String
+	corsi Corso[] @relation("Iscrizioni")
+}
+model Corso {
+	id        Int        @id @default(autoincrement())
+	titolo    String
+	studenti  Studente[] @relation("Iscrizioni")
+}
 		\end{minted}
 	\end{itemize}
 	
@@ -196,13 +196,13 @@
 		\item \textit{Esempio Pratico:} La relazione \texttt{Studente}-\texttt{Iscrizione}-\texttt{Corso} diventa: Entità \texttt{Studente} --- Relazione \texttt{HaSostenuto} --- Entità \texttt{IstanzaEsame} --- Relazione \texttt{Riguarda} --- Entità \texttt{Corso}. L'entità \texttt{IstanzaEsame} avrà attributi come \texttt{Data}, \texttt{Voto}.
 		\item \textit{SQL:} Questo si traduce in una ``join table'' o ``tabella associativa'':
 		\begin{minted}{sql}
-		CREATE TABLE EsamiSostenuti (
-		ID_Studente INT,
-		ID_Corso INT,
-		Data DATE,
-		Voto INT,
-		PRIMARY KEY (ID_Studente, ID_Corso, Data) -- Data inclusa per tentativi multipli
-		);
+CREATE TABLE EsamiSostenuti (
+	ID_Studente INT,
+	ID_Corso INT,
+	Data DATE,
+	Voto INT,
+	PRIMARY KEY (ID_Studente, ID_Corso, Data) -- Data inclusa per tentativi multipli
+);
 		\end{minted}
 	\end{itemize}
 	

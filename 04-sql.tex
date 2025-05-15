@@ -45,7 +45,6 @@
 	breaklines=true, % A capo automatico per linee lunghe
 	style=monokai,   % Stile di highlighting (assicurati che pygments lo supporti)
 }
-\newminted[sqlcode]{sql}{} % Comando personalizzato per SQL più breve
 
 
 % --- Comandi personalizzati per algebra relazionale (meno usati qui, ma presenti nel template) ---
@@ -142,41 +141,41 @@
 	\begin{itemize}
 		\item Sintassi base:
 		\begin{minted}{sql}
-			CREATE TABLE table_name (
-			colonna1 TIPO_DATI [vincoli],
-			colonna2 TIPO_DATI [vincoli],
-			...
-			);
+CREATE TABLE table_name (
+colonna1 TIPO_DATI [vincoli],
+colonna2 TIPO_DATI [vincoli],
+...
+);
 		\end{minted}
 		\item Definisce una nuova tabella (relazione) con le sue colonne (attributi), i tipi di dato per ciascuna colonna e i vincoli iniziali.
 		\item \textit{Esempio Pratico (corrispettivo User con Prisma):}
-		\begin{minted}[bgcolor=black!70]{text}
-			// Prisma Schema
-			model User {
-				id        Int      @id @default(autoincrement())
-				email     String   @unique
-				name      String?
-			}
+		\begin{minted}{graphql}
+// Prisma Schema
+model User {
+	id        Int      @id @default(autoincrement())
+	email     String   @unique
+	name      String?
+}
 		\end{minted}
 		Equivalente a:
 		\begin{minted}{sql}
-			-- SQL (es. PostgreSQL)
-			CREATE TABLE User (
-			id SERIAL PRIMARY KEY,
-			email VARCHAR(255) UNIQUE NOT NULL,
-			name VARCHAR(255)
-			);
+-- SQL (es. PostgreSQL)
+CREATE TABLE User (
+id SERIAL PRIMARY KEY,
+email VARCHAR(255) UNIQUE NOT NULL,
+name VARCHAR(255)
+);
 		\end{minted}
 		\item Esempio dalla slide:
 		\begin{minted}{sql}
-			CREATE TABLE EMPLOYEE (
-			Number CHARACTER(6) PRIMARY KEY,
-			Name CHARACTER(20) NOT NULL,
-			Surname CHARACTER(20) NOT NULL,
-			Dept CHARACTER(15),
-			Wage NUMERIC(9) DEFAULT 0,
-			FOREIGN KEY(Dept) REFERENCES DEPARTMENT(Dept)
-			);
+CREATE TABLE EMPLOYEE (
+Number CHARACTER(6) PRIMARY KEY,
+Name CHARACTER(20) NOT NULL,
+Surname CHARACTER(20) NOT NULL,
+Dept CHARACTER(15),
+Wage NUMERIC(9) DEFAULT 0,
+FOREIGN KEY(Dept) REFERENCES DEPARTMENT(Dept)
+);
 		\end{minted}
 	\end{itemize}
 	
@@ -195,9 +194,9 @@
 		\item Permette di definire un tipo di dato riutilizzabile con vincoli e valori di default specifici.
 		\item Esempio dalla slide:
 		\begin{minted}{sql}
-			CREATE DOMAIN Grade
-			AS SMALLINT DEFAULT NULL
-			CHECK (value >= 18 AND value <= 30);
+CREATE DOMAIN Grade
+AS SMALLINT DEFAULT NULL
+CHECK (value >= 18 AND value <= 30);
 		\end{minted}
 		Questo \texttt{Grade} può poi essere usato come tipo di dato per una colonna.
 	\end{itemize}
@@ -226,17 +225,17 @@
 		\item \texttt{FOREIGN KEY (colonna\_fk) REFERENCES tabella\_riferita (colonna\_pk\_riferita)}
 		\item Garantisce che i valori nella \texttt{colonna\_fk} esistano nella \texttt{colonna\_pk\_riferita} della \texttt{tabella\_riferita}.
 		\item \textit{Esempio Pratico (Relazione Post-User con Prisma):}
-		\begin{minted}[bgcolor=black!70]{text}
-			// Prisma Schema
-			model User {
-				id    Int     @id @default(autoincrement())
-				posts Post[]
-			}
-			model Post {
-				id        Int     @id @default(autoincrement())
-				author    User    @relation(fields: [authorId], references: [id])
-				authorId  Int // Foreign Key
-			}
+		\begin{minted}{graphql}
+// Prisma Schema
+model User {
+	id    Int     @id @default(autoincrement())
+	posts Post[]
+}
+model Post {
+	id        Int     @id @default(autoincrement())
+	author    User    @relation(fields: [authorId], references: [id])
+	authorId  Int // Foreign Key
+}
 		\end{minted}
 	\end{itemize}
 	\subsubsection{Azioni Referenziali Triggerate}
@@ -279,14 +278,14 @@
 	\subsection{Interrogazioni (Query) - \texttt{SELECT}}
 	La struttura base è:
 	\begin{minted}{sql}
-		SELECT [DISTINCT] {* | lista_colonne | espressioni [AS alias_colonna]}
-		FROM tabella1 [AS alias_tabella1]
-		[, tabella2 [AS alias_tabella2] ... |
-		JOIN_TYPE tabella2 ON condizione_join]
-		[WHERE condizione_filtro_righe]
-		[GROUP BY lista_colonne_raggruppamento]
-		[HAVING condizione_filtro_gruppi]
-		[ORDER BY lista_colonne_ordinamento [ASC|DESC]];
+SELECT [DISTINCT] {* | lista_colonne | espressioni [AS alias_colonna]}
+FROM tabella1 [AS alias_tabella1]
+[, tabella2 [AS alias_tabella2] ... |
+JOIN_TYPE tabella2 ON condizione_join]
+[WHERE condizione_filtro_righe]
+[GROUP BY lista_colonne_raggruppamento]
+[HAVING condizione_filtro_gruppi]
+[ORDER BY lista_colonne_ordinamento [ASC|DESC]];
 	\end{minted}
 	
 	\subsubsection{Ordine Concettuale di Esecuzione}
@@ -304,9 +303,9 @@
 	\begin{itemize}
 		\item \texttt{SELECT *}: Seleziona tutte le colonne.
 		\item Rinominare Colonne e Tabelle (Alias): \texttt{AS nome\_alias}
-		\begin{sqlcode}
-			SELECT P.Name AS GivenName FROM PEOPLE AS P;
-		\end{sqlcode}
+		\begin{minted}{sql}
+SELECT P.Name AS GivenName FROM PEOPLE AS P;
+		\end{minted}
 	\end{itemize}
 	
 	\subsubsection{Condizioni \texttt{WHERE}}
@@ -314,9 +313,9 @@
 		\item Operatori logici: \texttt{AND}, \texttt{OR}, \texttt{NOT}.
 		\item Operatori di confronto: \texttt{=}, \texttt{<>}, \texttt{<}, \texttt{>}, \texttt{<=}, \texttt{>=}.
 		\item \texttt{LIKE}: Pattern matching (\texttt{\%} per zero o più caratteri, \texttt{\_} per un singolo carattere).
-		\begin{sqlcode}
-			WHERE Name LIKE 'J_m%';
-		\end{sqlcode}
+		\begin{minted}{sql}
+WHERE Name LIKE 'J_m%';
+		\end{minted}
 		\item \texttt{IS NULL} / \texttt{IS NOT NULL}: Per verificare valori \texttt{NULL}.
 	\end{itemize}
 	
@@ -329,31 +328,31 @@
 	Combinano righe da due o più tabelle.
 	\begin{itemize}
 		\item \textbf{Implicit JOIN} (sconsigliato):
-		\begin{sqlcode}
-			SELECT ... FROM TableA, TableB WHERE TableA.id = TableB.a_id;
-		\end{sqlcode}
+		\begin{minted}{sql}
+SELECT ... FROM TableA, TableB WHERE TableA.id = TableB.a_id;
+		\end{minted}
 		\item \textbf{Explicit JOIN} (preferito):
 		\begin{itemize}
 			\item \texttt{INNER JOIN} (o solo \texttt{JOIN}): Solo righe con corrispondenza in entrambe.
-			\begin{sqlcode}
-				SELECT ... FROM TableA INNER JOIN TableB ON TableA.id = TableB.a_id;
-			\end{sqlcode}
+			\begin{minted}{sql}
+SELECT ... FROM TableA INNER JOIN TableB ON TableA.id = TableB.a_id;
+			\end{minted}
 			\item \texttt{LEFT [OUTER] JOIN}: Tutte le righe da sinistra, e le corrispondenti da destra (o \texttt{NULL}).
 			\item \texttt{RIGHT [OUTER] JOIN}: Tutte le righe da destra, e le corrispondenti da sinistra (o \texttt{NULL}).
 			\item \texttt{FULL [OUTER] JOIN}: Tutte le righe da entrambe; \texttt{NULL} dove non c'è corrispondenza.
 			\item \texttt{NATURAL JOIN}: Join automatico su colonne con lo stesso nome (usare con cautela).
 		\end{itemize}
 		\item \textit{Esempio Pratico (Left Join):} Trovare tutti gli utenti e i loro post.
-		\begin{sqlcode}
-			SELECT U.name, P.title
-			FROM User U LEFT JOIN Post P ON U.id = P.authorId;
-		\end{sqlcode}
+		\begin{minted}{sql}
+SELECT U.name, P.title
+FROM User U LEFT JOIN Post P ON U.id = P.authorId;
+		\end{minted}
 	\end{itemize}
 	
 	\subsubsection{Espressioni nella Target List}
-	\begin{sqlcode}
-		SELECT Income / 2 AS halvedIncome FROM PEOPLE;
-	\end{sqlcode}
+	\begin{minted}{sql}
+SELECT Income / 2 AS halvedIncome FROM PEOPLE;
+	\end{minted}
 	
 	\subsubsection{Ordinamento}
 	\begin{itemize}
@@ -376,23 +375,23 @@
 	\subsubsection{Nelle clausole \texttt{WHERE}}
 	\begin{itemize}
 		\item Con operatori di confronto: la subquery deve restituire un valore scalare.
-		\begin{sqlcode}
-			SELECT Name FROM PEOPLE WHERE Income = (SELECT MAX(Income) FROM PEOPLE);
-		\end{sqlcode}
+		\begin{minted}{sql}
+SELECT Name FROM PEOPLE WHERE Income = (SELECT MAX(Income) FROM PEOPLE);
+		\end{minted}
 		\item \texttt{IN}: Verifica se un valore è nel set di risultati della subquery.
-		\begin{sqlcode}
-			SELECT Name FROM PEOPLE WHERE Name IN (SELECT Father FROM FATHERHOOD);
-		\end{sqlcode}
+		\begin{minted}{sql}
+SELECT Name FROM PEOPLE WHERE Name IN (SELECT Father FROM FATHERHOOD);
+		\end{minted}
 		\item \texttt{ANY} / \texttt{SOME}, \texttt{ALL}: Usati con operatori di confronto.
 		\begin{itemize}
 			\item \texttt{valore > ANY (subquery)}: vero se \texttt{valore} $>$ di almeno un valore della subquery.
 			\item \texttt{valore > ALL (subquery)}: vero se \texttt{valore} $>$ di tutti i valori della subquery.
 		\end{itemize}
 		\item \texttt{EXISTS}: Vero se la subquery restituisce almeno una riga.
-		\begin{sqlcode}
-			SELECT Name FROM PEOPLE P
-			WHERE EXISTS (SELECT * FROM FATHERHOOD F WHERE F.Father = P.Name);
-		\end{sqlcode}
+		\begin{minted}{sql}
+SELECT Name FROM PEOPLE P
+WHERE EXISTS (SELECT * FROM FATHERHOOD F WHERE F.Father = P.Name);
+		\end{minted}
 		\item \texttt{NOT EXISTS}: Vero se la subquery non restituisce righe.
 	\end{itemize}
 	
@@ -405,18 +404,18 @@
 	
 	\subsubsection{Nelle clausole \texttt{FROM} (Derived Tables)}
 	La subquery agisce come una tabella temporanea e deve avere un alias.
-	\begin{sqlcode}
-		SELECT P.Name, J.Child
-		FROM PEOPLE P, (SELECT Child FROM FATHERHOOD WHERE Father='Jim') AS J
-		WHERE P.Name = J.Child;
-	\end{sqlcode}
+	\begin{minted}{sql}
+SELECT P.Name, J.Child
+FROM PEOPLE P, (SELECT Child FROM FATHERHOOD WHERE Father='Jim') AS J
+WHERE P.Name = J.Child;
+	\end{minted}
 	
 	\subsubsection{Nelle clausole \texttt{SELECT} (Scalar Subqueries)}
 	La subquery deve restituire un singolo valore per ogni riga della query esterna.
-	\begin{sqlcode}
-		SELECT C.Num, (SELECT COUNT(*) FROM ORDERS O WHERE O.CustomerNum = C.Num) AS OrderCount
-		FROM CUSTOMER C;
-	\end{sqlcode}
+	\begin{minted}{sql}
+SELECT C.Num, (SELECT COUNT(*) FROM ORDERS O WHERE O.CustomerNum = C.Num) AS OrderCount
+FROM CUSTOMER C;
+	\end{minted}
 	
 	\subsection{Funzioni Aggregate e Raggruppamento}
 	
@@ -442,9 +441,9 @@
 		\item Raggruppa le righe che hanno gli stessi valori nelle colonne specificate.
 		\item Le funzioni aggregate vengono applicate a ciascun gruppo.
 		\item Esempio:
-		\begin{sqlcode}
-			SELECT Dept, AVG(Wage) FROM EMPLOYEE GROUP BY Dept;
-		\end{sqlcode}
+		\begin{minted}{sql}
+SELECT Dept, AVG(Wage) FROM EMPLOYEE GROUP BY Dept;
+		\end{minted}
 	\end{itemize}
 	
 	\subsubsection{\texttt{HAVING condizione\_filtro\_gruppi}}
@@ -452,11 +451,11 @@
 		\item Filtra i gruppi creati da \texttt{GROUP BY}. La condizione in \texttt{HAVING} di solito coinvolge funzioni aggregate.
 		\item \texttt{WHERE} filtra le righe \textit{prima} del raggruppamento, \texttt{HAVING} filtra i gruppi \textit{dopo}.
 		\item Esempio:
-		\begin{sqlcode}
-			SELECT Dept, AVG(Wage) FROM EMPLOYEE
-			GROUP BY Dept
-			HAVING AVG(Wage) > 50000;
-		\end{sqlcode}
+		\begin{minted}{sql}
+SELECT Dept, AVG(Wage) FROM EMPLOYEE
+GROUP BY Dept
+HAVING AVG(Wage) > 50000;
+		\end{minted}
 	\end{itemize}
 	
 	\subsubsection{NULLs e Raggruppamento}
@@ -468,39 +467,39 @@
 	\subsubsection{\texttt{INSERT}}
 	\begin{itemize}
 		\item
-		\begin{sqlcode}
-			INSERT INTO table_name [(colonna1, colonna2, ...)]
-			VALUES (valore1, valore2, ...);
-		\end{sqlcode}
+		\begin{minted}{sql}
+INSERT INTO table_name [(colonna1, colonna2, ...)]
+VALUES (valore1, valore2, ...);
+		\end{minted}
 		\item Aggiunge una nuova riga. Se la lista colonne è omessa, fornire valori per tutte le colonne nell'ordine definito.
 		\item
-		\begin{sqlcode}
-			INSERT INTO table_name [(colonna1, ...)]
-			SELECT query_che_restituisce_righe_compatibili;
-		\end{sqlcode}
+		\begin{minted}{sql}
+INSERT INTO table_name [(colonna1, ...)]
+SELECT query_che_restituisce_righe_compatibili;
+		\end{minted}
 	\end{itemize}
 	
 	\subsubsection{\texttt{UPDATE}}
 	\begin{itemize}
 		\item
-		\begin{sqlcode}
-			UPDATE table_name
-			SET colonna1 = valore1, colonna2 = valore2, ...
-			[WHERE condizione];
-		\end{sqlcode}
+		\begin{minted}{sql}
+UPDATE table_name
+SET colonna1 = valore1, colonna2 = valore2, ...
+[WHERE condizione];
+		\end{minted}
 		\item Modifica righe che soddisfano la \texttt{condizione}. \textbf{ATTENZIONE:} Senza \texttt{WHERE}, aggiorna tutte le righe!
 		\item Il valore può essere un'espressione, \texttt{NULL}, \texttt{DEFAULT}, o una subquery scalare.
-		\begin{sqlcode}
-			UPDATE PEOPLE SET Income = Income * 1.1 WHERE Age < 30;
-		\end{sqlcode}
+		\begin{minted}{sql}
+UPDATE PEOPLE SET Income = Income * 1.1 WHERE Age < 30;
+		\end{minted}
 	\end{itemize}
 	
 	\subsubsection{\texttt{DELETE}}
 	\begin{itemize}
 		\item
-		\begin{sqlcode}
-			DELETE FROM table_name [WHERE condizione];
-		\end{sqlcode}
+		\begin{minted}{sql}
+DELETE FROM table_name [WHERE condizione];
+		\end{minted}
 		\item Cancella righe che soddisfano la \texttt{condizione}. \textbf{ATTENZIONE:} Senza \texttt{WHERE}, cancella tutte le righe!
 		\item Può innescare azioni referenziali.
 	\end{itemize}
