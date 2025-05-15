@@ -21,438 +21,384 @@
 
 % --- Hyperlink ---
 \usepackage{hyperref}
+\hypersetup{
+	colorlinks=true,
+	linkcolor=white,
+	filecolor=magenta,
+	urlcolor=blue,
+	pdftitle={Algebra Relazionale e Calcolo Relazionale},
+	pdfpagemode=FullScreen,
+}
 
 % --- Colori e sfondo nero ---
 \usepackage{xcolor}
-\pagecolor{black} % Commentato per una visualizzazione standard
-\color{white}    % Commentato per una visualizzazione standard
-\usepackage{color} % Assicurati che color sia caricato
+\pagecolor{black}
+\color{white}
 
 % --- Evidenziazione del codice (richiede -shell-escape) ---
+% Compilare con: pdflatex -shell-escape nomefile.tex
 \usepackage{minted}
+\setminted{
+	frame=lines,     % Cornice attorno al codice
+	framesep=2mm,
+	fontsize=\small,
+	breaklines=true, % A capo automatico per linee lunghe
+	style=monokai    % Stile di highlighting (assicurati che pygments lo supporti)
+}
+
 
 % --- Comandi personalizzati per algebra relazionale ---
-\newcommand{\union}{\cup}
-\newcommand{\intersection}{\cap}
-\newcommand{\difference}{-}
-\newcommand{\rename}[2]{\rho_{#1}(#2)}
-\newcommand{\selectop}[2]{\sigma_{#1}(#2)}
-\newcommand{\project}[2]{\pi_{#1}(#2)}
-\newcommand{\cartesian}{\times}
-\newcommand{\naturaljoin}{\Join}
-\newcommand{\thetajoin}[2]{\Join_{#1}(#2)}
+\newcommand{\Rel}[1]{\textit{#1}} % Per i nomi delle relazioni
+\newcommand{\Attr}[1]{\textsf{#1}} % Per i nomi degli attributi
+
+\newcommand{\myunion}{\cup}
+\newcommand{\myintersection}{\cap}
+\newcommand{\mydifference}{-}
+\newcommand{\myrename}[2]{\rho_{#1}(#2)}
+\newcommand{\myselectop}[2]{\sigma_{#1}(#2)}
+\newcommand{\myproject}[2]{\pi_{#1}(#2)}
+\newcommand{\mycartesian}{\times}
+\newcommand{\mynaturaljoin}{\bowtie} % Usare \Join da amssymb se disponibile e preferito
+\newcommand{\mythetajoin}[3]{#1 \bowtie_{#2} #3} % R1 \bowtie_cond R2
 
 % --- Comandi personalizzati per logica ---
-\newcommand{\landop}{\wedge}
-\newcommand{\vel}{\vee}
-\newcommand{\negop}{\neg}
-\newcommand{\forallop}{\forall}
-\newcommand{\existsop}{\exists}
+\newcommand{\mylandop}{\wedge}
+\newcommand{\myvel}{\vee}
+\newcommand{\mynegop}{\neg}
+\newcommand{\myforallop}{\forall}
+\newcommand{\myexistsop}{\exists}
 
 % --- Join esterni (outer join) ---
-% Ridefinizione per evitare potenziali conflitti e migliorare l'aspetto
-\DeclareRobustCommand{\lj}{\text{\ensuremath{\bowtie \mkern -1.5mu \relbar}}}
-\DeclareRobustCommand{\rj}{\text{\ensuremath{\relbar \mkern -1.5mu \bowtie}}}
-\DeclareRobustCommand{\fj}{\text{\ensuremath{\relbar \mkern -1.5mu \bowtie \mkern -1.5mu \relbar}}}
-\newcommand{\leftouterjoin}{\lj}
-\newcommand{\rightouterjoin}{\rj}
-\newcommand{\fullouterjoin}{\fj}
+% Definizione standard per i join esterni
+\def\ojoin{\setbox0=\hbox{$\mynaturaljoin$}%
+	\rule[-.02ex]{.25em}{.4pt}\llap{\rule[\ht0]{.25em}{.4pt}}}
+\newcommand{\myleftouterjoin}{\mathbin{\ojoin\mkern-5.8mu\mynaturaljoin}}
+\newcommand{\myrightouterjoin}{\mathbin{\mynaturaljoin\mkern-5.8mu\ojoin}}
+\newcommand{\myfullouterjoin}{\mathbin{\ojoin\mkern-5.8mu\mynaturaljoin\mkern-5.8mu\ojoin}}
 
 
 % --- Titolo ---
-\title{Database: Algebra e Calcolo Relazionale}
-\author{Basato sulle slide di Danilo Montesi}
+\title{Appunti su Algebra Relazionale e Calcolo Relazionale}
+\author{Basato sulle slide del Prof. Danilo Montesi}
 \date{\today}
 
 \begin{document}
 	
 	\maketitle
+	\tableofcontents
+	\newpage
 	
-	\section{Introduzione: Linguaggi per Basi di Dati}
+	\section{Introduzione ai Linguaggi per Database}
 	
-	\subsection{Tipi di Operazioni}
-	I linguaggi per basi di dati si dividono in base al tipo di operazioni che permettono:
+	I linguaggi per database si dividono principalmente in due categorie:
 	\begin{itemize}
-		\item \textbf{Operations on the schema} (Operazioni sullo schema):
+		\item \textbf{DDL (Data Definition Language):} Utilizzato per definire e modificare lo schema del database (es. creare tabelle, definire attributi e tipi).
+		\item \textbf{DML (Data Manipulation Language):} Utilizzato per operare sui dati. Si suddivide ulteriormente in:
 		\begin{itemize}
-			\item \textbf{DDL (Data Definition Language):} Per definire la struttura del database (tabelle, vincoli, ecc.).
-		\end{itemize}
-		\item \textbf{Operations on data} (Operazioni sui dati):
-		\begin{itemize}
-			\item \textbf{DML (Data Manipulation Language):} Per manipolare i dati (inserire, modificare, cancellare, interrogare).
-			\begin{itemize}
-				\item Query instructions (Istruzioni di interrogazione): Per estrarre i dati di interesse (\texttt{SELECT} in SQL).
-				\item Update instructions (Istruzioni di aggiornamento): Per inserire nuovi dati, modificare o cancellare dati esistenti (\texttt{INSERT}, \texttt{UPDATE}, \texttt{DELETE} in SQL).
-			\end{itemize}
+			\item \textbf{Istruzioni di Query:} Per estrarre dati di interesse.
+			\item \textbf{Istruzioni di Aggiornamento:} Per inserire nuovi dati o modificare quelli esistenti.
 		\end{itemize}
 	\end{itemize}
 	
-	\subsection{Query Languages per Relational DBs}
-	Le query languages possono essere classificate in base a come specificano il risultato:
+	I linguaggi di query possono essere:
 	\begin{itemize}
-		\item \textbf{Declarative} (Dichiarative): Specificano \textbf{cosa} (le proprietà) dei risultati che vogliamo ottenere. Il sistema decide come ottenerli.
-		\item \textbf{Imperative/Procedural} (Imperative/Procedurali): Specificano \textbf{come} il risultato viene ottenuto (una sequenza di operazioni).
+		\item \textbf{Dichiarativi:} Specificano \textbf{cosa} si vuole ottenere, le proprietà del risultato. L'utente non si preoccupa di come il database recupererà i dati. SQL è prevalentemente dichiarativo.
+		\item \textbf{Imperativi/Procedurali:} Specificano \textbf{come} il risultato deve essere ottenuto, descrivendo una sequenza di operazioni.
 	\end{itemize}
-	Esempi:
+	
+	Panoramica dei linguaggi trattati:
 	\begin{itemize}
-		\item \textbf{Relational Algebra:} Procedurale. Teorica, non implementata direttamente come linguaggio di query per gli utenti finali, ma alla base dei query processor dei DBMS.
-		\item \textbf{Relational Calculus:} Dichiarativo. Teorico, non implementato direttamente per gli utenti finali.
-		\item \textbf{SQL (Structured Query Language):} Parzialmente dichiarativo. Lo standard \underline{implementato} e più diffuso.
-		\item \textbf{QBE (Query by Example):} Dichiarativo. Implementato (es. in Microsoft Access).
+		\item \textbf{Algebra Relazionale:} Procedurale (fondamento teorico).
+		\item \textbf{Calcolo Relazionale:} Dichiarativo (fondamento teorico).
+		\item \textbf{SQL (Structured Query Language):} Parzialmente dichiarativo (ampiamente implementato).
+		\item \textbf{QBE (Query by Example):} Dichiarativo (implementato in alcuni sistemi).
 	\end{itemize}
 	
 	\section{Algebra Relazionale}
 	
-	L'Algebra Relazionale è un linguaggio di query procedurale definito da un insieme di operatori che operano su relazioni e producono relazioni come risultato. Gli operatori possono essere combinati (composizionali).
+	L'algebra relazionale è un linguaggio di query formale, procedurale, che definisce un insieme di operatori che agiscono su relazioni (tabelle) per produrre nuove relazioni come risultato. Gli operatori possono essere composti.
 	
-	\subsection{Operatori Fondamentali}
+	\subsection{Operatori dell'Algebra Relazionale}
 	\begin{itemize}
-		\item Set Operators (operazioni insiemistiche): \textbf{union ($\union$), intersection ($\intersection$), difference ($-$)}. Trattano le relazioni come insiemi di tuple. Richiedono che le relazioni abbiano lo stesso schema (compatibilità di unione).
-		\item \textbf{Rename ($\rho$)}: Operatore unario che cambia i nomi degli attributi o della relazione stessa.
-		\item \textbf{Select ($\sigma$)}: Operatore unario che seleziona un sottoinsieme di tuple in base a un predicato.
-		\item \textbf{Project ($\pi$)}: Operatore unario che seleziona un sottoinsieme di attributi (colonne) e rimuove i duplicati.
-		\item \textbf{Join ($\naturaljoin, \times, \thetajoin{...}{...}$)}: Operatori binari che combinano tuple da due relazioni.
+		\item Operatori insiemistici: \textbf{Unione ($\myunion$)}, \textbf{Intersezione ($\myintersection$)}, \textbf{Differenza ($\mydifference$)}.
+		\item \textbf{Ridenominazione ($\myrename{}$)}.
+		\item \textbf{Selezione ($\myselectop{}{}$)}.
+		\item \textbf{Proiezione ($\myproject{}{}$)}.
+		\item \textbf{Join ($\mynaturaljoin$)}: natural join, prodotto cartesiano ($\mycartesian$), theta-join ($\bowtie_{\theta}$).
 	\end{itemize}
 	
-	\subsection{Set Operators}
-	Le relazioni sono viste come insiemi di tuple. Per poter applicare unione, intersezione o differenza, le relazioni devono avere lo \textbf{stesso schema} (stesso numero di attributi, stessi nomi e stessi domini, oppure nomi diversi ma resi compatibili con Rename).
-	
-	Esempi dalle slide: GRADUATED(Number, Name, Age), TECHNICIANS(Number, Name, Age).
-	Schema compatibile, quindi operazioni insiemistiche dirette:
+	\subsection{Operatori Insiemistici}
+	Le relazioni sono insiemi di tuple. Questi operatori funzionano come le loro controparti nella teoria degli insiemi, ma richiedono che le relazioni coinvolte abbiano lo \textbf{stesso schema} (stessi nomi di attributi, nello stesso ordine e con tipi compatibili).
 	\begin{itemize}
-		\item \texttt{GRADUATED} $\union$ \texttt{TECHNICIANS}: Tutte le tuple che sono in GRADUATED o in TECHNICIANS (o in entrambe).
-		\item \texttt{GRADUATED} $\intersection$ \texttt{TECHNICIANS}: Tutte le tuple che sono sia in GRADUATED che in TECHNICIANS.
-		\item \texttt{GRADUATED} $-$ \texttt{TECHNICIANS}: Tutte le tuple che sono in GRADUATED ma non in TECHNICIANS.
+		\item \textbf{Unione ($\Rel{R1} \myunion \Rel{R2}$):} Restituisce una relazione contenente tutte le tuple che sono in $\Rel{R1}$, in $\Rel{R2}$, o in entrambe. Le tuple duplicate vengono eliminate.
+		\item \textbf{Intersezione ($\Rel{R1} \myintersection \Rel{R2}$):} Restituisce una relazione contenente solo le tuple che sono presenti sia in $\Rel{R1}$ sia in $\Rel{R2}$.
+		\item \textbf{Differenza ($\Rel{R1} \mydifference \Rel{R2}$):} Restituisce una relazione contenente le tuple che sono in $\Rel{R1}$ ma non in $\Rel{R2}$.
 	\end{itemize}
-	Se avessimo FATHERHOOD(Father, Child) e MOTHERHOOD(Mother, Child), per fare l'unione, dovremmo rinominare: $\rename{\text{Father} \leftarrow \text{Mother}}{MOTHERHOOD} \union \text{FATHERHOOD}$.
+	\textbf{Esempio pratico:} Se hai due tabelle, $\Rel{StudentiMagistrale}$ e $\Rel{StudentiDottorato}$, entrambe con colonne $\Attr{IDStudente}$ e $\Attr{Nome}$, puoi fare l'unione per ottenere una lista unica di tutti gli studenti post-laurea. Se le colonne avessero nomi diversi (es. $\Attr{Matricola}$ vs $\Attr{IDStudente}$), dovresti prima usare l'operatore di ridenominazione.
 	
-	\subsection{Renaming ($\rho$)}
+	\subsection{Ridenominazione ($\myrename{nuovo \leftarrow vecchio}{R}$)}
+	Operatore unario che cambia i nomi degli attributi o della relazione stessa, senza alterare i dati.
 	\begin{itemize}
-		\item Operatore \textbf{unario}.
-		\item Usato per \textbf{cambiare il nome degli attributi} o della relazione stessa. Lo schema cambia, i dati rimangono uguali.
-		\item Sintassi per attributi: $\rename{NewName \leftarrow OldName}{RELATION}$. Esempio: $\rename{Parent \leftarrow Father}{FATHERHOOD}$ crea una nuova relazione identica a FATHERHOOD ma con l'attributo 'Father' rinominato 'Parent'.
-		\item Sintassi per relazione: $\rename{NewRelationName}{RELATION}$.
+		\item $\myrename{\Attr{NuovoNomeAttr} \leftarrow \Attr{VecchioNomeAttr}}{(\Rel{R})}$: Rinomina l'attributo $\Attr{VecchioNomeAttr}$ in $\Attr{NuovoNomeAttr}$ nella relazione $\Rel{R}$.
+		\item $\myrename{\Rel{NuovoNomeRel}}{(\Rel{R})}$: Rinomina la relazione $\Rel{R}$ in $\Rel{NuovoNomeRel}$.
+		\item $\myrename{\Rel{NuovoNomeRel}(\Attr{A1}, \Attr{A2}, \dots)}{(\Rel{R})}$: Rinomina la relazione e i suoi attributi.
 	\end{itemize}
-	Il renaming è fondamentale per rendere compatibili gli schemi per le operazioni insiemistiche o per distinguere attributi con lo stesso nome provenienti da relazioni diverse in un join (anche se il natural join fa questo implicitamente, è esplicito in theta-join/equi-join notazionali come visto nelle slide).
+	\textbf{Esempio pratico:} Se hai una tabella $\Rel{Impiegati}$ con una colonna $\Attr{stip}$ e vuoi renderla più chiara come $\Attr{StipendioAnnuale}$, useresti $\myrename{\Attr{StipendioAnnuale} \leftarrow \Attr{stip}}{(\Rel{Impiegati})}$.
 	
-	\subsection{Selection ($\sigma$)}
-	\begin{itemize}
-		\item Operatore \textbf{unario}.
-		\item Restituisce le tuple (righe) che soddisfano un \textbf{predicato} (condizione booleana).
-		\item Lo schema del risultato è lo \textbf{stesso} dello schema di input.
-		\item Sintassi: $\selectop{Predicate}{RELATION}$.
-		\item Predicate: espressione booleana sugli attributi della relazione (es. $Salary > 50$, $Office = 'Milan'$, $Surname = Office$).
-		\item Corrisponde alla clausola \texttt{WHERE} in SQL:
-		\begin{minted}{sql}
-			SELECT * FROM Employee WHERE Salary > 50;
-			-- Corrisponde a: sigma_{Salary > 50}(EMPLOYEE)
-		\end{minted}
-	\end{itemize}
+	\subsection{Selezione ($\myselectop{predicato}{R}$)}
+	Operatore unario che restituisce un sottoinsieme delle tuple di una relazione $\Rel{R}$ che soddisfano un dato \textit{predicato} (condizione).
+	Lo schema del risultato è identico a quello di $\Rel{R}$.
+	\textbf{Esempio pratico (SQL):}
+	$\myselectop{\Attr{Eta} > 30 \mylandop \Attr{Dipartimento} = \text{'IT'}}{(\Rel{Impiegati})}$
+	è equivalente a:
+	\begin{minted}{sql}
+		SELECT *
+		FROM Impiegati
+		WHERE Eta > 30 AND Dipartimento = 'IT';
+	\end{minted}
 	
-	\subsection{Projection ($\pi$)}
-	\begin{itemize}
-		\item Operatore \textbf{unario}.
-		\item Restituisce una relazione con solo gli \textbf{attributi specificati} (colonne).
-		\item Le \textbf{tuple duplicate vengono rimosse} nel risultato (poiché le relazioni sono insiemi).
-		\item Lo schema del risultato è un \textbf{sottoinsieme} dello schema di input.
-		\item Sintassi: $\project{AttributeList}{RELATION}$.
-		\item Corrisponde alla clausola \texttt{SELECT} (senza \texttt{DISTINCT}) in SQL:
-		\begin{minted}{sql}
-			SELECT Number, Surname FROM Employee;
-			-- Corrisponde a: pi_{Number, Surname}(EMPLOYEE)
-		\end{minted}
-		\item \textbf{Cardinalità:} La cardinalità dell'output è \textbf{al massimo} quella dell'input. Può essere minore se la proiezione su un sottoinsieme di attributi causa duplicati che vengono rimossi. È uguale alla cardinalità dell'input se AttributeList include una superchiave della relazione.
-	\end{itemize}
+	\subsection{Proiezione ($\myproject{lista\_attributi}{R}$)}
+	Operatore unario che restituisce una nuova relazione contenente solo gli attributi specificati nella \textit{lista\_attributi} dalla relazione $\Rel{R}$.
+	Le tuple duplicate nel risultato vengono eliminate (poiché le relazioni sono insiemi).
+	\textbf{Esempio pratico (SQL):}
+	$\myproject{\Attr{Nome}, \Attr{Cognome}}{(\Rel{Impiegati})}$
+	è equivalente a:
+	\begin{minted}{sql}
+		SELECT DISTINCT Nome, Cognome
+		FROM Impiegati;
+	\end{minted}
+	Nota l'uso di `DISTINCT` in SQL per replicare il comportamento insiemistico della proiezione.
 	
-	\subsection{Combinazione di Selection e Projection}
-	\begin{itemize}
-		\item Selection filtra \textbf{orizzontalmente} (righe).
-		\item Projection filtra \textbf{verticalmente} (colonne).
-		\item Combinandoli, si estraggono tuple specifiche e solo i loro attributi desiderati: $\project{AttributeList}{\selectop{Predicate}{RELATION}}$.
-		\item Esempio: Restituire numero e cognome degli impiegati con stipendio > 50:
-		$$ \pi_{\text{Number, Surname}}(\sigma_{\text{Salary > 50}}(\text{EMPLOYEE})) $$
-		Corrisponde a:
-		\begin{minted}{sql}
-			SELECT Number, Surname
-			FROM Employee
-			WHERE Salary > 50;
-		\end{minted}
-	\end{itemize}
-	Limiti: Questi operatori da soli permettono di estrarre informazioni solo da una \textbf{singola relazione}. Non permettono di correlare dati tra relazioni diverse o tuple diverse della stessa relazione in modo complesso.
+	\subsection{Combinazione di Selezione e Proiezione}
+	Questi operatori sono spesso usati insieme per estrarre dati specifici.
+	\textbf{Esempio pratico (SQL):} Trovare nome e cognome degli impiegati nel dipartimento 'Vendite' con stipendio superiore a 50000.
+	Algebra: $\myproject{\Attr{Nome}, \Attr{Cognome}}{(\myselectop{\Attr{Dipartimento} = \text{'Vendite'} \mylandop \Attr{Stipendio} > 50000}{(\Rel{Impiegati})})}$
+	SQL:
+	\begin{minted}{sql}
+		SELECT DISTINCT Nome, Cognome
+		FROM Impiegati
+		WHERE Dipartimento = 'Vendite' AND Stipendio > 50000;
+	\end{minted}
 	
 	\subsection{Join}
+	Il join è un operatore fondamentale per combinare informazioni da due o più relazioni.
 	\begin{itemize}
-		\item Operatore \textbf{binario}.
-		\item Permette di \textbf{combinare tuple} da due relazioni diverse in base a una condizione.
-		\item È essenziale per correlare informazioni distribuite su più tabelle, come si fa con \texttt{JOIN} in SQL.
-	\end{itemize}
-	
-	\subsubsection{Cartesian Product ($\times$)}
-	\begin{itemize}
-		\item Operatore binario.
-		\item Combina \textbf{ogni tupla} della prima relazione con \textbf{ogni tupla} della seconda.
-		\item Sintassi: $R_1 \times R_2$.
-		\item Lo schema del risultato è l'unione degli attributi di $R_1$ e $R_2$. Se ci sono attributi con lo stesso nome, vengono qualificati (es. $R1.Attr$, $R2.Attr$).
-		\item La cardinalità del risultato è $|R_1| \times |R_2|$.
-		\item È raramente usato da solo in pratica; è più utile quando seguito da una Selection per filtrare le combinazioni desiderate.
-	\end{itemize}
-	
-	\subsubsection{Theta-Join ($\thetajoin{Condition}{...}$)}
-	\begin{itemize}
-		\item Operatore binario definito come una Selection sul Cartesian Product: $R_1 \thetajoin{Condition}{R_2} = \selectop{Condition}{R_1 \times R_2}$.
-		\item Permette di specificare una \textbf{condizione arbitraria} (Condition, tipicamente con operatori $=, <, >, \leq, \geq, \neq$) per combinare le tuple.
-		\item Sintassi: $R_1 \thetajoin{C}{R_2}$, dove $C$ è la condizione.
-	\end{itemize}
-	
-	\subsubsection{Equi-Join}
-	\begin{itemize}
-		\item Un caso speciale di Theta-Join in cui la condizione $C$ è una \textbf{congiunzione di uguaglianze} ($=$).
-		\item È molto comune ed efficiente. Permette di combinare tuple quando i valori di specifici attributi (anche con nomi diversi) sono uguali.
-		\item Esempio: Combinare EMPLOYEE e DEPARTMENT basandosi sull'uguaglianza tra EMPLOYEE.Dept e DEPARTMENT.Code:
-		$$ \text{EMPLOYEE} \thetajoin{\text{EMPLOYEE.Dept = DEPARTMENT.Code}}{\text{DEPARTMENT}} $$
-		Corrisponde a un \texttt{JOIN ON} in SQL:
+		\item \textbf{Prodotto Cartesiano ($\Rel{R1} \mycartesian \Rel{R2}$):}
+		Combina ogni tupla di $\Rel{R1}$ con ogni tupla di $\Rel{R2}$. Il numero di tuple risultanti è $|\Rel{R1}| \times |\Rel{R2}|$. Lo schema è la concatenazione degli schemi di $\Rel{R1}$ e $\Rel{R2}$.
+		In SQL, è spesso scritto come `FROM R1, R2` (sintassi più vecchia) o `FROM R1 CROSS JOIN R2`. Di solito è seguito da una selezione per filtrare le combinazioni significative.
+		
+		\item \textbf{Theta-Join ($\mythetajoin{\Rel{R1}}{condizione}{\Rel{R2}}$):}
+		È un prodotto cartesiano seguito da una selezione. La \textit{condizione} è un predicato che coinvolge attributi di $\Rel{R1}$ e $\Rel{R2}$.
+		Sintassi formale: $\myselectop{condizione}{(\Rel{R1} \mycartesian \Rel{R2})}$.
+		\textbf{Esempio pratico (SQL):}
+		$\mythetajoin{\Rel{Impiegati}}{\Attr{Impiegati.IDDip} = \Attr{Dipartimenti.ID}}{\Rel{Dipartimenti}}$
+		è equivalente a:
 		\begin{minted}{sql}
 			SELECT *
-			FROM Employee JOIN Department
-			ON Employee.Dept = Department.Code;
+			FROM Impiegati, Dipartimenti -- o Impiegati JOIN Dipartimenti
+			WHERE Impiegati.IDDip = Dipartimenti.ID;
 		\end{minted}
-	\end{itemize}
-	
-	\subsubsection{Natural Join ($\naturaljoin$)}
-	\begin{itemize}
-		\item Operatore binario.
-		\item Combina tuple basandosi sull'\textbf{uguaglianza di valore su tutti gli attributi con lo stesso nome}.
-		\item Lo schema del risultato è l'unione degli attributi di entrambe le relazioni, con gli attributi in comune che appaiono una sola volta.
-		\item Sintassi: $R_1 \naturaljoin R_2$.
-		\item Può essere definito in termini di Theta-Join e Projection. Esempio: se EMPLOYEE ha (Number, Name, Dept) e DEPARTMENT ha (Dept, Chief), EMPLOYEE $\naturaljoin$ DEPARTMENT combina su 'Dept' e il risultato avrà schema (Number, Name, Dept, Chief).
-		\item Corrisponde, in molti casi, a \texttt{JOIN USING} o \texttt{NATURAL JOIN} in SQL, ma è importante essere precisi perché SQL ha sottili differenze o preferisce la notazione esplicita con \texttt{ON}.
+		
+		\item \textbf{Equi-Join:} Un Theta-Join in cui la condizione contiene solo confronti di uguaglianza ($=$). L'esempio precedente è un equi-join.
+		
+		\item \textbf{Natural Join ($\Rel{R1} \mynaturaljoin \Rel{R2}$):}
+		Un tipo speciale di equi-join. Le relazioni vengono combinate basandosi sull'uguaglianza dei valori degli attributi che hanno lo \textbf{stesso nome} in entrambe le relazioni. Gli attributi comuni appaiono una sola volta nel risultato.
+		\textbf{Esempio pratico (SQL):} Se $\Rel{Impiegati}$ e $\Rel{Assegnazioni}$ hanno entrambe una colonna $\Attr{IDProgetto}$.
+		$\Rel{Impiegati} \mynaturaljoin \Rel{Assegnazioni}$
+		è equivalente a:
 		\begin{minted}{sql}
 			SELECT *
-			FROM Employee NATURAL JOIN Department; -- Joins on 'Dept'
-			-- Equivalente (spesso preferito per chiarezza):
-			SELECT *
-			FROM Employee JOIN Department USING (Dept);
+			FROM Impiegati NATURAL JOIN Assegnazioni;
 		\end{minted}
+		\textit{Attenzione:} Il Natural Join può essere pericoloso se ci sono attributi con lo stesso nome ma significato diverso, o se si aggiungono/rimuovono colonne. È spesso preferibile usare join espliciti con clausola `ON`.
 	\end{itemize}
 	
-	\subsubsection{Cardinalità del Risultato del Join}
+	\subsection{Outer Join (Join Esterni)}
+	I join visti finora (inner join) scartano le tuple che non trovano una corrispondenza nell'altra relazione. Gli outer join includono queste tuple, riempiendo con `NULL` gli attributi mancanti.
 	\begin{itemize}
-		\item Il numero di tuple nel risultato di un join $R_1 \naturaljoin R_2$ (o $R_1 \thetajoin{C}{R_2}$) è compreso tra 0 e $|R_1| \times |R_2|$.
-		\item Se l'attributo di join è una \textbf{chiave (PK) in $R_2$}, allora ogni tupla di $R_1$ può trovare al massimo una corrispondenza in $R_2$ (se esiste). La cardinalità è tra 0 e $|R_1|$.
-		\item Se l'attributo di join è una \textbf{chiave (PK) in $R_2$} e c'è un \textbf{vincolo di integrità referenziale} (Foreign Key in $R_1$ che referenzia la PK in $R_2$, non NULL), allora ogni tupla di $R_1$ troverà \underline{esattamente} una corrispondenza in $R_2$. La cardinalità è esattamente $|R_1|$.
+		\item \textbf{Left Outer Join ($\Rel{R1} \myleftouterjoin \Rel{R2}$):} Mantiene tutte le tuple di $\Rel{R1}$. Se una tupla di $\Rel{R1}$ non ha corrispondenze in $\Rel{R2}$, viene inclusa nel risultato con valori `NULL` per gli attributi di $\Rel{R2}$.
+		SQL: `R1 LEFT OUTER JOIN R2 ON condizione`
+		\item \textbf{Right Outer Join ($\Rel{R1} \myrightouterjoin \Rel{R2}$):} Mantiene tutte le tuple di $\Rel{R2}$. Simmetrico al left outer join.
+		SQL: `R1 RIGHT OUTER JOIN R2 ON condizione`
+		\item \textbf{Full Outer Join ($\Rel{R1} \myfullouterjoin \Rel{R2}$):} Mantiene tutte le tuple di entrambe le relazioni. Se non c'è corrispondenza, i campi dell'altra relazione sono `NULL`.
+		SQL: `R1 FULL OUTER JOIN R2 ON condizione`
 	\end{itemize}
+	\textbf{Esempio pratico:} Trovare tutti gli impiegati e, se assegnati a un dipartimento, il nome del dipartimento. Se un impiegato non ha dipartimento, vogliamo comunque vederlo.
+	$\Rel{Impiegati} \myleftouterjoin \Rel{Dipartimenti}$ (assumendo un join su $\Attr{IDDip}$)
+	SQL:
+	\begin{minted}{sql}
+		SELECT Impiegati.Nome, Dipartimenti.NomeDip
+		FROM Impiegati
+		LEFT OUTER JOIN Dipartimenti ON Impiegati.IDDip = Dipartimenti.ID;
+	\end{minted}
 	
-	\subsubsection{Inner Join vs Outer Join}
+	\subsection{Espressioni Equivalenti e Ottimizzazione}
+	Esistono diverse espressioni algebriche che producono lo stesso risultato. I DBMS (Database Management Systems) utilizzano regole di equivalenza per trasformare una query in una forma equivalente ma più efficiente da eseguire.
+	Ad esempio, "spingere" le selezioni il più presto possibile (`pushdown selection`) riduce la dimensione delle relazioni intermedie, velocizzando i join successivi.
+	\textbf{Esempio:}
+	$\myselectop{\Attr{Stipendio}>100K}{(\Rel{Impiegati} \mynaturaljoin \Rel{Dipartimenti})}$
+	potrebbe essere più efficiente se riscritta come:
+	$(\myselectop{\Attr{Stipendio}>100K}{\Rel{Impiegati}}) \mynaturaljoin \Rel{Dipartimenti}$
+	(se $\Attr{Stipendio}$ è solo in $\Rel{Impiegati}$). Il DBMS fa queste ottimizzazioni automaticamente.
+	
+	\subsection{Selezione con Valori NULL}
+	I valori `NULL` rappresentano l'assenza di un valore o un valore sconosciuto.
+	Nei predicati di selezione:
 	\begin{itemize}
-		\item Il Join standard (Natural, Theta, Equi) è un \textbf{Inner Join}. Discarda le tuple che non trovano corrispondenza nell'altra relazione ("left out").
-		\item Gli \textbf{Outer Join} mantengono le tuple che non trovano corrispondenza, riempiendo con valori \textbf{NULL} per gli attributi della relazione mancante.
-		\item Tipi di Outer Join:
-		\begin{itemize}
-			\item \textbf{Left Outer Join ($\leftouterjoin$):} Mantiene tutte le tuple della relazione \textbf{sinistra}. Corrisponde a \texttt{LEFT JOIN} o \texttt{LEFT OUTER JOIN} in SQL.
-			\item \textbf{Right Outer Join ($\rightouterjoin$):} Mantiene tutte le tuple della relazione \textbf{destra}. Corrisponde a \texttt{RIGHT JOIN} o \texttt{RIGHT OUTER JOIN} in SQL.
-			\item \textbf{Full Outer Join ($\fullouterjoin$):} Mantiene tutte le tuple da \textbf{entrambe} le relazioni. Corrisponde a \texttt{FULL JOIN} o \texttt{FULL OUTER JOIN} in SQL.
-		\end{itemize}
+		\item Un confronto con `NULL` (es. $\Attr{Eta} > \text{NULL}$ o $\Attr{Stipendio} = \text{NULL}$) restituisce `UNKNOWN`.
+		\item L'operatore $\sigma$ seleziona solo le tuple per cui il predicato è `TRUE`.
+		\item Per testare esplicitamente i `NULL`, si usano i predicati $\Attr{Attributo} \text{ IS NULL}$ e $\Attr{Attributo} \text{ IS NOT NULL}$.
 	\end{itemize}
+	\textbf{Esempio pratico (SQL):} Trovare gli impiegati senza un numero di telefono assegnato.
+	$\myselectop{\Attr{Telefono} \text{ IS NULL}}{(\Rel{Impiegati})}$
+	SQL:
+	\begin{minted}{sql}
+		SELECT * FROM Impiegati WHERE Telefono IS NULL;
+	\end{minted}
 	
-	\subsection{Espressioni Equivalenti in Algebra Relazionale}
-	Due espressioni di Algebra Relazionale sono equivalenti se producono lo stesso risultato su qualsiasi istanza valida del database (lo stato del database può cambiare, ma l'equivalenza deve valere sempre).
-	Le regole di equivalenza sono cruciali per l'\textbf{ottimizzazione delle query} nei DBMS. Il query optimizer riscrive le query in forme equivalenti ma più efficienti.
-	
-	Esempi di regole di equivalenza (quelle più importanti per l'efficienza):
+	\section{Views (Viste)}
+	Una vista è una tabella virtuale il cui contenuto è definito da una query sull'algebra relazionale (o SQL). Non memorizza dati propriamente, ma li deriva dalle tabelle base al momento della query sulla vista.
 	\begin{itemize}
-		\item \textbf{Pushing selections down:} È spesso più efficiente applicare le selezioni \textbf{il prima possibile} per ridurre la dimensione delle relazioni intermedie.
-		$$ \selectop{C_1 \landop C_2}{R} = \selectop{C_1}{\selectop{C_2}{R}} $$
-		$$ \selectop{C}{R_1 \times R_2} = \selectop{C}{R_1} \times R_2 \quad (\text{se } C \text{ solo su attr di } R_1) $$
-		$$ \selectop{C}{R_1 \times R_2} = R_1 \times \selectop{C}{R_2} \quad (\text{se } C \text{ solo su attr di } R_2) $$
-		$$ \selectop{C_1 \landop C_2}{R_1 \times R_2} = \selectop{C_1}{R_1} \times \selectop{C_2}{R_2} \quad (\text{se } C_1 \text{ solo su } R_1, C_2 \text{ solo su } R_2) $$
-		Questo è il motivo per cui una query SQL con \texttt{WHERE} dopo un \texttt{FROM} con più tabelle è spesso più efficiente di un \texttt{SELECT * FROM R1, R2 WHERE ...}, perché il DBMS può "spingere" le condizioni \texttt{WHERE} (selection) verso le tabelle individuali o inserirle direttamente nel JOIN.
-		\item \textbf{Pushing projections down:} È spesso più efficiente applicare le proiezioni \textbf{il prima possibile} per ridurre la dimensione (larghezza) delle relazioni intermedie. Bisogna fare attenzione a non rimuovere attributi necessari per operazioni successive (es. join o selection).
-		$$ \project{X}{R_1 \times R_2} = \project{X_1}{R_1} \times \project{X_2}{R_2} \quad (\text{dove } X = X_1 \cup X_2, X_1 \subseteq \text{schema}(R_1), X_2 \subseteq \text{schema}(R_2)) $$
-		Per i join, bisogna proiettare solo dopo il join, ma si possono proiettare *prima* gli attributi che non servono *né per la condizione di join né per le proiezioni finali*.
-		$$ \project{X_1 \cup Y_2}{R_1(X_1 \cup Y_1) \naturaljoin R_2(X_2 \cup Y_2)} = \project{X_1 \cup Y_1}{R_1} \naturaljoin \project{X_2 \cup Y_2}{R_2} $$
-		(Questa è una semplificazione; le regole complete considerano gli attributi usati nella condizione di join e quelli proiettati alla fine). L'idea è rimuovere colonne non necessarie il prima possibile.
-		\item La \textbf{proiezione non è distributiva sulla differenza}. $\pi_X(R_1 - R_2) \neq \pi_X(R_1) - \pi_X(R_2)$.
-		\item Molte proprietà insiemistiche (commutatività, associatività) valgono per join, unione, intersezione, ma \textbf{non per la differenza}.
+		\item \textbf{Tabelle Base:} Tabelle che contengono fisicamente i dati.
+		\item \textbf{Tabelle Derivate (Viste):} Definite da query.
 	\end{itemize}
-	\textbf{Nota importante:} Non è lo scopo del corso imparare a riscrivere manualmente le query per l'efficienza in Algebra Relazionale. I moderni DBMS lo fanno automaticamente tramite il query optimizer. L'obiettivo è capire i concetti e le trasformazioni possibili.
-	
-	\subsection{Selection con valori NULL}
+	Le viste sono utili per:
 	\begin{itemize}
-		\item In presenza di valori \texttt{NULL}, le espressioni booleane possono avere tre valori: \textbf{TRUE}, \textbf{FALSE}, \textbf{UNKNOWN}.
-		\item La Selection ($\sigma$) restituisce solo le tuple per cui il predicato è \textbf{TRUE}. Le tuple per cui è FALSE o UNKNOWN vengono scartate.
-		\item Questo significa che un predicato come $\sigma_{Age > 30 AND Age <= 30}(PEOPLE)$ non restituirà tutte le persone se alcune hanno Age = NULL, perché per queste tuple la condizione $Age > 30 AND Age <= 30$ sarà UNKNOWN.
-		\item Per gestire i NULL nelle selezioni, si usano predicati speciali come \texttt{IS NULL} e \texttt{IS NOT NULL}.
-		\item Esempio: Selezionare le persone con Age maggiore di 40 \textbf{o} con Age NULL:
-		$$ \sigma_{\text{Age > 40 OR Age IS NULL}}(\text{PEOPLE}) $$
-		In SQL:
-		\begin{minted}{sql}
-			SELECT *
-			FROM People
-			WHERE Age > 40 OR Age IS NULL;
-		\end{minted}
+		\item \textbf{Schema Esterno:} Fornire diverse rappresentazioni dei dati a utenti diversi, semplificando la complessità e implementando la sicurezza (mostrando solo dati pertinenti).
+		\item \textbf{Strumento di Programmazione:} Semplificare query complesse riutilizzando sotto-espressioni comuni, o per mantenere la compatibilità con applicazioni esistenti quando lo schema delle tabelle base cambia.
 	\end{itemize}
-	Teoricamente si potrebbe usare una logica a 3 valori, ma nella pratica standard dei database si considera UNKNOWN come "non TRUE" ai fini della selezione.
-	
-	\subsection{Views}
-	\begin{itemize}
-		\item Una View è una \textbf{tabella virtuale} definita da una query. Non contiene dati propri; mostra i dati delle tabelle base sottostanti.
-		\item Utili per fornire \textbf{rappresentazioni diverse} dei dati o \textbf{sottoschemi personalizzati} (Schema Esterno nell'architettura ANSI/SPARC).
-		\item Permettono agli utenti di vedere solo i dati di loro interesse e con la struttura desiderata, nascondendo la complessità delle tabelle base.
-		\item Possono anche servire come \textbf{strumento di programmazione} per semplificare query complesse suddividendole o riusando definizioni.
-	\end{itemize}
-	
-	\subsubsection{Tipi di Views}
-	\begin{itemize}
-		\item \textbf{Virtual Relations (Views):} La definizione comune. La query sulla view viene \textbf{riscritta} dal DBMS in una query sulle tabelle base sottostanti. Non c'è storage separato per la view. Ampiamente supportate. Non migliorano l'efficienza dell'esecuzione (la query riscritta viene ottimizzata).
-		\item \textbf{Materialized Views:} La query che definisce la view viene eseguita e il risultato viene \textbf{memorizzato fisicamente}. Forniscono accesso più veloce (lettura) ma occupano spazio e devono essere mantenute aggiornate quando le tabelle base cambiano (aggiornamenti lenti). Gli aggiornamenti \textit{sulla} materialized view sono raramente supportati direttamente.
-	\end{itemize}
-	
-	\subsubsection{Esempio di View (Algebra Relazionale)}
-	Definiamo una view \texttt{SUPERVISOR} che combina AFFILIATION e MANAGEMENT:
-	\begin{itemize}
-		\item \texttt{AFFILIATION(Employee, Dept)}
-		\item \texttt{MANAGEMENT(Dept, Chief)}
-	\end{itemize}
-	La view \texttt{SUPERVISOR} potrebbe mostrare quale impiegato è supervisionato da quale Chief, unendo le due tabelle sul dipartimento:
-	$$ \text{SUPERVISOR} := \project{\text{Employee, Chief}}(\text{AFFILIATION} \naturaljoin \text{MANAGEMENT}) $$
-	(Assumendo che gli attributi di join abbiano lo stesso nome o siano gestiti implicitamente dal natural join, altrimenti si userebbe un equi-join esplicito dopo un eventuale rename).
-	
-	Query sulla view: Trova gli impiegati supervisionati da 'Mori'.
-	$$ \selectop{\text{Chief='Mori'}}{\text{SUPERVISOR}} $$
-	Il DBMS riscrive questa query espandendo la definizione della view:
-	$$ \selectop{\text{Chief='Mori'}}{(\project{\text{Employee, Chief}}(\text{AFFILIATION} \naturaljoin \text{MANAGEMENT}))} $$
-	Questo è l'query processing di base per le virtual views.
-	
-	\subsubsection{Aggiornare le Views (Incremental Updates)}
-	Aggiornare una view significa modificare i dati nelle tabelle base in modo che la view aggiornata rifletta la modifica.
-	\begin{itemize}
-		\item Per ogni aggiornamento sulla view deve esserci una \textbf{corrispondente (e possibilmente unica) modifica sulle tabelle base}.
-		\item Non è sempre univoco capire quali tuple delle tabelle base modificare per riflettere un cambiamento nella view.
-		\item Quindi, solo un \textbf{sottoinsieme limitato} di views sono aggiornabili (tipicamente views semplici definite su una singola tabella base senza aggregazioni, raggruppamenti, ecc.).
-	\end{itemize}
-	
-	\subsection{Notazione alternativa per il Join (Orientata a SQL)}
-	Le slide presentano anche una notazione alternativa per il join e la proiezione, più vicina a come SQL gestisce gli attributi qualificati e meno focalizzata sul natural join implicito.
-	\begin{itemize}
-		\item Si distinguono attributi con lo stesso nome usando la notazione \texttt{Relation.Attribute} (es. \texttt{EMPLOYEE.Wage}, \texttt{CHIEF.Wage}). Questo è standard in SQL.
-		\item Le query join esplicite sono preferite (theta-join con $=$, o equi-join).
-		\item Esempio con questa notazione (query per impiegati che guadagnano più del loro capo):
-		$$ \project{\text{E.Number, E.Name, E.Wage, C.Number AS NumC, C.Name AS NameC, C.Wage AS WageC}}{(\text{EMPLOYEE AS E} \thetajoin{\text{E.Dept = M.Dept}}{(\text{MANAGEMENT AS M} \thetajoin{\text{M.Chief = C.Number}}{\text{EMPLOYEE AS C}})} \thetajoin{\text{E.Wage > C.Wage}}{()} } $$
-		Questa notazione esplicita con alias (AS E, AS M, AS C) e condizioni di join è molto più vicina all'SQL reale:
-		\begin{minted}{sql}
-			SELECT E.Number, E.Name, E.Wage, C.Number AS NumC, C.Name AS NameC, C.Wage AS WageC
-			FROM EMPLOYEE AS E
-			JOIN MANAGEMENT AS M ON E.Dept = M.Dept
-			JOIN EMPLOYEE AS C ON M.Chief = C.Number -- C alias for the chief employee
-			WHERE E.Wage > C.Wage;
-		\end{minted}
-		L'uso degli alias e delle qualificazioni \texttt{E.Wage} vs \texttt{C.Wage} risolve l'ambiguità.
-	\end{itemize}
+	\textbf{Esempio pratico (SQL):} Creare una vista che mostra solo gli impiegati del dipartimento IT.
+	Algebra: $\Rel{ImpiegatiIT} := \myselectop{\Attr{Dipartimento} = \text{'IT'}}{(\Rel{Impiegati})}$
+	SQL:
+	\begin{minted}{sql}
+		CREATE VIEW ImpiegatiIT AS
+		SELECT *
+		FROM Impiegati
+		WHERE Dipartimento = 'IT';
+		
+		-- Successivamente si può interrogare la vista:
+		SELECT Nome, Cognome FROM ImpiegatiIT WHERE Stipendio > 60000;
+	\end{minted}
+	Il DBMS traduce la query sulla vista in una query sulle tabelle base (es. $\myselectop{\Attr{Stipendio} > 60000}{(\myselectop{\Attr{Dipartimento} = \text{'IT'}}{(\Rel{Impiegati})})}$ ).
 	
 	\section{Calcolo Relazionale}
-	Una famiglia di linguaggi \textbf{dichiarativi} basati sulla First Order Logic. Permettono di specificare le proprietà del risultato desiderato senza descrivere la procedura per ottenerlo.
+	Il calcolo relazionale è un linguaggio di query formale, \textbf{dichiarativo}, basato sulla logica dei predicati del primo ordine. Specifica \textit{cosa} si vuole ottenere, non \textit{come}.
+	Esistono due forme principali:
+	\begin{itemize}
+		\item \textbf{Domain Relational Calculus (DRC):} Le variabili assumono valori dai domini degli attributi.
+		\item \textbf{Tuple Relational Calculus (TRC):} Le variabili rappresentano tuple di relazioni.
+	\end{itemize}
 	
 	\subsection{Domain Relational Calculus (DRC)}
+	Una query DRC ha la forma:
+	$\{ \Attr{A}_1:x_1, \dots, \Attr{A}_k:x_k \mid \text{Formula}(x_1, \dots, x_k) \}$
+	dove:
 	\begin{itemize}
-		\item Basato su variabili che rangeano sui \textbf{domini dei valori} (es. una variabile \texttt{m} potrebbe assumere tutti i possibili valori del dominio dei numeri di impiegato).
-		\item Sintassi generale: $\{x_1, x_2, \dots, x_k | \text{Formula}(x_1, \dots, x_k)\}$. Più precisamente, specificando gli attributi: $\{ A_1: x_1, \dots, A_k: x_k | \text{Formula}(x_1, \dots, x_k) \}$.
-		\item Formula: una formula della logica del primo ordine che può includere:
+		\item $\Attr{A}_1:x_1, \dots, \Attr{A}_k:x_k$ è la \textbf{target list}: specifica gli attributi del risultato e le variabili che ne conterranno i valori.
+		\item $x_1, \dots, x_k$ sono variabili che variano sui domini dei rispettivi attributi.
+		\item $\text{Formula}(x_1, \dots, x_k)$ è una formula della logica del primo ordine che usa:
 		\begin{itemize}
-			\item Predicati che rappresentano le relazioni (es. $EMPLOYEE(m, n, a, w)$ significa "esiste una tupla nella relazione EMPLOYEE con valori m, n, a, w per i rispettivi attributi Number, Name, Age, Wage").
-			\item Predicati di confronto ($x > 40$, $x = y$).
-			\item Operatori logici ($\landop, \vel, \negop$).
-			\item Quantificatori ($\forallop, \existsop$) sulle variabili (rangeano sull'intero dominio).
-		\end{itemize}
-		\item Semantica: Il risultato è l'insieme delle tuple $(v_1, \dots, v_k)$ di valori per le variabili $(x_1, \dots, x_k)$ tali che la Formula è vera quando le variabili sono sostituite dai valori corrispondenti. Gli attributi della tupla risultante sono $A_1, \dots, A_k$.
-		\item Esempio: Restituire Numero, Nome, Età, Stipendio degli impiegati con stipendio > 40.
-		$$ \{ \text{Number}: m, \text{Name}: n, \text{Age}: a, \text{Wage}: w \mid \text{EMPLOYEE}(m, n, a, w) \landop w > 40 \} $$
-		\item Contro: Può essere prolisso. Permette di scrivere formule "domain-dependent" che non sono esprimibili in Algebra Relazionale (es. ${A: x | ¬R(A: x)}$ - tutti i valori nel dominio di A che NON compaiono in R; l'algebra relazionale può solo operare sui valori *presenti* nelle relazioni). Si cerca di usare il DRC solo per query "domain-independent" (quelle esprimibili in RA).
-	\end{itemize}
-	
-	\subsection{Tuple Relational Calculus with Range Declarations (TRC-RD)}
-	\begin{itemize}
-		\item Basato su variabili che rangeano su \textbf{intere tuple} di specifiche relazioni. Ogni variabile è dichiarata per rangeare su una relazione.
-		\item Sintassi generale: $\{ \text{TargetList} \mid \text{RangeList} \mid \text{Formula} \}$.
-		\item RangeList: dichiara le variabili di tupla e su quale relazione rangeano (es. $e \in \text{EMPLOYEE}$, o $e(\text{EMPLOYEE})$ nella notazione delle slide).
-		\item TargetList: specifica quali attributi delle variabili di tupla compaiono nel risultato (es. $e.Number$, $e.Name$, o $e.(Number, Name, Age)$ o $e.*$ per tutti gli attributi).
-		\item Formula: una formula logica che usa gli attributi delle variabili di tupla (es. $e.Wage > 40$).
-		\item Semantica: L'insieme delle tuple formate dagli attributi specificati in TargetList, per le quali esiste un'assegnazione di tuple alle variabili in RangeList che soddisfa la Formula.
-		\item Esempio: Restituire Numero, Nome, Età, Stipendio degli impiegati con stipendio > 40.
-		$$ \{ e.\text{*} \mid e(\text{EMPLOYEE}) \mid e.\text{Wage} > 40 \} $$
-		Questo è più conciso del DRC per molte query.
-		\item Esempio: Restituire numero, nome e età di tutti gli impiegati (proiezione).
-		$$ \{ e.\text{(Number, Name, Age)} \mid e(\text{EMPLOYEE}) \mid \text{TRUE} \} $$
-		La formula TRUE indica che non ci sono ulteriori condizioni di selezione sulle tuple.
-	\end{itemize}
-	
-	\subsection{Equivalenza tra Calcolo e Algebra}
-	\begin{itemize}
-		\item Il \textbf{Domain Relational Calculus} (limitato alle query domain-independent) e il \textbf{Relational Algebra} sono \textbf{equivalenti} nel loro potere espressivo. Qualsiasi query esprimibile nell'uno è esprimibile nell'altro.
-		\item Il \textbf{Tuple Relational Calculus with Range Declarations} è anch'esso \textbf{equivalente} a DRC (domain-independent) e RA.
-		\item Questo è un risultato fondamentale nella teoria dei database relazionali.
-	\end{itemize}
-	
-	\section{Oltre l'Algebra e il Calcolo Relazionale Standard}
-	
-	L'Algebra e il Calcolo Relazionale standard hanno dei limiti:
-	\begin{itemize}
-		\item Possono solo \textbf{estrarre} valori presenti nel database, non \textbf{computare nuovi valori} (es. calcolare un'imposta sul salario, fare una somma, una media). Le estensioni come l'aggregazione (SUM, AVG, COUNT) o le operazioni aritmetiche nelle proiezioni/selezioni sono state aggiunte in linguaggi pratici come SQL.
-		\item Non possono esprimere query che richiedono un \textbf{numero arbitrario e a priori sconosciuto di join}. L'esempio classico è la \textbf{Transitive Closure}.
-	\end{itemize}
-	
-	\subsection{Transitive Closure}
-	\begin{itemize}
-		\item Data una relazione binaria $R$ su un insieme $X$ (es. "c'è un volo diretto da X a Y"), la Transitive Closure $R^+$ è la più piccola relazione su $X$ che contiene $R$ ed è transitiva (se XRY e YRZ, allora X$R^+$Z).
-		\item Nel caso dei voli, X$R^+$Y significa "è possibile volare da X a Y (con uno o più scali)".
-		\item In Algebra Relazionale, per trovare tutti gli impiegati e i loro superiori diretti o indiretti (la relazione SUPERVISOR è la relazione base "direttamente supervisionato da"), dovrei fare:
-		\begin{itemize}
-			\item Superiore diretto: SUPERVISOR
-			\item Superiore di 2 livelli: SUPERVISOR $\naturaljoin$ SUPERVISOR (rinominando gli attributi intermedi per il join)
-			\item Superiore di 3 livelli: SUPERVISOR $\naturaljoin$ SUPERVISOR $\naturaljoin$ SUPERVISOR
-			\item ...e fare l'unione di tutti questi risultati.
-		\end{itemize}
-		\item Il problema è che non so a priori quanti livelli di supervisione (quanti join) potrebbero esistere in una data istanza del database. L'altezza della gerarchia potrebbe essere arbitraria.
-		\item Pertanto, la Transitive Closure \textbf{non è esprimibile} in Algebra Relazionale o Calcolo Relazionale standard, che sono "first-order".
-		\item SQL moderno ha estensioni per gestire questo, in particolare le \textbf{Common Table Expressions (CTE) ricorsive} (\texttt{WITH RECURSIVE}).
-	\end{itemize}
-	
-	\subsection{Datalog}
-	\begin{itemize}
-		\item Un linguaggio di programmazione logica orientato ai database, basato su Prolog.
-		\item Utilizza \textbf{regole} nella forma \texttt{head <- body} (congiunzione di predicati).
-		\item Distingue tra:
-		\begin{itemize}
-			\item \textbf{Predicati Estensionali:} Corrispondono alle tabelle base del database. Sono fatti noti a priori.
-			\item \textbf{Predicati Intensionali:} Definiti da regole. Corrispondono a viste derivate o a fatti che possono essere inferiti.
-		\end{itemize}
-		\item Query: si chiede se un predicato è vero con un \texttt{?}. Esempio: \texttt{?richer(m, n, a, w)}.
-		\item Esempio di regola (equivalente a una Selection in RA):
-		\begin{minted}{prolog}
-			richer(M, N, A, W) :- employee(M, N, A, W), W > 40.
-			-- Leggi: "Una tupla (M,N,A,W) e' nel predicato richer SE una tupla (M,N,A,W) e' nel predicato employee E W > 40."
-			-- Corrisponde a: RICH PEOPLE = select_{Wage > 40}(EMPLOYEE)
-		\end{minted}
-		\item Esempio di regola (equivalente a un Join):
-		\begin{minted}{prolog}
-			chief_of_rich(C) :- employee(M, N, A, W), W > 40, supervisor(C, M).
-			-- Leggi: "C e' un chief_of_rich SE (M,N,A,W) e' un employee, W > 40, E C e' il supervisore di M."
-			-- Corrisponde a: pi_{Chief}(select_{Wage > 40}(EMPLOYEE naturaljoin SUPERVISOR))
-		\end{minted}
-		\item Datalog supporta la \textbf{ricorsione} definendo predicati intensionali in termini di sé stessi. Questo permette di esprimere la Transitive Closure.
-		\begin{minted}{prolog}
-			super_chief(E, C) :- supervisor(E, C). -- Regola base (supervisore diretto)
-			super_chief(E, C) :- supervisor(E, C'), super_chief(C', C). -- Regola ricorsiva (supervisore indiretto)
-			-- super_chief(E, C) e' vero se C e' il supervisore diretto di E, OPPURE se C' e' il supervisore diretto di E E C e' un super_chief di C'.
-		\end{minted}
-		\item Questo insieme di regole definisce il predicato \texttt{super\_chief(E, C)} come la Transitive Closure della relazione \texttt{supervisor(E, C)}.
-		\item \textbf{Potere Espressivo di Datalog:}
-		\begin{itemize}
-			\item Datalog non ricorsivo (con o senza negazione) è equivalente a RA/Calcolo standard.
-			\item Datalog \textbf{ricorsivo} (con negazione) è \textbf{più espressivo} di RA/Calcolo standard.
+			\item Predicati corrispondenti alle relazioni nel database (es. $\Rel{IMPIEGATO}(\Attr{Num}:m, \Attr{Nome}:n, \dots)$).
+			\item Operatori di confronto ($=, >, <, \dots$).
+			\item Operatori logici ($\mylandop$ AND, $\myvel$ OR, $\mynegop$ NOT).
+			\item Quantificatori ($\myforallop$ per tutti, $\myexistsop$ esiste).
 		\end{itemize}
 	\end{itemize}
+	Il risultato è l'insieme di tuple $(\Attr{A}_1:v_1, \dots, \Attr{A}_k:v_k)$ tali che, quando le variabili $x_i$ assumono i valori $v_i$, la Formula è vera.
 	
-	\section{Conclusione}
-	Abbiamo esplorato i fondamenti dei linguaggi di interrogazione relazionali: l'Algebra Relazionale (procedurale) e il Calcolo Relazionale (dichiarativo). Abbiamo visto che, per le query "first-order", questi linguaggi sono equivalenti. Abbiamo anche identificato i loro limiti, in particolare l'incapacità di esprimere computazioni (come aggregazioni) e la Transitive Closure. Linguaggi pratici come SQL hanno estensioni per superare queste limitazioni, mentre linguaggi teorici come Datalog mostrano come la ricorsione permetta di esprimere concetti come la Transitive Closure.
+	\textbf{Esempio DRC:} Trovare numero, nome, età e salario degli impiegati che guadagnano più di 40.
+	\begin{verbatim}
+		{ Numero:m, Nome:n, Eta:a, Salario:w |
+			IMPIEGATO(Numero:m, Nome:n, Eta:a, Salario:w)  w > 40 }
+	\end{verbatim}
+	Se vogliamo solo nome ed età:
+	\begin{verbatim}
+		{ Nome:n, Eta:a |
+			existsop w (IMPIEGATO(Numero:m, Nome:n, Eta:a, Salario:w)  w > 40) }
+	\end{verbatim}
+	(Il `Numero:m` nella seconda query è una variabile libera nella formula `IMPIEGATO`, ma non nella target list, quindi la sua esistenza è implicitamente richiesta. Le slide mostrano `EMPLOYEE(Number:m, Name:n, Age:a, Wage:w)` anche quando `m` non è nella target list; questo significa che deve esistere una tupla con qualche `m` che soddisfi il resto. Per essere più precisi, si quantificherebbero le variabili non nella target list).
+	
+	\subsection{Tuple Relational Calculus (TRC) with Range Declarations}
+	Una query TRC ha la forma:
+	$\{ \text{TargetList} \mid \text{RangeList} \mid \text{Formula} \}$
+	dove:
+	\begin{itemize}
+		\item $\text{TargetList}$: Specifica gli attributi da restituire, spesso nella forma $t.\Attr{A}$ (attributo $\Attr{A}$ della tupla $t$).
+		\item $\text{RangeList}$: Dichiara le variabili di tupla e le relazioni a cui appartengono (es. $e(\Rel{IMPIEGATO})$, $s(\Rel{SUPERVISORE})$).
+		\item $\text{Formula}$: Una condizione sulle variabili di tupla dichiarate.
+	\end{itemize}
+	Le variabili variano sull'insieme delle tuple della relazione specificata.
+	
+	\textbf{Esempio TRC:} Trovare tutte le informazioni sugli impiegati che guadagnano più di 40.
+	\begin{verbatim}
+		{ e.* | e(IMPIEGATO) | e.Salario > 40 }
+	\end{verbatim}
+	Trovare nome ed età degli impiegati che guadagnano più di 40:
+	\begin{verbatim}
+		{ e.Nome, e.Eta | e(IMPIEGATO) | e.Salario > 40 }
+	\end{verbatim}
+	Il TRC è spesso considerato più vicino a come si pensa in SQL, poiché si ragiona in termini di "tuple che soddisfano certe condizioni".
+	
+	\subsection{Equivalenza tra Algebra e Calcolo}
+	Per le query "safe" (che non producono risultati infiniti e dipendono solo dai dati nel database), l'Algebra Relazionale, il Domain Relational Calculus (safe) e il Tuple Relational Calculus (safe) sono \textbf{espressivamente equivalenti}. Ciò significa che qualsiasi query esprimibile in uno di questi linguaggi può essere espressa anche negli altri. Questo è un risultato teorico importante (Teorema di Codd).
+	
+	\section{Limiti dell'Algebra e del Calcolo Relazionale Standard}
+	Nonostante la loro potenza, l'algebra e il calcolo relazionale standard hanno dei limiti:
+	\begin{itemize}
+		\item \textbf{No Calcoli Aritmetici/Nuovi Valori:} Non possono calcolare nuovi valori (es. stipendio + bonus) o eseguire aggregazioni (somma, media, conteggio). SQL estende queste capacità con funzioni aritmetiche e di aggregazione (`SUM()`, `AVG()`, `COUNT()`, `GROUP BY`).
+		\item \textbf{No Chiusura Transitiva (Recursion):} Non possono esprimere query ricorsive, come trovare tutti i superiori di un impiegato (il capo, il capo del capo, ecc.) o tutte le tratte aeree possibili tra due città (dirette e indirette). Questo richiederebbe un numero potenzialmente illimitato di join.
+	\end{itemize}
+	
+	\section{Datalog}
+	Datalog è un linguaggio di query e programmazione logica orientato ai database, che supera alcuni limiti di RA/RC, in particolare per le query ricorsive. È un sottoinsieme di Prolog.
+	Concetti chiave:
+	\begin{itemize}
+		\item \textbf{Predicati Estensionali (EDB - Extensional Database):} Corrispondono alle relazioni base del database (fatti).
+		\item \textbf{Predicati Intensionali (IDB - Intensional Database):} Corrispondono a viste o relazioni derivate, definite tramite \textbf{regole}.
+		\item \textbf{Regole:} Hanno la forma `testa :- corpo.` (o `testa <- corpo` nelle slide).
+		Significa: "la \textit{testa} è vera se il \textit{corpo} è vero".
+		La testa è un singolo predicato intensionale. Il corpo è una congiunzione (AND) di predicati (estensionali o intensionali) e condizioni.
+		\item \textbf{Query:} Indicate con un prefisso `?` davanti a un predicato.
+	\end{itemize}
+	
+	\textbf{Esempio Datalog (non ricorsivo):} Trovare i capi degli impiegati che guadagnano più di 40.
+	Relazioni EDB: $\Rel{IMPIEGATO}(\Attr{Num}, \Attr{Nome}, \Attr{Eta}, \Attr{Salario})$, $\Rel{SUPERVISORE}(\Attr{Capo}, \Attr{Impiegato})$
+	\begin{minted}{prolog}
+		% Predicato intensionale: IMPIEGATO_RICCO
+		IMPIEGATO_RICCO(Num, Nome, Eta, Salario) :-
+		IMPIEGATO(Num, Nome, Eta, Salario), Salario > 40.
+		
+		% Predicato intensionale: CAPO_DI_IMPIEGATO_RICCO
+		CAPO_DI_IMPIEGATO_RICCO(NumCapo) :-
+		IMPIEGATO_RICCO(NumImp, _, _, _),
+		SUPERVISORE(NumCapo, NumImp).
+		
+		% Query
+		? CAPO_DI_IMPIEGATO_RICCO(X).
+	\end{minted}
+	
+	\textbf{Esempio Datalog (Ricorsione - Chiusura Transitiva):} Trovare tutti i superiori (diretti e indiretti) di un impiegato.
+	Relazione EDB: $\Rel{CAPO\_DIRETTO}(\Attr{Superiore}, \Attr{Subordinato})$
+	\begin{minted}{prolog}
+		% Caso base: un capo diretto e' un superiore
+		SUPERIORE(X, Y) :- CAPO_DIRETTO(X, Y).
+		
+		% Caso ricorsivo: il superiore di un mio superiore e' anche mio superiore
+		SUPERIORE(X, Y) :- CAPO_DIRETTO(X, Z), SUPERIORE(Z, Y).
+		
+		% Query: trovare tutti i superiori di 'Rossi' (assumendo che 'Rossi' sia un ID)
+		? SUPERIORE(Capo, 'Rossi').
+	\end{minted}
+	Datalog, grazie alla sua capacità di esprimere la ricorsione, è più potente dell'algebra e del calcolo relazionale standard. Le estensioni ricorsive di SQL (come `WITH RECURSIVE`) sono ispirate a Datalog.
+	
+	\section{Conclusioni}
+	L'Algebra Relazionale e il Calcolo Relazionale forniscono le fondamenta teoriche per i linguaggi di query dei database relazionali come SQL.
+	\begin{itemize}
+		\item L'\textbf{Algebra Relazionale} è procedurale e definisce come costruire il risultato passo dopo passo. È cruciale per l'implementazione interna e l'ottimizzazione delle query nei DBMS.
+		\item Il \textbf{Calcolo Relazionale} è dichiarativo, permettendo di specificare le proprietà del risultato desiderato senza dettagliarne il processo di ottenimento.
+		\item Entrambi (nelle loro forme "safe") hanno lo stesso potere espressivo ma non possono gestire calcoli complessi o ricorsione.
+		\item \textbf{Datalog} estende questi concetti introducendo la ricorsione, aumentando il potere espressivo.
+	\end{itemize}
+	Comprendere questi modelli teorici aiuta a capire meglio il funzionamento e le potenzialità di SQL e dei sistemi di gestione di database moderni.
 	
 \end{document}
