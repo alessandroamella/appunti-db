@@ -11,6 +11,8 @@
 % --- Font sans-serif ---
 \usepackage[scaled]{helvet}
 \renewcommand{\familydefault}{\sfdefault}
+\usepackage[T1]{fontenc}
+
 
 % --- Matematica ---
 \usepackage{amsmath}
@@ -358,36 +360,34 @@
 		\item \textbf{Regole:} Hanno la forma `testa :- corpo.` (o `testa <- corpo` nelle slide).
 		Significa: "la \textit{testa} è vera se il \textit{corpo} è vero".
 		La testa è un singolo predicato intensionale. Il corpo è una congiunzione (AND) di predicati (estensionali o intensionali) e condizioni.
-		\item \textbf{Query:} Indicate con un prefisso `?` davanti a un predicato.
+		\item \textbf{Query:} Indicate con un prefisso ? davanti a un predicato.
 	\end{itemize}
 	
 	\textbf{Esempio Datalog (non ricorsivo):} Trovare i capi degli impiegati che guadagnano più di 40.
 	Relazioni EDB: $\Rel{IMPIEGATO}(\Attr{Num}, \Attr{Nome}, \Attr{Eta}, \Attr{Salario})$, $\Rel{SUPERVISORE}(\Attr{Capo}, \Attr{Impiegato})$
 	\begin{minted}{prolog}
-		% Predicato intensionale: IMPIEGATO_RICCO
-		IMPIEGATO_RICCO(Num, Nome, Eta, Salario) :-
-		IMPIEGATO(Num, Nome, Eta, Salario), Salario > 40.
-		
-		% Predicato intensionale: CAPO_DI_IMPIEGATO_RICCO
-		CAPO_DI_IMPIEGATO_RICCO(NumCapo) :-
-		IMPIEGATO_RICCO(NumImp, _, _, _),
-		SUPERVISORE(NumCapo, NumImp).
-		
-		% Query
-		? CAPO_DI_IMPIEGATO_RICCO(X).
+% Predicato intensionale: IMPIEGATO_RICCO
+IMPIEGATO_RICCO(Num, Nome, Eta, Salario) :- IMPIEGATO(Num, Nome, Eta, Salario), Salario > 40.
+
+% Predicato intensionale: CAPO_DI_IMPIEGATO_RICCO
+CAPO_DI_IMPIEGATO_RICCO(NumCapo) :- IMPIEGATO_RICCO(NumImp, _, _, _),
+SUPERVISORE(NumCapo, NumImp).
+
+% Query
+? CAPO_DI_IMPIEGATO_RICCO(X).
 	\end{minted}
 	
 	\textbf{Esempio Datalog (Ricorsione - Chiusura Transitiva):} Trovare tutti i superiori (diretti e indiretti) di un impiegato.
 	Relazione EDB: $\Rel{CAPO\_DIRETTO}(\Attr{Superiore}, \Attr{Subordinato})$
 	\begin{minted}{prolog}
-		% Caso base: un capo diretto e' un superiore
-		SUPERIORE(X, Y) :- CAPO_DIRETTO(X, Y).
+% Caso base: un capo diretto e' un superiore
+SUPERIORE(X, Y) :- CAPO_DIRETTO(X, Y).
 		
-		% Caso ricorsivo: il superiore di un mio superiore e' anche mio superiore
-		SUPERIORE(X, Y) :- CAPO_DIRETTO(X, Z), SUPERIORE(Z, Y).
+% Caso ricorsivo: il superiore di un mio superiore e' anche mio superiore
+SUPERIORE(X, Y) :- CAPO_DIRETTO(X, Z), SUPERIORE(Z, Y).
 		
-		% Query: trovare tutti i superiori di 'Rossi' (assumendo che 'Rossi' sia un ID)
-		? SUPERIORE(Capo, 'Rossi').
+% Query: trovare tutti i superiori di 'Rossi' (assumendo che 'Rossi' sia un ID)
+? SUPERIORE(Capo, 'Rossi').
 	\end{minted}
 	Datalog, grazie alla sua capacità di esprimere la ricorsione, è più potente dell'algebra e del calcolo relazionale standard. Le estensioni ricorsive di SQL (come `WITH RECURSIVE`) sono ispirate a Datalog.
 	
