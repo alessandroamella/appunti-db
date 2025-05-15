@@ -5,3 +5,5 @@
 *.synctex.gz
 *.pygtex
 _minted*
+.env
+node_modules/

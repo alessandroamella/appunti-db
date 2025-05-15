@@ -1,0 +1,24 @@
+{
+  "name": "github-auto-release",
+  "version": "1.0.0",
+  "description": "Automatically create GitHub releases with combined PDFs on push",
+  "main": "github-auto-release.js",
+  "scripts": {
+    "setup": "node github-auto-release.js setup",
+    "release": "node github-auto-release.js release"
+  },
+  "keywords": [
+    "github",
+    "release",
+    "pdf",
+    "automation"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@octokit/rest": "^19.0.13",
+    "date-fns": "^4.1.0",
+    "dotenv-safe": "^9.1.0",
+    "tmp": "^0.2.3"
+  }
+}
