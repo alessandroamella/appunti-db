@@ -70,25 +70,25 @@
 		\begin{itemize}
 			\item Semplice:
 			\begin{minted}{sql}
-			Gender CHARACTER NOT NULL CHECK (Gender IN ('M', 'F'))
+		Gender CHARACTER NOT NULL CHECK (Gender IN ('M', 'F'))
 			\end{minted}
 			\item Semplice:
 			\begin{minted}{sql}
-			Salary INTEGER CHECK (Salary >= 0)
+		Salary INTEGER CHECK (Salary >= 0)
 			\end{minted}
 			\item Complesso (con subquery):
 			\begin{minted}{sql}
-			-- Assicura che lo stipendio di un impiegato non superi
-			-- quello del suo supervisore.
-			-- Nota: le subquery nei CHECK non sono supportate da tutti i DBMS.
-			CHECK (Salary <= (SELECT Salary
-			FROM EMPLOYEE J
-			WHERE Supervisor = J.Number))
+		-- Assicura che lo stipendio di un impiegato non superi
+		-- quello del suo supervisore.
+		-- Nota: le subquery nei CHECK non sono supportate da tutti i DBMS.
+		CHECK (Salary <= (SELECT Salary
+		FROM EMPLOYEE J
+		WHERE Supervisor = J.Number))
 			\end{minted}
 			\item Derivato:
 			\begin{minted}{sql}
-			-- Assicura la coerenza per campi calcolati.
-			CHECK (Net = Salary - Withholding)
+		-- Assicura la coerenza per campi calcolati.
+		CHECK (Net = Salary - Withholding)
 			\end{minted}
 		\end{itemize}
 		\item \textbf{Importanza}: Se un \texttt{INSERT} o \texttt{UPDATE} viola un vincolo \texttt{CHECK}, l'operazione fallisce, mantenendo l'integrità dei dati.
@@ -100,10 +100,10 @@
 		\item \textbf{Sintassi}: \texttt{CREATE ASSERTION NomeAsserzione CHECK ( Predicate )}
 		\item \textbf{Esempio}:
 		\begin{minted}{sql}
-			-- Questa asserzione garantisce che la tabella EMPLOYEE
-			-- non sia mai completamente vuota.
-			CREATE ASSERTION AtLeastOneEmployee
-			CHECK (1 <= (SELECT COUNT(*) FROM EMPLOYEE));
+		-- Questa asserzione garantisce che la tabella EMPLOYEE
+		-- non sia mai completamente vuota.
+		CREATE ASSERTION AtLeastOneEmployee
+		CHECK (1 <= (SELECT COUNT(*) FROM EMPLOYEE));
 		\end{minted}
 		\item \textit{Nota Pratica}: Anche qui, il supporto completo (specialmente con subquery complesse) varia tra i DBMS.
 	\end{itemize}
@@ -114,10 +114,10 @@
 		\item \textbf{Sintassi}: \texttt{CREATE VIEW NomeVista [(ListaAttributi)] AS SelectStatement}
 		\item \textbf{Esempio}:
 		\begin{minted}{sql}
-			CREATE VIEW ADMINEMPLOYEES (Name, Surname, Salary) AS
-			SELECT Name, Surname, Salary
-			FROM EMPLOYEE
-			WHERE Dept = 'Administration' AND Salary > 10;
+		CREATE VIEW ADMINEMPLOYEES (Name, Surname, Salary) AS
+		SELECT Name, Surname, Salary
+		FROM EMPLOYEE
+		WHERE Dept = 'Administration' AND Salary > 10;
 		\end{minted}
 		\item \textbf{Utilizzi}:
 		\begin{itemize}
@@ -134,11 +134,11 @@
 		\begin{itemize}
 			\item \textbf{Esempio}:
 			\begin{minted}{sql}
-			CREATE VIEW POORADMINEMPLOYEES AS
-			SELECT *
-			FROM ADMINEMPLOYEES -- Supponiamo sia una vista o tabella
-			WHERE Salary < 50
-			WITH CHECK OPTION;
+		CREATE VIEW POORADMINEMPLOYEES AS
+		SELECT *
+		FROM ADMINEMPLOYEES -- Supponiamo sia una vista o tabella
+		HERE Salary < 50
+		WITH CHECK OPTION;
 			\end{minted}
 			Se si tenta di fare \texttt{UPDATE POORADMINEMPLOYEES SET Salary = 60 WHERE Name = 'Ann'}, l'operazione fallirà.
 			\item \texttt{LOCAL} vs \texttt{CASCADED} (per viste su viste):
@@ -157,12 +157,12 @@
 			\item \textbf{Problema}: "Calcolare la media del numero di uffici distinti per dipartimento". Una query come \texttt{SELECT AVG(COUNT(DISTINCT Office)) FROM EMPLOYEE GROUP BY Dept} è errata perché non si possono annidare funzioni aggregate direttamente.
 			\item \textbf{Soluzione con Vista}:
 			\begin{minted}{sql}
-			CREATE VIEW DEPTOFFICES (NameDept, OffNum) AS
-			SELECT Dept, COUNT(DISTINCT Office)
-			FROM EMPLOYEE
-			GROUP BY Dept;
+		CREATE VIEW DEPTOFFICES (NameDept, OffNum) AS
+		SELECT Dept, COUNT(DISTINCT Office)
+		FROM EMPLOYEE
+		GROUP BY Dept;
 		
-			SELECT AVG(OffNum) FROM DEPTOFFICES;
+		SELECT AVG(OffNum) FROM DEPTOFFICES;
 			\end{minted}
 		\end{itemize}
 	\end{itemize}
@@ -172,18 +172,18 @@
 		\item \textbf{Concetto}: Permettono di interrogare dati gerarchici o grafi. SQL:1999 ha introdotto le Common Table Expressions (CTE) ricorsive.
 		\item \textbf{Sintassi Base}:
 		\begin{minted}{sql}
-			WITH RECURSIVE NomeCTE (colonne) AS (
+		WITH RECURSIVE NomeCTE (colonne) AS (
 			-- Membro Ancora (non ricorsivo, caso base)
 			SELECT ...
 			UNION ALL
 			-- Membro Ricorsivo (richiama NomeCTE)
 			SELECT ... FROM NomeCTE JOIN ...
 			)
-			SELECT * FROM NomeCTE;
+		SELECT * FROM NomeCTE;
 		\end{minted}
 		\item \textbf{Esempio (Trovare tutti gli antenati)}: Data una tabella \texttt{FATHERHOOD(Father, Child)}
 		\begin{minted}{sql}
-			WITH RECURSIVE ANCESTORS (Ancestor, Descendant) AS (
+		WITH RECURSIVE ANCESTORS (Ancestor, Descendant) AS (
 			-- Caso base: padri diretti
 			SELECT Father, Child FROM FATHERHOOD
 			UNION ALL
@@ -192,8 +192,8 @@
 			SELECT FH.Father, A.Descendant
 			FROM FATHERHOOD FH, ANCESTORS A
 			WHERE FH.Child = A.Ancestor
-			)
-			SELECT * FROM ANCESTORS;
+		)
+		SELECT * FROM ANCESTORS;
 		\end{minted}
 	\end{itemize}
 	
@@ -206,9 +206,9 @@
 		\item \texttt{EXTRACT(parte FROM espressione\_data)}: Estrae una parte da una data (es. \texttt{EXTRACT(YEAR FROM OrderDate)}).
 		\item Esempio:
 		\begin{minted}{sql}
-			SELECT EXTRACT(YEAR FROM OrderDate) AS OrderYear
-			FROM ORDERS
-			WHERE DATE(OrderDate) = CURRENT_DATE();
+		SELECT EXTRACT(YEAR FROM OrderDate) AS OrderYear
+		FROM ORDERS
+		WHERE DATE(OrderDate) = CURRENT_DATE();
 		\end{minted}
 	\end{itemize}
 	
@@ -237,23 +237,23 @@
 		\begin{itemize}
 			\item \textbf{Sintassi "Searched"}:
 			\begin{minted}{sql}
-			CASE
-			WHEN condizione1 THEN risultato1
-			WHEN condizione2 THEN risultato2
-			...
-			ELSE risultato_default
-			END
+		CASE
+		WHEN condizione1 THEN risultato1
+		WHEN condizione2 THEN risultato2
+		...
+		ELSE risultato_default
+		END
 			\end{minted}
 			\item \textbf{Esempio}: Calcolo tasse veicoli
 			\begin{minted}{sql}
-			SELECT PlateNum,
-			(CASE Type
-			WHEN 'Car' THEN 2.58 * KWatt
-			WHEN 'Moto' THEN (22.00 + 1.00 * KWatt)
-			ELSE NULL
-			END) AS Tax
-			FROM VEHICLE
-			WHERE Year > 1975;
+		SELECT PlateNum,
+		(CASE Type
+		WHEN 'Car' THEN 2.58 * KWatt
+		WHEN 'Moto' THEN (22.00 + 1.00 * KWatt)
+		ELSE NULL
+		END) AS Tax
+		FROM VEHICLE
+		WHERE Year > 1975;
 			\end{minted}
 		\end{itemize}
 	\end{itemize}
@@ -305,12 +305,12 @@
 		\end{itemize}
 		\item \textbf{Esempio RBAC}:
 		\begin{minted}{sql}
-			-- 1. Crea il ruolo
-			CREATE ROLE Employee;
-			-- 2. Concedi un privilegio al ruolo
-			GRANT CREATE TABLE TO Employee;
-			-- 3. Assegna il ruolo a un utente
-			GRANT Employee TO 'specific_user';
+		-- 1. Crea il ruolo
+		CREATE ROLE Employee;
+		-- 2. Concedi un privilegio al ruolo
+		GRANT CREATE TABLE TO Employee;
+		-- 3. Assegna il ruolo a un utente
+		GRANT Employee TO 'specific_user';
 		\end{minted}
 	\end{itemize}
 	
@@ -333,15 +333,15 @@
 		\end{itemize}
 		\item \textbf{Esempio Transazione}:
 		\begin{minted}{sql}
-			START TRANSACTION;
-			UPDATE BANKACCOUNT SET Balance = Balance - 10
-			WHERE AccountNumber = 42177;
-			UPDATE BANKACCOUNT SET Balance = Balance + 10
-			WHERE AccountNumber = 12202;
-			-- Se tutto va bene:
-			COMMIT WORK;
-			-- Se c'è un errore (da verificare in logica applicativa):
-			-- ROLLBACK WORK;
+		START TRANSACTION;
+		UPDATE BANKACCOUNT SET Balance = Balance - 10
+		WHERE AccountNumber = 42177;
+		UPDATE BANKACCOUNT SET Balance = Balance + 10
+		WHERE AccountNumber = 12202;
+		-- Se tutto va bene:
+		COMMIT WORK;
+		-- Se c'è un errore (da verificare in logica applicativa):
+		-- ROLLBACK WORK;
 		\end{minted}
 	\end{itemize}
 	
