@@ -28,9 +28,7 @@ pnpm release -m "msg"     # Crea una release con messaggio personalizzato
 
 ## Licenza
 
-Fai quel che ti pare:
-
-[MIT](LICENSE)
+Fai quel che ti pare: licenza [MIT](LICENSE).
 
 ## By
 
