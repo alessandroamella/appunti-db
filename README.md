@@ -1,5 +1,7 @@
 # Appunti di Basi di Dati
 
+> 📥 **Scarica gli ultimi appunti**: [Ultima Release](https://github.com/alessandroamella/appunti-db/releases/latest)
+
 Appunti per il corso di Basi di Dati, Laurea in Informatica, Unibo, 2025.
 
 ## Informazioni sul Corso
