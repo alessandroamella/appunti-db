@@ -1,0 +1,364 @@
+\documentclass{article}
+
+% --- Encoding e lingua ---
+\usepackage[utf8]{inputenc}
+\usepackage[italian]{babel}
+
+% --- Margini e layout ---
+\usepackage{geometry}
+\geometry{a4paper, margin=1in}
+
+% --- Font sans-serif ---
+\usepackage[scaled]{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage[T1]{fontenc}
+
+% --- Matematica ---
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+% --- Liste personalizzate ---
+\usepackage{enumitem}
+
+% --- Immagini ---
+\usepackage{float}
+% \usepackage{tikz} % Rimosso perché non utilizzato negli appunti testuali
+% \usetikzlibrary{shapes.geometric, positioning, calc} % Rimosso
+
+% --- Hyperlink ---
+\usepackage{hyperref}
+\hypersetup{
+	colorlinks=true,
+	linkcolor=white,     % Cambiato per visibilità su sfondo nero (era bianco)
+	filecolor=magenta,
+	urlcolor=cyan,      % Cambiato per migliore visibilità
+	pdftitle={Appunti sui Database Attivi},
+	pdfpagemode=FullScreen,
+}
+
+% --- Colori e sfondo nero ---
+\usepackage{xcolor}
+\pagecolor{black}
+\color{white}
+
+% --- Evidenziazione del codice (richiede -shell-escape) ---
+% Compilare con: pdflatex -shell-escape nomefile.tex
+\usepackage{minted}
+\setminted{
+	frame=lines,     % Cornice attorno al codice
+	framesep=2mm,
+	fontsize=\small,
+	breaklines=true, % A capo automatico per linee lunghe
+	style=monokai    % Stile di highlighting (assicurati sia installato Pygments)
+}
+\usemintedstyle{monokai} % Specifica lo stile per il documento
+
+% --- Titolo ---
+\title{Appunti sui Database Attivi}
+\author{Basato sulle slide del Prof. Danilo Montesi}
+\date{\today}
+
+\begin{document}
+	
+	\maketitle
+	\tableofcontents
+	\newpage
+	
+	\section{Dai Database Passivi ai Database Attivi}
+	L'idea di base dei database attivi è quella di rendere il database stesso più ''intelligente'' e ''reattivo'', capace cioè di eseguire automaticamente delle azioni in risposta a determinati eventi, senza che sia l'applicazione a dover gestire tutta questa logica.
+	
+	\subsection{Database Passivi (Tradizionali)}
+	\begin{itemize}
+		\item Eseguono solo le operazioni esplicitamente richieste dall'utente o dall'applicazione.
+		\item Un primo, rudimentale esempio di ''reattività'' nei database passivi sono le \textbf{strategie di reazione ai vincoli di integrità referenziale}.
+		\begin{itemize}
+			\item Esempio SQL: \texttt{ON DELETE CASCADE}, \texttt{ON UPDATE SET NULL}, \texttt{ON DELETE SET DEFAULT}, \texttt{ON DELETE NO ACTION}.
+			\item Qui il database ''reagisce'' a un \texttt{DELETE} o \texttt{UPDATE} su una tabella primaria, eseguendo un'azione sulla tabella correlata.
+		\end{itemize}
+		\item L'idea è di estendere questa capacità introducendo costrutti linguistici specifici (chiamati \textbf{regole attive}) per gestire una parte del comportamento procedurale che altrimenti sarebbe nell'applicazione.
+		\item \textbf{Vantaggio:} Se questo comportamento è a livello di database, è ''condiviso'' tra tutte le applicazioni che accedono a quei dati, garantendo consistenza e promuovendo l'indipendenza dei dati.
+	\end{itemize}
+	
+	\subsection{Database Attivi}
+	\begin{itemize}
+		\item Hanno un componente dedicato per gestire \textbf{regole attive} basate sul paradigma \textbf{ECA (Event-Condition-Action)}.
+		\begin{itemize}
+			\item \textbf{Evento (Event):} Un cambiamento nel database (es. \texttt{INSERT}, \texttt{UPDATE}, \texttt{DELETE} su una tabella specifica).
+			\item \textbf{Condizione (Condition):} Una verifica (un predicato SQL) che deve essere vera affinché l'azione scatti. Se la condizione è omessa, si assume sempre vera.
+			\item \textbf{Azione (Action):} Una o più istruzioni SQL (o codice in un linguaggio procedurale specifico del DBMS, come PL/SQL per Oracle) da eseguire.
+		\end{itemize}
+		\item Questi database hanno un \textbf{comportamento reattivo}: non si limitano a eseguire le transazioni dell'utente, ma \textit{reagiscono} agli eventi eseguendo anche le regole definite.
+		\item Nei DBMS commerciali (standard SQL3 e successivi), le regole attive sono implementate principalmente tramite i \textbf{trigger}.
+	\end{itemize}
+	
+	\section{Evoluzione dell'Architettura e Ruolo dei Database Attivi}
+	Le slide mostrano un'evoluzione nel tempo di come la logica applicativa e la gestione dei dati sono state organizzate:
+	\begin{itemize}
+		\item \textbf{Anni '70 (No DBMS):} Le applicazioni accedevano direttamente ai file tramite il Sistema Operativo.
+		\item \textbf{Anni '80 (Primi DBMS):} Le applicazioni interagivano con un DBMS, che gestiva ''tabelle di dati''.
+		\item \textbf{Anni '90 (Comportamento Procedurale):} Esigenza di spostare parte del \textbf{comportamento procedurale condiviso} all'interno del DBMS.
+		\begin{itemize}
+			\item \textbf{Stored Procedures:} Introdotte per condividere logica comune. Problemi: non standardizzate, impedance mismatch.
+			\item \textbf{Trigger (Database Attivi):} Introdotte regole specifiche (i \textbf{trigger}) per modellare il comportamento procedurale condiviso, gestito direttamente dal DBMS.
+		\end{itemize}
+		\item \textbf{Anni 2000 (Applicazioni Web):} Architettura client-server a più livelli (Client JS, Web App Server Java/Node, Server con Active DBMS).
+		\item \textbf{Anni 2010 (Mobile Apps):} Simile, con client mobile.
+	\end{itemize}
+	\textbf{Concetto chiave dell'evoluzione:} Tendenza a spostare la logica strettamente legata ai dati e condivisa all'interno del database stesso.
+	
+	\section{Trigger: Il Cuore dei Database Attivi}
+	Un trigger è una procedura memorizzata nel database che viene eseguita automaticamente quando si verifica un determinato evento su una tabella specifica.
+	
+	\subsection{Definizione}
+	\begin{itemize}
+		\item Definiti con istruzioni DDL (Data Definition Language), es. \texttt{CREATE TRIGGER}.
+		\item Seguono il paradigma \textbf{ECA}:
+		\begin{itemize}
+			\item \textbf{Evento:} Un'operazione di modifica dei dati (\texttt{INSERT}, \texttt{DELETE}, \texttt{UPDATE}).
+			\item \textbf{Condizione:} Un predicato SQL opzionale (clausola \texttt{WHEN}).
+			\item \textbf{Azione:} Una sequenza di istruzioni SQL o un blocco di codice procedurale.
+		\end{itemize}
+		\item \textbf{Flusso intuitivo:} Attivazione (evento) $\rightarrow$ Verifica (condizione) $\rightarrow$ Esecuzione (azione).
+		\item Ogni trigger è associato a una \textbf{tabella target}.
+	\end{itemize}
+	
+	\subsection{Granularità dei Trigger}
+	\begin{itemize}
+		\item \textbf{Row-level (per tupla/riga):} Il trigger si attiva e la sua azione viene eseguita \textit{per ogni singola riga} affetta dall'istruzione SQL.
+		\item \textbf{Statement-level (per istruzione):} Il trigger si attiva e la sua azione viene eseguita \textit{una sola volta per l'intera istruzione SQL}.
+	\end{itemize}
+	
+	\subsection{Modalità (Timing) dei Trigger}
+	\begin{itemize}
+		\item \textbf{\texttt{IMMEDIATE} (Immediata):} L'azione del trigger viene eseguita immediatamente \textit{prima} (\texttt{BEFORE}) o \textit{dopo} (\texttt{AFTER}) l'evento. Modalità più comune.
+		\item \textbf{\texttt{DEFERRED} (Differita):} L'azione del trigger viene posticipata e eseguita solo al momento del \texttt{COMMIT} della transazione.
+	\end{itemize}
+	
+	\subsection{Modello Computazionale e Problemi}
+	Data una transazione utente $T^U = U_1; \dots ;U_n$. Se le regole P sono del tipo E, C $\rightarrow$ A. $U^P_i$ è la sequenza di azioni indotte da $U_i$.
+	\begin{itemize}
+		\item \textbf{Semantica Immediata:} $T^I = U_1; U^P_1; U_2; U^P_2; \dots ; U_n; U^P_n$.
+		\item \textbf{Semantica Differita:} $T^D = U_1; \dots U_n; U^P_1; \dots ; U^P_n$.
+		\item \textbf{Problemi Potenziali:}
+		\begin{itemize}
+			\item \textbf{Terminazione:} L'esecuzione a cascata dei trigger deve terminare (evitare cicli infiniti).
+			\item \textbf{Confluenza:} Se più trigger possono essere attivati, il risultato finale è lo stesso indipendentemente dall'ordine?
+			\item \textbf{Equivalenza:} Diverse definizioni di regole portano allo stesso comportamento?
+		\end{itemize}
+	\end{itemize}
+	
+	\section{Sintassi dei Trigger (SQL:1999 Standard)}
+	\begin{minted}[fontsize=\footnotesize]{sql}
+CREATE TRIGGER nomeTrigger
+{ BEFORE | AFTER } -- Timing
+{ INSERT | DELETE | UPDATE [OF nomeColonna [, nomeColonna]...] } -- Evento
+ON nomeTabellaTarget -- Tabella target
+
+[ REFERENCING -- Variabili per righe/tabelle vecchie e nuove
+-- Per trigger STATEMENT-LEVEL:
+[ OLD TABLE [AS] varTabellaVecchia ]
+[ NEW TABLE [AS] varTabellaNuova ]
+-- Per trigger ROW-LEVEL:
+[ OLD [ROW] [AS] varTuplaVecchia ] -- Solitamente OLD
+[ NEW [ROW] [AS] varTuplaNuova ]   -- Solitamente NEW
+]
+
+[ FOR EACH { ROW | STATEMENT } ] -- Granularità
+
+[ WHEN (condizioneSQL) ] -- Condizione (opzionale)
+
+SQLProceduralStatement; -- Azione
+	\end{minted}
+	
+	\subsection{\texttt{BEFORE} vs \texttt{AFTER}}
+	\begin{itemize}
+		\item \textbf{\texttt{BEFORE}:} Eseguito \textit{prima} dell'operazione. Utile per validare/modificare dati in ingresso.
+		\item \textbf{\texttt{AFTER}:} Eseguito \textit{dopo} l'operazione. Utile per logging, aggiornare tabelle dipendenti.
+	\end{itemize}
+	
+	\subsection{Clausola \texttt{REFERENCING} (\texttt{OLD} e \texttt{NEW})}
+	Permette di accedere ai valori dei dati \textit{prima} e \textit{dopo} la modifica.
+	\begin{itemize}
+		\item \textbf{Per trigger \texttt{ROW-LEVEL}:}
+		\begin{itemize}
+			\item \texttt{OLD}: Pseudo-riga con valori \textit{prima} della modifica (per \texttt{UPDATE}, \texttt{DELETE}). Accesso: \texttt{OLD.nomeColonna}.
+			\item \texttt{NEW}: Pseudo-riga con valori \textit{dopo} la modifica (per \texttt{INSERT}) o proposti (per \texttt{UPDATE}). Accesso: \texttt{NEW.nomeColonna}.
+		\end{itemize}
+		\item \textbf{Per trigger \texttt{STATEMENT-LEVEL}:}
+		\begin{itemize}
+			\item \texttt{OLD TABLE}: Tabella temporanea con righe \textit{prima} della modifica.
+			\item \texttt{NEW TABLE}: Tabella temporanea con righe \textit{dopo} la modifica.
+		\end{itemize}
+		\item \textbf{Disponibilità:}
+		\begin{itemize}
+			\item \texttt{INSERT}: Solo \texttt{NEW} / \texttt{NEW TABLE}.
+			\item \texttt{DELETE}: Solo \texttt{OLD} / \texttt{OLD TABLE}.
+			\item \texttt{UPDATE}: Sia \texttt{OLD} / \texttt{OLD TABLE} che \texttt{NEW} / \texttt{NEW TABLE}.
+		\end{itemize}
+	\end{itemize}
+	
+	\section{Trigger in Oracle}
+	\subsection{Sintassi}
+	\begin{minted}[fontsize=\footnotesize]{sql}
+CREATE [OR REPLACE] TRIGGER nomeTrigger
+{ BEFORE | AFTER }
+evento1 [OR evento2 OR evento3 ...] -- Es. INSERT OR UPDATE OF col1
+ON nomeTabella
+[ REFERENCING OLD AS nomeVarVecchia NEW AS nomeVarNuova ] -- Default :OLD, :NEW
+[ FOR EACH ROW ] -- Se omesso, è STATEMENT level
+[ WHEN (condizione) ]
+DECLARE
+-- variabili locali PL/SQL
+BEGIN
+-- corpo del trigger (logica PL/SQL)
+-- accesso con :OLD.colonna e :NEW.colonna per FOR EACH ROW
+EXCEPTION
+-- gestione errori
+END;
+	\end{minted}
+	
+	\subsection{Semantica Oracle}
+	\begin{itemize}
+		\item Modalità Immediata (\texttt{BEFORE}, \texttt{AFTER}).
+		\item Ordine di Esecuzione:
+		\begin{enumerate}
+			\item \texttt{BEFORE STATEMENT} triggers.
+			\item Per ogni riga affetta:
+			\begin{enumerate}
+				\item \texttt{BEFORE ROW} triggers.
+				\item Operazione DML + controllo vincoli.
+				\item \texttt{AFTER ROW} triggers.
+			\end{enumerate}
+			\item \texttt{AFTER STATEMENT} triggers.
+		\end{enumerate}
+		\item Errore: Rollback dell'intera istruzione/transazione.
+		\item Priorità: Basata su timestamp di creazione (non garantita).
+		\item Cascata: Massimo 32 trigger.
+	\end{itemize}
+	
+	\subsection{Esempio Oracle (Riordino Prodotti)}
+	Trigger \texttt{Reorder} su tabella \texttt{Warehouse}.
+	\begin{itemize}
+		\item \textbf{Evento:} \texttt{AFTER UPDATE OF QtyAvbl ON Warehouse}.
+		\item \textbf{Granularità:} \texttt{FOR EACH ROW}.
+		\item \textbf{Condizione:} \texttt{WHEN (NEW.QtyAvbl < NEW.QtyLimit)}.
+		\item \textbf{Azione (PL/SQL):}
+	\end{itemize}
+	\begin{minted}[fontsize=\footnotesize]{sql}
+DECLARE
+X NUMBER;
+BEGIN
+-- Controlla se esiste già un ordine pendente per questa parte
+SELECT COUNT(*) INTO X
+FROM PendingOrders
+WHERE Part = :NEW.Part; -- :NEW si riferisce alla riga aggiornata
+
+IF X = 0 THEN -- Se non ci sono ordini pendenti
+-- Inserisce un nuovo ordine pendente
+INSERT INTO PendingOrders (Part_ID, QuantityToReorder, OrderDate)
+VALUES (:NEW.Part, :NEW.QtyReord, SYSDATE);
+END IF;
+END;
+	\end{minted}
+	
+	\section{Trigger in DB2}
+	\subsection{Sintassi}
+	\begin{minted}[fontsize=\footnotesize]{sql}
+CREATE TRIGGER nomeTrigger
+{ BEFORE | AFTER } evento -- evento è INSERT, UPDATE, DELETE
+ON nomeTabella
+REFERENCING { OLD AS varTuplaVecchia | NEW AS varTuplaNuova |
+	OLD_TABLE AS varTabellaVecchia | NEW_TABLE AS varTabellaNuova } ...
+FOR EACH { ROW | STATEMENT }
+[ WHEN (predicatoSQL) ]
+SQLProceduralStatement; -- Può essere un blocco BEGIN ATOMIC ... END
+	\end{minted}
+	
+	\subsection{Semantica DB2}
+	\begin{itemize}
+		\item Modalità Immediata.
+		\item I trigger \texttt{BEFORE} di norma \textit{non possono modificare il database} (eccetto assegnare valori a \texttt{NEW} in \texttt{BEFORE INSERT/UPDATE ROW}), quindi non possono attivare altri trigger.
+		\item Errore: Rollback.
+		\item Priorità: Determinata dal sistema (timestamp).
+		\item Cascata: Massimo 16 trigger.
+	\end{itemize}
+	
+	\subsection{Esempio DB2 (Controllo Riduzione Stipendio)}
+	Trigger \texttt{checkWage} su tabella \texttt{Employee}.
+	\begin{itemize}
+		\item \textbf{Evento:} \texttt{AFTER UPDATE OF Wage ON Employee}.
+		\item \textbf{Granularità:} \texttt{FOR EACH ROW}.
+		\item \textbf{Condizione:} \texttt{WHEN (NEW.Wage < OLD.Wage * 0.97)}.
+		\item \textbf{Azione:}
+	\end{itemize}
+	\begin{minted}[fontsize=\footnotesize]{sql}
+-- La sintassi specifica può variare leggermente in DB2 SQL PL
+-- Questo è un esempio concettuale basato sulle slide
+BEGIN
+-- Se la riduzione è maggiore del 3%, la limita al 3%
+-- L'azione qui presuppone che il trigger AFTER possa modificare la stessa riga
+-- anche se più tipicamente si impedirebbe l'azione in un BEFORE trigger
+-- o si farebbe l'update in modo più controllato.
+-- La slide suggerisce un update, quindi lo riporto così:
+UPDATE Employee
+SET Wage = OLD.Wage * 0.97
+WHERE EmpCode = NEW.EmpCode; -- O l'identificativo di riga corrente
+END
+	\end{minted}
+	\textit{Nota sull'esempio DB2: L'azione di un trigger \texttt{AFTER} che modifica la stessa riga che ha scatenato il trigger può portare a ricorsione se non gestita con attenzione. Spesso, per questo tipo di logica, si preferirebbe un trigger \texttt{BEFORE} per modificare \texttt{NEW.Wage} o per sollevare un errore se la condizione non è rispettata.}
+	
+	\section{Estensioni dei Trigger (Non Sempre Disponibili)}
+	\begin{itemize}
+		\item Eventi Temporali (periodici) o definiti dall'utente.
+		\item Combinazioni Booleane di Eventi.
+		\item Clausola \texttt{INSTEAD OF}: Esegue l'azione del trigger al posto dell'operazione originale (utile per viste non aggiornabili).
+		\item Esecuzione ''Detached'' (transazione autonoma).
+		\item Definizione di Priorità esplicita.
+		\item Gruppi di Regole (attivabili/disattivabili).
+		\item Regole su Query (\texttt{SELECT}).
+	\end{itemize}
+	
+	\section{Proprietà delle Regole Attive}
+	\begin{itemize}
+		\item \textbf{Terminazione (essenziale):} L'esecuzione deve finire.
+		\item \textbf{Confluenza:} Il risultato finale è indipendente dall'ordine di esecuzione di trigger concorrenti?
+		\item \textbf{Determinismo delle Osservazioni:} L'utente osserva sempre lo stesso comportamento?
+	\end{itemize}
+	
+	\section{Applicazioni dei Trigger}
+	\subsection{Funzionalità Interne al DBMS}
+	\begin{itemize}
+		\item \textbf{Gestione dei Vincoli di Integrità Complessi:} Oltre ai vincoli standard.
+		\item \textbf{Replicazione dei Dati:} Catturare modifiche e replicarle.
+		\item \textbf{Gestione delle Viste:}
+		\begin{itemize}
+			\item \textbf{Viste Materializzate:} Propagare modifiche dalle tabelle base alla vista materializzata.
+			\item \textbf{Viste Virtuali (con \texttt{INSTEAD OF}):} Rendere aggiornabili viste complesse.
+		\end{itemize}
+	\end{itemize}
+	
+	\subsection{Funzionalità Applicative (Logica di Business nel DB)}
+	\begin{itemize}
+		\item \textbf{Descrizione del Comportamento del Database:} Incapsulare logica di business direttamente nel DB per consistenza.
+		\begin{itemize}
+			\item Esempi: Mantenere \texttt{last\_modified\_date}, inviare notifiche, audit, calcolare valori derivati, impedire operazioni basate su condizioni complesse.
+		\end{itemize}
+		\item \textbf{Confronto Logica in Applicazione vs. Logica in Trigger:}
+		\begin{itemize}
+			\item \textbf{Logica in Applicazione (es. Node.js con Prisma/Mongoose):}
+			\begin{itemize}
+				\item \textit{Pro:} Più facile da testare, linguaggio dell'applicazione, flessibilità.
+				\item \textit{Contro:} Se il DB è accessibile esternamente, la logica può essere bypassata.
+			\end{itemize}
+			\item \textbf{Logica in Trigger DB:}
+			\begin{itemize}
+				\item \textit{Pro:} Consistenza garantita, logica vicina ai dati.
+				\item \textit{Contro:} Minore visibilità/debug per lo sviluppatore applicativo, dipendenza dal linguaggio procedurale del DB, test più complessi.
+			\end{itemize}
+		\end{itemize}
+	\end{itemize}
+	
+	\section{Conclusione}
+	I database attivi, attraverso i trigger, offrono un meccanismo potente per automatizzare reazioni a eventi sui dati, centralizzare la logica di business e garantire la consistenza. Tuttavia, il loro uso richiede un'attenta progettazione per evitare complessità, problemi di performance e difficoltà di manutenzione. È fondamentale bilanciare cosa implementare a livello di database tramite trigger e cosa lasciare alla logica applicativa.
+	
+\end{document}

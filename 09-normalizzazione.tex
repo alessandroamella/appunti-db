@@ -1,0 +1,334 @@
+\documentclass{article}
+
+% --- Encoding e lingua ---
+\usepackage[utf8]{inputenc}
+\usepackage[italian]{babel}
+
+% --- Margini e layout ---
+\usepackage{geometry}
+\geometry{a4paper, margin=1in}
+
+% --- Font sans-serif ---
+\usepackage[scaled]{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage[T1]{fontenc}
+
+% --- Matematica ---
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+% --- Liste personalizzate ---
+\usepackage{enumitem}
+
+% --- Immagini (non usate attivamente qui ma nel template originale) ---
+\usepackage{float}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, positioning, calc}
+
+% --- Tabelle ---
+\usepackage{array} % Per colonne >{\centering\arraybackslash}m{width}
+\usepackage{booktabs} % Per tabelle più professionali (toprule, midrule, bottomrule)
+
+% --- Hyperlink ---
+\usepackage{hyperref}
+\hypersetup{
+	colorlinks=true,
+	linkcolor=white,     % Cambiato per visibilità su sfondo nero
+	filecolor=magenta,
+	urlcolor=blue,
+	pdftitle={Appunti sulla Normalizzazione dei Database},
+	pdfpagemode=FullScreen,
+}
+
+% --- Colori e sfondo nero ---
+\usepackage{xcolor}
+\pagecolor{black}
+\color{white}
+
+% --- Evidenziazione del codice (richiede -shell-escape) ---
+% Compilare con: pdflatex -shell-escape nomefile.tex
+\usepackage{minted}
+\setminted{
+	frame=lines,     % Cornice attorno al codice
+	framesep=2mm,
+	fontsize=\small,
+	breaklines=true, % A capo automatico per linee lunghe
+	style=monokai,   % Stile di highlighting
+	bgcolor=gray!20  % Sfondo leggermente diverso per i blocchi minted
+}
+
+% --- Titolo ---
+\title{Appunti sulla Normalizzazione dei Database}
+\author{Basato sulle slide del Prof. Danilo Montesi}
+\date{\today}
+
+\begin{document}
+	
+	\maketitle
+	\tableofcontents
+	\newpage
+	
+	\section{Normalizzazione nel Contesto dei Database}
+	
+	La \textbf{normalizzazione} è un processo fondamentale nella progettazione di database relazionali. Il suo scopo principale è organizzare i dati in modo da:
+	\begin{enumerate}
+		\item \textbf{Ridurre la ridondanza:} Evitare di ripetere le stesse informazioni in più punti.
+		\item \textbf{Eliminare le anomalie:} Prevenire problemi che possono sorgere durante l'inserimento, l'aggiornamento o la cancellazione dei dati.
+		\item \textbf{Garantire la qualità e l'integrità dei dati:} Assicurare che i dati siano coerenti e affidabili.
+	\end{enumerate}
+	
+	Le \textbf{Forme Normali (FN)} sono un insieme di regole che definiscono quanto "ben formata" è una tabella (relazione). Se una relazione non è in una forma normale adeguata, può presentare:
+	\begin{itemize}
+		\item \textbf{Ridondanze:} Dati duplicati inutilmente.
+		\item \textbf{Comportamenti indesiderati durante gli aggiornamenti:} Ad esempio, la necessità di modificare lo stesso dato in più righe, con il rischio di dimenticarne qualcuna e creare inconsistenza.
+	\end{itemize}
+	
+	La normalizzazione è una \textbf{tecnica di verifica} del design del database, non una metodologia di progettazione da zero. Prima progetti lo schema (magari con un modello E-R), poi lo verifichi e lo affini con la normalizzazione.
+	
+	\subsection{Esempio di Tabella con Anomalie}
+	Consideriamo una tabella che traccia impiegati, progetti a cui lavorano, i loro stipendi, il budget dei progetti e il loro ruolo nel progetto:
+	
+	\begin{center}
+		\begin{tabular}{lllll}
+			\toprule
+			\textbf{Employee} & \textbf{Wage} & \textbf{Project} & \textbf{Budget} & \textbf{Role} \\
+			\midrule
+			Jones    & 20   & Mars     & 2      & Technician \\
+			Smith    & 35   & Jupiter  & 15     & Designer   \\
+			Smith    & 35   & Venus    & 15     & Designer   \\
+			Williams & 55   & Venus    & 15     & Chief      \\
+			Williams & 55   & Jupiter  & 15     & Consultant \\
+			Williams & 55   & Mars     & 2      & Consultant \\
+			Brown    & 48   & Mars     & 2      & Chief      \\
+			Brown    & 48   & Venus    & 15     & Designer   \\
+			White    & 48   & Venus    & 15     & Designer   \\
+			White    & 48   & Jupiter  & 15     & Director   \\
+			\bottomrule
+		\end{tabular}
+	\end{center}
+	
+	Questa tabella presenta diversi problemi (anomalie):
+	\begin{enumerate}
+		\item \textbf{Ridondanza:}
+		\begin{itemize}
+			\item Lo stipendio (\texttt{Wage}) di un impiegato (es. Smith, 35) è ripetuto per ogni progetto a cui lavora.
+			\item Il budget (\texttt{Budget}) di un progetto (es. Jupiter, 15) è ripetuto per ogni impiegato che ci lavora.
+		\end{itemize}
+		\item \textbf{Anomalia di Aggiornamento (Update Anomaly):}
+		\begin{itemize}
+			\item Se lo stipendio di Smith cambia, dobbiamo aggiornarlo in \textit{tutte} le righe in cui Smith compare. Se ne dimentichiamo una, il database diventa inconsistente.
+		\end{itemize}
+		\item \textbf{Anomalia di Cancellazione (Deletion Anomaly):}
+		\begin{itemize}
+			\item Se Jones smette di lavorare al progetto Mars (e Mars era il suo unico progetto), cancellando quella riga potremmo perdere l'informazione che Jones ha uno stipendio di 20 (se non ci sono altre tabelle che lo tracciano).
+			\item Similmente, se il progetto Mars viene cancellato e Jones e Brown lavoravano solo a Mars, perderemmo le informazioni su Jones e Brown.
+		\end{itemize}
+		\item \textbf{Anomalia di Inserimento (Insertion Anomaly):}
+		\begin{itemize}
+			\item Non possiamo inserire un nuovo impiegato con il suo stipendio se non è ancora assegnato a un progetto.
+			\item Non possiamo inserire un nuovo progetto con il suo budget se nessun impiegato ci sta ancora lavorando.
+		\end{itemize}
+	\end{enumerate}
+	
+	\subsection{Perché questa situazione è indesiderabile?}
+	Perché stiamo mescolando diversi "concetti" o "pezzi di informazione" nella stessa tabella:
+	\begin{itemize}
+		\item Informazioni sugli impiegati e i loro stipendi.
+		\item Informazioni sui progetti e i loro budget.
+		\item Informazioni sul ruolo di un impiegato \textit{all'interno di uno specifico progetto}.
+	\end{itemize}
+	
+	\section{Dipendenze Funzionali (Functional Dependencies - FD)}
+	Per studiare e risolvere queste anomalie in modo sistematico, introduciamo il concetto di \textbf{Dipendenza Funzionale (DF)}.
+	Una DF è un vincolo di integrità che descrive una relazione tra attributi all'interno di una tabella.
+	
+	\subsection{Definizione Formale}
+	Data una relazione $r$ con uno schema $R(X)$ (dove X è l'insieme di tutti gli attributi), e dati due sottoinsiemi non vuoti di attributi $Y$ e $Z$ (contenuti in X), esiste una dipendenza funzionale $Y \rightarrow Z$ (si legge "Y determina funzionalmente Z" o "Z dipende funzionalmente da Y") se e solo se:
+	\textit{Per ogni coppia di tuple (righe) $t_1$ e $t_2$ in $r$, se i valori degli attributi in $Y$ sono uguali in $t_1$ e $t_2$ (cioè $t_1[Y] = t_2[Y]$), allora anche i valori degli attributi in $Z$ devono essere uguali (cioè $t_1[Z] = t_2[Z]$).}
+	
+	In parole povere: se conosci il valore di $Y$, puoi determinare \textit{univocamente} il valore di $Z$.
+	
+	\subsection{Esempi dalla tabella precedente}
+	\begin{itemize}
+		\item $\text{Employee} \rightarrow \text{Wage}$
+		\item $\text{Project} \rightarrow \text{Budget}$
+		\item $\{\text{Employee, Project}\} \rightarrow \text{Role}$
+	\end{itemize}
+	
+	\subsection{FD Triviali e Non Triviali}
+	\begin{itemize}
+		\item Una FD $Y \rightarrow A$ è \textbf{triviale} se $A \subseteq Y$ (es. $\{\text{Employee, Project}\} \rightarrow \text{Project}$). Sono sempre vere e poco utili.
+		\item Una FD $Y \rightarrow A$ è \textbf{non triviale} se $A \not\subseteq Y$. Sono queste che ci interessano per la normalizzazione.
+	\end{itemize}
+	
+	\subsection{Come le FD causano anomalie}
+	Le anomalie sorgono principalmente quando abbiamo FD $X \rightarrow Y$ dove $X$ \textbf{non è una superchiave} (o chiave candidata) della tabella.
+	\begin{itemize}
+		\item $\text{Employee} \rightarrow \text{Wage}$: \texttt{Employee} da solo non è la chiave. Causa ridondanza.
+		\item $\text{Project} \rightarrow \text{Budget}$: \texttt{Project} da solo non è la chiave. Causa ridondanza.
+		\item $\{\text{Employee, Project}\} \rightarrow \text{Role}$: $\{\text{Employee, Project}\}$ è (probabilmente) la chiave primaria. Questa FD \textbf{non causa anomalie}.
+	\end{itemize}
+	Le anomalie sono quindi causate dalla presenza di informazioni eterogenee.
+	
+	\section{Forma Normale di Boyce-Codd (BCNF)}
+	La BCNF è una delle forme normali più stringenti e desiderabili.
+	
+	\subsection{Definizione}
+	Una relazione $r$ è in \textbf{BCNF} se, per ogni dipendenza funzionale non triviale $X \rightarrow Y$ definita su $r$:
+	\begin{itemize}
+		\item $X$ è una \textbf{superchiave} di $r$.
+	\end{itemize}
+	
+	Nella nostra tabella di esempio iniziale, non è in BCNF a causa di $\text{Employee} \rightarrow \text{Wage}$ e $\text{Project} \rightarrow \text{Budget}$.
+	
+	\subsection{Cosa fare se una relazione non è in BCNF?}
+	Si \textbf{decompone} la relazione in più relazioni più piccole, ognuna delle quali sia in BCNF.
+	
+	\subsection{Esempio di Decomposizione (per la tabella iniziale)}
+	\begin{enumerate}
+		\item \textbf{ImpiegatiStipendi}(\underline{Employee}, Wage)
+		\item \textbf{ProgettiBudget}(\underline{Project}, Budget)
+		\item \textbf{ImpiegatiRuoliProgetto}(\underline{Employee, Project}, Role)
+	\end{enumerate}
+	Questa decomposizione elimina le anomalie.
+	
+	\subsection{Qualità della Decomposizione}
+	Quando decomponiamo una tabella, dobbiamo assicurarci due proprietà fondamentali:
+	
+	\subsubsection{Lossless Join Property (Proprietà di Join Senza Perdita)}
+	Dobbiamo essere in grado di ricreare la tabella originale facendo il JOIN delle tabelle decomposte.
+	\textbf{Condizione:} Una decomposizione di $r(X)$ in $r_1(X_1)$ e $r_2(X_2)$ è senza perdita se l'intersezione degli attributi $X_0 = X_1 \cap X_2$ forma una chiave per almeno una delle relazioni decomposte ($X_0 \rightarrow X_1$ oppure $X_0 \rightarrow X_2$).
+	
+	\textbf{Esempio di Decomposizione CON PERDITA:}
+	Supponiamo $R(\text{Employee, Project, Office})$ con FD: $\text{Employee} \rightarrow \text{Office}$ e $\text{Project} \rightarrow \text{Office}$.
+	Decomposizione in:
+	\begin{itemize}
+		\item $R_1(\text{Employee, Office})$
+		\item $R_2(\text{Project, Office})$
+	\end{itemize}
+	Attributo comune: \texttt{Office}. \texttt{Office} non è chiave né per $R_1$ né per $R_2$. Il join può generare tuple spurie.
+	
+	\textbf{Esempio di Decomposizione SENZA PERDITA:}
+	Tabella $R(\text{Employee, Project, Office})$ con FD: $\text{Employee} \rightarrow \text{Office}$ e chiave primaria $\{\text{Employee, Project}\}$.
+	Decomposizione in:
+	\begin{itemize}
+		\item $R_1(\text{\underline{Employee}}, \text{Office})$
+		\item $R_2(\text{\underline{Employee, Project}})$
+	\end{itemize}
+	Attributo comune: \texttt{Employee}. \texttt{Employee} è chiave per $R_1$. Lossless.
+	
+	\subsubsection{Dependency Preservation (Conservazione delle Dipendenze)}
+	Tutte le dipendenze funzionali originali devono poter essere verificate esaminando una singola tabella nello schema decomposto.
+	Nell'esempio di decomposizione $R(\text{E, P, O})$ con $\text{E} \rightarrow \text{O}$ e $\text{P} \rightarrow \text{O}$ (slide 28), se decomponiamo in $R_1(\text{E,O})$ e $R_2(\text{E,P})$, la FD $\text{P} \rightarrow \text{O}$ non è preservata.
+	
+	\section{Terza Forma Normale (3NF)}
+	La 3NF è una forma normale leggermente meno stringente della BCNF che permette sempre una decomposizione lossless e che preserva le dipendenze.
+	
+	\subsection{Definizione}
+	Una relazione $r$ è in \textbf{3NF} se, per ogni dipendenza funzionale non triviale $X \rightarrow Y$ definita su $r$, almeno una delle seguenti condizioni è vera:
+	\begin{enumerate}
+		\item $X$ è una \textbf{superchiave} di $r$ (condizione BCNF).
+		\textbf{OPPURE}
+		\item Ogni attributo in $Y$ è parte di \textbf{almeno una chiave candidata} di $r$ (cioè, ogni attributo in $Y$ è un "attributo primo").
+	\end{enumerate}
+	
+	\subsection{BCNF vs 3NF}
+	\begin{itemize}
+		\item BCNF è più restrittiva. Ogni relazione in BCNF è anche in 3NF.
+		\item Una relazione in 3NF potrebbe non essere in BCNF.
+		\item Si può sempre decomporre una relazione in 3NF in modo lossless e preservando le dipendenze.
+		\item Se una relazione ha una sola chiave candidata, allora 3NF e BCNF sono equivalenti.
+	\end{itemize}
+	
+	\subsection{Esempio 3NF (ma non BCNF)}
+	Tabella $R(\text{Chief, Project, Office})$
+	FDs:
+	\begin{enumerate}
+		\item $\{\text{Project, Office}\} \rightarrow \text{Chief}$ (chiave candidata: $\{\text{Project, Office}\}$ )
+		\item $\text{Chief} \rightarrow \text{Office}$
+	\end{enumerate}
+	Analizziamo $\text{Chief} \rightarrow \text{Office}$:
+	\begin{itemize}
+		\item \textbf{BCNF:} $\text{Chief}$ non è superchiave. \textbf{NON è in BCNF.}
+		\item \textbf{3NF:} $\text{Chief}$ non è superchiave. MA $\text{Office}$ è parte della chiave candidata $\{\text{Project, Office}\}$. \textbf{È in 3NF.}
+	\end{itemize}
+	
+	\subsection{Algoritmo di Decomposizione in 3NF (Idea Generale)}
+	\begin{enumerate}
+		\item Trova un insieme minimo di dipendenze funzionali (copertura canonica).
+		\item Per ogni FD $X \rightarrow Y$ in questa copertura, crea una tabella con attributi $X \cup Y$.
+		\item Se nessuna delle tabelle create contiene una chiave candidata della relazione originale, aggiungi un'ulteriore tabella contenente solo gli attributi di una chiave candidata originale.
+	\end{enumerate}
+	
+	\subsection{Approccio Pratico Consigliato}
+	\begin{enumerate}
+		\item Decomponi la relazione per raggiungere la 3NF.
+		\item Verifica se le tabelle risultanti sono anche in BCNF.
+		\item Se una tabella è in 3NF ma non in BCNF, valuta il trade-off.
+	\end{enumerate}
+	
+	\subsection{Teoria delle Dipendenze e Implicazioni}
+	Dato un insieme di dipendenze funzionali $F$, possiamo derivare altre dipendenze funzionali. Diciamo che $F$ implica $f$ se ogni relazione che soddisfa $F$ soddisfa anche $f$. L'insieme di tutte le dipendenze implicite da $F$ è chiamato \textbf{chiusura di F ($F^+$)}.
+	
+	\subsubsection{Assiomi di Armstrong}
+	\begin{enumerate}
+		\item \textbf{Riflessività:} Se $Y \subseteq X$, allora $X \rightarrow Y$.
+		\item \textbf{Aumento:} Se $X \rightarrow Y$, allora $XZ \rightarrow YZ$.
+		\item \textbf{Transitività:} Se $X \rightarrow Y$ e $Y \rightarrow Z$, allora $X \rightarrow Z$.
+		\begin{itemize}
+			\item Esempio: $\text{MatricolaStudente} \rightarrow \text{CodiceCorsoLaurea}$ e $\text{CodiceCorsoLaurea} \rightarrow \text{NomeCorsoLaurea}$. Allora, $\text{MatricolaStudente} \rightarrow \text{NomeCorsoLaurea}$.
+		\end{itemize}
+	\end{enumerate}
+	
+	\subsubsection{Chiusura di un insieme di attributi $X^+$}
+	L'insieme di tutti gli attributi che sono funzionalmente determinati da X, dato un insieme di FDs F.
+	
+	\subsubsection{Copertura Minima (o Canonica)}
+	Un insieme "minimale" di FDs equivalente a F, senza ridondanze.
+	
+	\section{Normalizzazione nel Design Concettuale (Modello E-R)}
+	La teoria della normalizzazione può essere usata anche per verificare la qualità di un modello Entità-Relazione.
+	
+	\subsection{Esempio: Normalizzazione su Entità}
+	Considera un'entità \texttt{Prodotto} con attributi:
+	\texttt{Codice} (PK), \texttt{NomeProdotto}, \texttt{Prezzo}, \texttt{PartitaIVAFornitore}, \texttt{NomeFornitore}, \texttt{IndirizzoFornitore}.
+	
+	Identifichiamo una FD: $\text{PartitaIVAFornitore} \rightarrow \text{NomeFornitore, IndirizzoFornitore}$.
+	Qui, \texttt{PartitaIVAFornitore} non è la chiave di \texttt{Prodotto}.
+	Questo viola le forme normali.
+	
+	\textbf{Decomposizione dell'Entità:}
+	\begin{itemize}
+		\item Entità \texttt{Prodotto}(\underline{\texttt{Codice}}, \texttt{NomeProdotto}, \texttt{Prezzo})
+		\item Entità \texttt{Fornitore}(\underline{\texttt{PartitaIVAFornitore}}, \texttt{NomeFornitore}, \texttt{IndirizzoFornitore})
+		\item Relazione \texttt{Fornisce} tra \texttt{Fornitore} e \texttt{Prodotto}.
+	\end{itemize}
+	Nello schema proposto dalla slide 54:
+	\begin{itemize}
+		\item \texttt{Product(Code, Name, Price)}
+		\item \texttt{Supplier(VATNum, Name, Address)}
+		\item \texttt{Supply} (relationship)
+	\end{itemize}
+	
+	\subsection{Esempio: Normalizzazione su Relazioni (Relationship)}
+	Considera una relazione \texttt{Tesi} che collega \texttt{Studente}, \texttt{Professore}, \texttt{DipartimentoProf}, \texttt{CorsoLaureaStudente}.
+	Assumiamo che $(\text{MatricolaStudente, IDProfessore})$ sia la chiave.
+	FDs:
+	\begin{itemize}
+		\item $\text{MatricolaStudente} \rightarrow \text{CorsoLaureaStudente}$
+		\item $\text{IDProfessore} \rightarrow \text{DipartimentoProf}$
+	\end{itemize}
+	Nella tabella \texttt{Tesi}(\underline{MatricolaStudente, IDProfessore}, CorsoLaureaStudente, DipartimentoProf):
+	\begin{itemize}
+		\item $\text{IDProfessore} \rightarrow \text{DipartimentoProf}$: \texttt{IDProfessore} è parte della chiave, non la chiave intera. \texttt{DipartimentoProf} non è un attributo primo. Viola 3NF/BCNF.
+	\end{itemize}
+	
+	\textbf{Decomposizione della Relazione (Conceptual Level):}
+	\begin{enumerate}
+		\item Creare un'entità \texttt{Professore} con attributo \texttt{Dipartimento} (slide 50: \texttt{Professor --(1,1)-- Work --(0,N)-- Dept}).
+		\item Creare un'entità \texttt{Studente} con attributo \texttt{CorsoLaurea} (slide 52: \texttt{Student --(1,1)-- Enroll --(0,N)-- Degree}).
+		\item La relazione \texttt{Tesi} ora collegherebbe solo \texttt{Studente} e \texttt{Professore} (slide 52: \texttt{Professor --(0,N)-- Thesis --(0,1)-- Student}).
+	\end{enumerate}
+	Questo processo porta a un modello concettuale più robusto.
+	
+\end{document}

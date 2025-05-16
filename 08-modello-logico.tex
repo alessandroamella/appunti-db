@@ -1,0 +1,332 @@
+\documentclass{article}
+
+% --- Encoding e lingua ---
+\usepackage[utf8]{inputenc}
+\usepackage[italian]{babel}
+
+% --- Margini e layout ---
+\usepackage{geometry}
+\geometry{a4paper, margin=1in}
+
+% --- Font sans-serif ---
+\usepackage[scaled]{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage[T1]{fontenc}
+
+% --- Matematica ---
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+% --- Liste personalizzate ---
+\usepackage{enumitem}
+
+% --- Immagini ---
+\usepackage{float}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, positioning, calc}
+
+% --- Hyperlink ---
+\usepackage{hyperref}
+\hypersetup{
+	colorlinks=true,
+	linkcolor=white,     % Cambiato per visibilità su sfondo nero
+	filecolor=magenta,
+	urlcolor=blue,
+	pdftitle={Appunti sulla Progettazione Logica dei Database},
+	pdfpagemode=FullScreen,
+}
+
+% --- Colori e sfondo nero ---
+\usepackage{xcolor}
+\pagecolor{black}
+\color{white}
+
+% --- Evidenziazione del codice (richiede -shell-escape) ---
+% Compilare con: pdflatex -shell-escape nomefile.tex
+\usepackage{minted}
+\setminted{
+	frame=lines,     % Cornice attorno al codice
+	framesep=2mm,
+	fontsize=\small,
+	breaklines=true, % A capo automatico per linee lunghe
+	style=monokai    % Stile di highlighting
+}
+
+
+% --- Titolo ---
+\title{Appunti sulla Progettazione Logica dei Database}
+\author{Basato sulle slide del Prof. Danilo Montesi}
+\date{\today}
+
+\begin{document}
+	
+	\maketitle
+	\tableofcontents
+	\newpage
+	
+	\section{Introduzione alla Progettazione Logica dei Database}
+	L'obiettivo principale della \textbf{progettazione logica} è "tradurre" lo schema concettuale (spesso un diagramma E-R) in uno schema logico (ad esempio, per un database relazionale come SQL Server, MySQL, PostgreSQL) che rappresenti gli stessi dati in modo \textbf{corretto ed efficiente}.
+	
+	\subsection{Input della Progettazione Logica}
+	\begin{itemize}
+		\item \textbf{Schema Concettuale:} Il diagramma E-R che descrive la realtà di interesse.
+		\item \textbf{Informazioni sul Carico Applicativo (Workload):} Quali operazioni verranno eseguite più frequentemente? Quanti dati ci aspettiamo? (Fondamentale per l'efficienza).
+		\item \textbf{Modello Logico Scelto:} Ad es. relazionale, a oggetti, a grafo. Ci concentreremo sul relazionale.
+	\end{itemize}
+	
+	\subsection{Output della Progettazione Logica}
+	\begin{itemize}
+		\item \textbf{Schema Logico:} Ad esempio, un insieme di istruzioni \texttt{CREATE TABLE} per SQL.
+		\item \textbf{Documentazione Associata:} Spiegazioni delle scelte fatte.
+	\end{itemize}
+	
+	\subsection{Non è una semplice traduzione!}
+	\begin{itemize}
+		\item Alcuni aspetti dello schema concettuale potrebbero non essere rappresentabili direttamente nel modello logico scelto (es. generalizzazioni nel modello relazionale puro).
+		\item Bisogna considerare le \textbf{prestazioni (efficienza)}.
+	\end{itemize}
+	
+	\section{Fasi della Trasformazione Logica}
+	\begin{enumerate}
+		\item \textbf{Ristrutturazione dello Schema E-R (E-R Schema Restructuring):}
+		\begin{itemize}
+			\item Si modifica lo schema E-R iniziale tenendo conto del carico applicativo e del modello logico.
+			\item \textbf{Perché?}
+			\begin{itemize}
+				\item Semplificare la successiva traduzione.
+				\item Ottimizzare le prestazioni.
+			\end{itemize}
+			\item \textbf{Nota Bene:} Uno schema E-R ristrutturato \textit{non è più} uno schema concettuale puro, perché inizia a includere considerazioni di implementazione.
+		\end{itemize}
+		\item \textbf{Traduzione nel Modello Logico:}
+		\begin{itemize}
+			\item Si converte lo schema E-R ristrutturato nello schema del modello scelto (es. tabelle relazionali).
+		\end{itemize}
+	\end{enumerate}
+	
+	\section{Analisi delle Prestazioni (Approssimata)}
+	A livello concettuale/logico iniziale, non possiamo valutare le prestazioni con precisione assoluta, ma usiamo degli "indicatori":
+	\begin{itemize}
+		\item \textbf{Spazio (Space):} Numero di istanze (righe nelle tabelle) attese.
+		\begin{itemize}
+			\item \textit{Esempio Pratico:} Se hai una tabella \texttt{Utenti} e prevedi 1 milione di utenti, questo è un indicatore di spazio.
+		\end{itemize}
+		\item \textbf{Tempo (Time):} Numero di istanze (entità e relazioni) "visitate" (lette/scritte) durante un'operazione.
+		\begin{itemize}
+			\item \textit{Esempio Pratico:} Per mostrare il profilo di un utente con i suoi ultimi 10 post e i commenti a quei post, quante righe da diverse tabelle (\texttt{Utenti}, \texttt{Post}, \texttt{Commenti}) devi leggere?
+		\end{itemize}
+	\end{itemize}
+	La \textbf{Tabella delle Dimensioni (Size Table)} stima il numero di istanze per ogni entità (E) e relazione (R).
+	La \textbf{Tabella degli Accessi (Access Table)}, per un'operazione specifica, elenca:
+	\begin{itemize}
+		\item Quali entità/relazioni vengono accedute.
+		\item Quante volte (numero accessi).
+		\item Tipo di accesso (Lettura/Scrittura).
+		\item Ordine di accesso.
+	\end{itemize}
+	Questo aiuta a confrontare diverse opzioni di ristrutturazione.
+	
+	\section{Attività di Ristrutturazione dello Schema E-R}
+	Sono 4 attività principali:
+	
+	\subsection{Analisi delle Ridondanze}
+	\begin{itemize}
+		\item Una \textbf{ridondanza} è un'informazione rilevante che può essere derivata da altre informazioni già presenti.
+		\item Bisogna decidere se: mantenere, rimuovere o \textit{creare nuove} ridondanze.
+		\item \textbf{Pro della Ridondanza:}
+		\begin{itemize}
+			\item Semplifica le query (meno join, calcoli al volo).
+			\item \textit{Esempio Pratico:} In una tabella \texttt{Ordini}, potresti avere una colonna \texttt{TotaleOrdine}. Questo è ridondante se puoi calcolarlo sommando \texttt{Prezzo * Quantità} da una tabella \texttt{RigheOrdine} collegata. Averlo precalcolato velocizza la lettura del totale ordine.
+		\end{itemize}
+		\item \textbf{Contro della Ridondanza:}
+		\begin{itemize}
+			\item Gli aggiornamenti richiedono più tempo (devi aggiornare il dato in più posti e mantenerlo consistente).
+			\item Aumenta lo spazio di archiviazione.
+			\item \textit{Esempio Pratico (continuazione):} Se modifichi una riga in \texttt{RigheOrdine}, devi ricalcolare e aggiornare \texttt{TotaleOrdine} nella tabella \texttt{Ordini}. Se non lo fai, i dati diventano inconsistenti.
+		\end{itemize}
+		\item \textbf{Tipi di Ridondanze comuni in E-R:}
+		\begin{itemize}
+			\item \textbf{Attributi derivabili:}
+			\begin{itemize}
+				\item Da altri attributi nella stessa entità/relazione (es. \texttt{Fattura} con \texttt{ValoreNetto}, \texttt{IVA}, \texttt{ValoreLordo}. \texttt{ValoreLordo} è derivabile).
+				\item Da attributi di altre entità/relazioni (es. \texttt{Acquisto} con attributo \texttt{Totale}, derivabile da $\sum(\texttt{Composizione.Quantita} \times \texttt{Prodotto.Prezzo})$).
+			\end{itemize}
+			\item \textbf{Relazioni derivabili:} Spesso cicli di relazioni (es. se hai \texttt{Studente - Frequenta - Lezione - TenutaDa - Docente}, una relazione diretta \texttt{Studente - InsegnatoDa - Docente} potrebbe essere ridondante).
+			\item \textbf{Attributi derivabili da conteggio:} (es. \texttt{Citta} con attributo \texttt{NumeroAbitanti}, derivabile da \texttt{COUNT(*)} delle persone che risiedono in quella città).
+		\end{itemize}
+		\item \textbf{Decisione sulla Ridondanza:} Si basa sull'analisi costi/benefici, considerando la frequenza delle operazioni.
+		\begin{itemize}
+			\item Se un dato derivato è letto molto frequentemente e scritto/aggiornato raramente, mantenerlo ridondante può essere vantaggioso.
+			\item Se è aggiornato spesso, la ridondanza può diventare problematica.
+		\end{itemize}
+	\end{itemize}
+	
+	\subsection{Eliminazione delle Generalizzazioni (Gerarchie)}
+	\begin{itemize}
+		\item Il modello relazionale puro non supporta direttamente le generalizzazioni (ereditarietà). Vanno trasformate.
+		\item \textbf{Tre Soluzioni Possibili} (esempio: E0 genitore, E1 ed E2 figli):
+		\begin{enumerate}
+			\item \textbf{Embedding dei Figli nel Genitore (Roll-up / Accorpamento verso l'alto):}
+			\begin{itemize}
+				\item Si elimina E1 ed E2. L'entità E0 eredita tutti gli attributi di E1 ed E2.
+				\item Si aggiunge un attributo "Tipo" (o "Kind") a E0 per distinguere se un'istanza era originariamente E1 o E2.
+				\item Gli attributi specifici di E1 o E2 diventano \texttt{NULL}abili in E0 se un'istanza non è di quel tipo.
+				\item Le relazioni dei figli vengono "spostate" sul genitore.
+				\item \textit{Esempio Pratico:} \texttt{Veicolo} (genitore), \texttt{Auto} (figlio), \texttt{Moto} (figlio). Diventa un'unica tabella \texttt{VEICOLI(targa, marca, modello, tipoVeicolo, numPorte\_auto, cilindrata\_moto, ...)}. \texttt{numPorte\_auto} sarà \texttt{NULL} per le moto.
+				\item \textbf{Quando usarla:} Se le operazioni accedono frequentemente al genitore e ai figli contemporaneamente.
+			\end{itemize}
+			\item \textbf{Embedding del Genitore nei Figli (Roll-down / Accorpamento verso il basso):}
+			\begin{itemize}
+				\item Si elimina E0. Le entità E1 ed E2 ereditano tutti gli attributi di E0.
+				\item Le relazioni di E0 vengono replicate per E1 ed E2.
+				\item \textit{Esempio Pratico:} Tabelle separate \texttt{AUTO(targa, marca, modello\_veicolo, numPorte, ...)} e \texttt{MOTO(targa, marca, modello\_veicolo, cilindrata, ...)}. \texttt{marca} e \texttt{modello\_veicolo} sono duplicati.
+				\item \textbf{Quando usarla:} Se le operazioni accedono ai figli indipendentemente l'uno dall'altro.
+			\end{itemize}
+			\item \textbf{Sostituzione della Generalizzazione con Relazioni (Una tabella per classe):}
+			\begin{itemize}
+				\item Si mantengono E0, E1, E2 come entità separate.
+				\item Si creano relazioni 1-a-1 tra E0 ed E1, e tra E0 ed E2. La chiave primaria di E1 (e E2) sarà anche chiave esterna verso E0.
+				\item \textit{Esempio Pratico:} Tabella \texttt{VEICOLI(targa\_PK, marca, modello)}. Tabella \texttt{AUTO(targa\_FK\_PK, numPorte)}. Tabella \texttt{MOTO(targa\_FK\_PK, cilindrata)}. Per avere tutti i dati di un'auto, fai un \texttt{JOIN}.
+				\item \textbf{Quando usarla:} Se i figli sono acceduti indipendentemente dal padre.
+			\end{itemize}
+		\end{enumerate}
+		\item \textbf{Soluzioni Ibride:} Si possono combinare queste strategie, specialmente con gerarchie a più livelli.
+	\end{itemize}
+	
+	\subsection{Partizionamento/Raggruppamento di Entità e Relazioni}
+	L'obiettivo è ridurre il numero di accessi.
+	\begin{itemize}
+		\item \textbf{Partizionamento Verticale di Entità:}
+		\begin{itemize}
+			\item Se un'entità ha molti attributi e alcuni sono usati frequentemente insieme, mentre altri raramente, si può dividere l'entità in due (o più) entità collegate da una relazione 1-a-1.
+			\item \textit{Esempio Pratico:} \texttt{Impiegato(Codice, Cognome, Indirizzo, DataNascita, Livello, Salario, Tasse)} può diventare \texttt{DatiPersonali(Codice\_PK, Cognome, Indirizzo, DataNascita)} e \texttt{DatiAziendali(Codice\_PK\_FK, Livello, Salario, Tasse)}.
+		\end{itemize}
+		\item \textbf{Ristrutturazione di Attributi Multi-Valore:}
+		\begin{itemize}
+			\item Un attributo multi-valore (es. \texttt{Ufficio} con \texttt{Telefono(1,N)}) viene trasformato in una nuova entità (\texttt{Telefono}) e una relazione 1-a-N (\texttt{Possiede}).
+			\item \textit{Esempio Pratico:} Se un \texttt{Prodotto} può avere più \texttt{Tag}, crei una tabella \texttt{Prodotti}, una tabella \texttt{Tag} e una tabella di join \texttt{ProdottoTag}.
+		\end{itemize}
+		\item \textbf{Raggruppamento di Entità (Denormalizzazione):}
+		\begin{itemize}
+			\item Se un'entità A ha una relazione 1-a-1 (o N-a-1) con un'entità B, e sono \textit{sempre} accedute insieme, gli attributi di B possono essere "assorbiti" in A.
+			\item \textit{Esempio Pratico:} \texttt{Persona(0,1) --- ViveIn --- (1,1)Appartamento}. Si possono spostare \texttt{NumAppartamento} e \texttt{IndirizzoAppartamento} nell'entità \texttt{Persona}, rendendoli \texttt{NULL}abili.
+		\end{itemize}
+		\item \textbf{Partizionamento Orizzontale di Relazioni:}
+		\begin{itemize}
+			\item Si dividono le istanze di una relazione in più relazioni distinte se hanno pattern di accesso diversi.
+			\item \textit{Esempio Pratico:} Relazione \texttt{ParteDi} tra \texttt{Giocatore} e \texttt{Squadra} può essere divisa in \texttt{MilitaAttualmenteIn} e \texttt{HaMilitatoInPassato}.
+		\end{itemize}
+	\end{itemize}
+	
+	\subsection{Identificazione delle Chiavi Primarie}
+	\begin{itemize}
+		\item Operazione \textbf{obbligatoria} per la traduzione in un modello relazionale.
+		\item \textbf{Criteri di Scelta:}
+		\begin{enumerate}
+			\item \textbf{Informazione Obbligatoria:} L'attributo deve essere \texttt{NOT NULL}.
+			\item \textbf{Semplicità:} Preferire chiavi singole a chiavi composite.
+			\item \textbf{Usata nelle Operazioni più Frequenti/Rilevanti.}
+		\end{enumerate}
+		\item \textbf{Nuovi Attributi (Surrogate Keys):} Se nessuna combinazione di attributi esistenti è una buona chiave primaria, si introducono nuovi attributi "artificiali".
+		\begin{itemize}
+			\item \textit{Esempio Pratico:} \texttt{id INT AUTO\_INCREMENT PRIMARY KEY} in SQL, \texttt{ObjectId()} in MongoDB.
+		\end{itemize}
+	\end{itemize}
+	
+	\section{Traduzione nel Modello Relazionale (Regole Generali)}
+	\begin{itemize}
+		\item \textbf{Entità:} Diventano tabelle. Gli attributi dell'entità diventano colonne. La chiave primaria identificata diventa la \texttt{PRIMARY KEY}.
+		\item \textbf{Relazioni:}
+		\begin{itemize}
+			\item \textbf{Molti-a-Molti (M:N):}
+			\begin{itemize}
+				\item Diventano una \textbf{nuova tabella} (tabella di associazione).
+				\item Colonne: chiavi primarie delle entità coinvolte (come \texttt{FOREIGN KEY}, formano la \texttt{PRIMARY KEY} della nuova tabella) + attributi propri della relazione.
+				\item \textit{Esempio:} \texttt{IMPIEGATO(0,N) --- ISCRIZIONE(DataInizio) --- (1,N)PROGETTO}
+				\begin{minted}{sql}
+IMPIEGATO(Numero_PK, Cognome, Salario)
+PROGETTO(Codice_PK, Nome, Budget)
+ISCRIZIONE(NumeroImpiegato_FK_PK, CodiceProgetto_FK_PK, DataInizio)
+				\end{minted}
+				\item \textbf{Vincoli di Integrità Referenziale:} Vanno definiti.
+				\item \textbf{Nomi Espressivi per FK:} Meglio \texttt{IDImpiegato}, \texttt{IDProgetto}.
+				\item \textbf{Cardinalità Minima:} La traduzione base M:N *non* cattura la cardinalità minima. Richiede logica applicativa o \texttt{TRIGGER}/\texttt{CHECK} complessi.
+			\end{itemize}
+			
+			\item \textbf{Relazioni Ricorsive (M:N sulla stessa entità):}
+			\begin{itemize}
+				\item Simile a M:N, si crea una nuova tabella con due chiavi esterne che puntano alla stessa tabella originale.
+				\item \textit{Esempio:} \texttt{PRODOTTO --- CompostoDa(NumeroPezzi) --- PRODOTTO}
+				\begin{minted}{sql}
+PRODOTTO(Codice_PK, Nome, Costo)
+COMPOSTODA(CodiceProdottoComposto_FK_PK, CodiceComponente_FK_PK, NumeroPezzi)
+				\end{minted}
+			\end{itemize}
+			
+			\item \textbf{Relazioni N-arie (coinvolgono 3 o più entità):}
+			\begin{itemize}
+				\item Diventano una nuova tabella con le chiavi primarie di tutte le entità coinvolte (come FK) + attributi propri.
+				\item \textit{Esempio:} \texttt{FORNITORE --- FORNITURA(NumeroPezzi) --- PRODOTTO --- A REPARTO}
+				\begin{minted}{sql}
+FORNITURA(ID_Fornitore_FK_PK, ID_Prodotto_FK_PK, ID_Reparto_FK_PK, NumeroPezzi)
+				\end{minted}
+			\end{itemize}
+			
+			\item \textbf{Uno-a-Molti (1:N):}
+			\begin{itemize}
+				\item La chiave primaria dell'entità sul lato "1" viene \textbf{propagata} come \texttt{FOREIGN KEY} nell'entità sul lato "N".
+				\item Gli attributi della relazione vengono aggiunti alla tabella sul lato "N".
+				\item \textit{Esempio:} \texttt{GIOCATORE(1,1) --- CONTRATTO(DataIngaggio) --- (0,N)SQUADRA}
+				\begin{minted}{sql}
+SQUADRA(Nome_PK, Citta, ColoriSociali)
+GIOCATORE(CF_PK, Cognome, DataNascita, Ruolo, NomeSquadra_FK, DataIngaggio)
+				\end{minted}
+				\item \textbf{Cardinalità Minima (0 sul lato N):} Se opzionale, la \texttt{FOREIGN KEY} permette \texttt{NULL}.
+				\item \textbf{Cardinalità Minima (1 sul lato N):} Se obbligatoria, la \texttt{FOREIGN KEY} è \texttt{NOT NULL}.
+			\end{itemize}
+			
+			\item \textbf{Entità con Identificatore Esterno (Entità Debole):}
+			\begin{itemize}
+				\item L'entità debole diventa una tabella la cui chiave primaria è composta dalla PK dell'entità forte + identificatore parziale.
+				\item \textit{Esempio:} \texttt{STUDENTE(Matricola)} identificato da \texttt{UNIVERSITA(Nome)}.
+				\begin{minted}{sql}
+UNIVERSITA(Nome_PK, Citta, Indirizzo)
+STUDENTE(NomeUniversita_FK_PKpart, Matricola_PKpart, Cognome, AnnoCorso)
+				\end{minted}
+				La PK di \texttt{STUDENTE} è \texttt{(NomeUniversita, Matricola)}.
+			\end{itemize}
+			
+			\item \textbf{Uno-a-Uno (1:1):}
+			\begin{itemize}
+				\item Si sceglie una delle due tabelle e si aggiunge la PK dell'altra come \texttt{FOREIGN KEY} e \texttt{UNIQUE KEY}. Gli attributi della relazione vanno nella tabella scelta.
+				\item \textit{Esempio:} \texttt{CAPO(1,1) --- SUPERVISIONE(DataInizio) --- (1,1)DIPARTIMENTO}
+				\begin{minted}{sql}
+-- Opzione 1:
+DIPARTIMENTO(Nome_PK, Ufficio, Telefono)
+CAPO(Codice_PK, Cognome, Salario, NomeDipartimento_FK_UNIQUE, DataInizioSupervisione)
+
+-- Opzione 2:
+CAPO(Codice_PK, Cognome, Salario)
+DIPARTIMENTO(Nome_PK, Ufficio, Telefono, CodiceCapo_FK_UNIQUE, DataInizioSupervisione)
+				\end{minted}
+				\item \textbf{Cardinalità (0,1) - Opzionale:}
+				\begin{itemize}
+					\item Se una partecipazione è opzionale, la \texttt{FOREIGN KEY} è \texttt{NULL}abile (ma sempre \texttt{UNIQUE} se presente).
+					\item Se entrambe sono \texttt{(0,1)}: la soluzione più pulita è una tabella separata per la relazione \texttt{SUPERVISIONE(CodiceCapo\_FK\_PK, NomeDipartimento\_FK\_PK, DataInizio)}.
+				\end{itemize}
+			\end{itemize}
+		\end{itemize}
+	\end{itemize}
+	
+	\section{Attenzione Finale}
+	Piccole differenze nelle cardinalità e nelle scelte degli identificatori nello schema E-R possono portare a significati e schemi logici molto diversi. È fondamentale essere precisi.
+	
+	\section{Strumenti (Tools)}
+	Esistono software CASE (Computer-Aided Software Engineering) che supportano la modellazione, come:
+	\begin{itemize}
+		\item ERwin/ERX
+		\item IBM Rational Rose
+	\end{itemize}
+	Questi strumenti aiutano a disegnare diagrammi E-R e a generare lo schema DDL.
+	
+\end{document}
