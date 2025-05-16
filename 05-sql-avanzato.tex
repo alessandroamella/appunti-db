@@ -137,7 +137,7 @@ WHERE Dept = 'Administration' AND Salary > 10;
 CREATE VIEW POORADMINEMPLOYEES AS
 SELECT *
 FROM ADMINEMPLOYEES -- Supponiamo sia una vista o tabella
-HERE Salary < 50
+WHERE Salary < 50
 WITH CHECK OPTION;
 			\end{minted}
 			Se si tenta di fare \texttt{UPDATE POORADMINEMPLOYEES SET Salary = 60 WHERE Name = 'Ann'}, l'operazione fallirà.
