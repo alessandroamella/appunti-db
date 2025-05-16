@@ -291,7 +291,21 @@ CREATE TABLE EsamiSostenuti (
 			every node/.style={font=\small},
 			entity/.style={rectangle, draw=white, fill=black!80, text=white, minimum width=2cm, minimum height=1cm},
 			relationship/.style={diamond, draw=white, fill=black!70, text=white, minimum width=1.5cm, minimum height=1cm},
-			weak/.style={rectangle, draw=white, fill=black!60, text=white, minimum width=2cm, minimum height=1cm, double}
+			% Nuova definizione per l'entità debole con doppio bordo visibile su sfondo nero
+			weak/.style={
+				rectangle,
+				draw=white,
+				fill=black!60, 
+				text=white, 
+				minimum width=2cm, 
+				minimum height=1cm,
+				path picture={
+					\draw[white] 
+					([shift={(0.05cm,0.05cm)}]path picture bounding box.south west) 
+					rectangle 
+					([shift={(-0.05cm,-0.05cm)}]path picture bounding box.north east);
+				}
+			}
 		]
 			\node[entity] (studente) {Studente};
 			\node[weak] (esame) [right=2cm of studente] {IstanzaEsame};
@@ -397,8 +411,22 @@ CREATE TABLE EsamiSostenuti (
 			every node/.style={font=\small},
 			entity/.style={rectangle, draw=white, fill=black!80, text=white, minimum width=2cm, minimum height=1cm},
 			attribute/.style={ellipse, draw=white, fill=black!60, text=white, minimum width=1.5cm, minimum height=0.8cm},
-			multivalue/.style={ellipse, draw=white, fill=black!50, text=white, minimum width=1.5cm, minimum height=0.8cm, double}
+			multivalue/.style={
+				ellipse,
+				draw=white,
+				fill=black!50,
+				text=white,
+				minimum width=1.5cm,
+				minimum height=0.8cm,
+				path picture={
+					\draw[white] 
+					(path picture bounding box.center) 
+					ellipse 
+					({0.5*\pgfkeysvalueof{/pgf/minimum width}-0.05cm} and {0.5*\pgfkeysvalueof{/pgf/minimum height}-0.05cm});
+				}
+			}
 		]
+		
 			\node[entity] (persona) {Persona};
 			
 			% Single value attributes
@@ -449,7 +477,20 @@ CREATE TABLE EsamiSostenuti (
 		\begin{tikzpicture}[
 			every node/.style={font=\small},
 			entity/.style={rectangle, draw=white, fill=black!80, text=white, minimum width=2cm, minimum height=1cm},
-			weak/.style={rectangle, draw=white, fill=black!60, text=white, minimum width=2cm, minimum height=1cm, double},
+			weak/.style={
+				rectangle, 
+				draw=white, 
+				fill=black!60, 
+				text=white, 
+				minimum width=2cm, 
+				minimum height=1cm,
+				path picture={
+					\draw[white] 
+					([shift={(0.05cm,0.05cm)}]path picture bounding box.south west) 
+					rectangle 
+					([shift={(-0.05cm,-0.05cm)}]path picture bounding box.north east);
+				}
+			},
 			attribute/.style={ellipse, draw=white, fill=black!60, text=white, minimum width=1.5cm, minimum height=0.8cm},
 			key/.style={attribute, draw=white, ultra thick}
 		]
