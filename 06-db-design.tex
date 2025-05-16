@@ -20,6 +20,10 @@
 % --- Liste personalizzate ---
 \usepackage{enumitem}
 
+
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, positioning}
+
 % --- Hyperlink ---
 \usepackage{hyperref}
 \hypersetup{
@@ -90,29 +94,75 @@
 		\item \textit{Esempio Pratico:} ``Abbiamo Entità \texttt{Studente} e \texttt{Corso}. Uno \texttt{Studente} si \texttt{IscriveA} un \texttt{Corso}.''
 	\end{itemize}
 	
+		
 	\subsection{Design Logico}
 	\begin{itemize}
 		\item \textbf{Input:} Schema Concettuale.
 		\item \textbf{Output:} \textbf{Schema Logico} (es. definizione di tabelle per un DB relazionale, o collezioni per un DB NoSQL come MongoDB).
 		\item \textbf{Focus:} Il ``COME?'' – come traduciamo il modello concettuale in un modello supportato da un tipo di DBMS (es. relazionale, a documenti, a grafo). È indipendente dal DBMS specifico, ma non dal \textit{tipo} di DBMS.
-		\item \textit{Esempio Pratico (Relazionale):} Dallo schema concettuale sopra, deriviamo:
+		\item \textit{Esempio Pratico (Relazionale):}\\
+		\begin{center}
+			\begin{tikzpicture}[
+				entity/.style={rectangle, draw=white, fill=black!90, text=gray!10, minimum width=3cm, minimum height=1.2cm, font=\bfseries},
+				relationship/.style={diamond, draw=white, fill=black!90, text=gray!10, aspect=2, minimum width=2.8cm, minimum height=1.2cm, font=\bfseries},
+				line/.style={draw=white, thick},
+				node distance=0.5cm and 1.5cm
+				]
+				
+				% Top row
+				\node[entity] (studente) {Studente};
+				\node[relationship, right=of studente] (esame) {Esame};
+				\node[entity, right=of esame] (lezione) {Lezione};
+				
+				\draw[line] (studente) -- (esame);
+				\draw[line] (esame) -- (lezione);
+				
+				% Bottom row
+				\node[entity, below=of studente] (impiegato) {Impiegato};
+				\node[relationship, right=of impiegato] (residenza) {Residenza};
+				\node[entity, right=of residenza] (città) {Città};
+				
+				\draw[line] (impiegato) -- (residenza);
+				\draw[line] (residenza) -- (città);
+				
+			\end{tikzpicture}
+		\end{center}
+		
+		
+		\item Dallo schema concettuale sopra, un esempio molto \textit{loose} potrebbe essere:
 		\begin{minted}{sql}
-CREATE TABLE Studenti (
-	ID_Studente INT PRIMARY KEY,
-	Nome VARCHAR(255),
-	Cognome VARCHAR(255)
+-- Table: Studente
+CREATE TABLE Studente (
+id INT PRIMARY KEY,
+nome VARCHAR(100)
 );
-CREATE TABLE Corsi (
-	ID_Corso INT PRIMARY KEY,
-	TitoloCorso VARCHAR(255)
+
+-- Table: Lezione
+CREATE TABLE Lezione (
+id INT PRIMARY KEY,
+titolo VARCHAR(100)
 );
-CREATE TABLE Iscrizioni (
-	ID_Studente INT,
-	ID_Corso INT,
-	PRIMARY KEY (ID_Studente, ID_Corso),
-	FOREIGN KEY (ID_Studente) REFERENCES Studenti(ID_Studente),
-	FOREIGN KEY (ID_Corso) REFERENCES Corsi(ID_Corso)
+
+-- Join Table: Esame (between Studente and Lezione)
+CREATE TABLE Esame (
+studente_id INT,
+lezione_id INT,
+data DATE,
+voto INT,
+PRIMARY KEY (studente_id, lezione_id),
+FOREIGN KEY (studente_id) REFERENCES Studente(id),
+FOREIGN KEY (lezione_id) REFERENCES Lezione(id)
 );
+
+-- Table: Impiegato
+CREATE TABLE Impiegato (
+id INT PRIMARY KEY,
+nome VARCHAR(100)
+);
+
+-- Table: Città
+CREATE TABLE Città (
+id INT PRIMARY
 		\end{minted}
 		\item \textit{Esempio Pratico (MongoDB/Prisma):} Potresti avere una collezione \texttt{Studenti} con un array di \texttt{ID\_Corso} a cui sono iscritti, o una collezione \texttt{Corsi} con un array di \texttt{ID\_Studente} iscritti. Prisma ti permette di definire queste relazioni in modo più astratto:
 		\begin{minted}{graphql}
