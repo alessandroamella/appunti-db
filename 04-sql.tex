@@ -250,6 +250,10 @@ model Post {
 	\begin{itemize}
 		\item \texttt{CHECK (condizione)}: Specifica una condizione che deve essere vera per ogni riga.
 		\item Esempio: \texttt{CHECK (Wage > 0)}
+		\item Esempio aggiuntivo:
+		\begin{minted}{sql}
+Age INTEGER CHECK (Age >= 0 AND Age <= 120)
+		\end{minted}
 	\end{itemize}
 	
 	\subsection{Modificare la Struttura}
@@ -262,6 +266,12 @@ model Post {
 		\item \texttt{DROP DOMAIN domain\_name;}
 		\item \texttt{DROP TABLE table\_name;} (cancella la tabella e tutti i suoi dati!)
 	\end{itemize}
+	Esempio aggiuntivo:
+	\begin{minted}{sql}
+ALTER TABLE Student ADD COLUMN Email VARCHAR(100);
+ALTER TABLE Student DROP COLUMN Email;
+ALTER TABLE Student ADD CONSTRAINT chk_age CHECK (Age >= 18);
+	\end{minted}
 	
 	\subsection{Indici}
 	\begin{itemize}
@@ -270,8 +280,35 @@ model Post {
 		\item Strutture dati fisiche, non logiche.
 		\item Le \texttt{PRIMARY KEY} e le colonne \texttt{UNIQUE} creano automaticamente un indice.
 		\item \textit{Esempio Pratico:} Se fai spesso ricerche di utenti per \texttt{email}, un indice su \texttt{User(email)} velocizzerà molto.
+		\item Esempio aggiuntivo:
+		\begin{minted}{sql}
+CREATE INDEX idx_salary ON Employee(Salary DESC);
+		\end{minted}
 	\end{itemize}
 	
+	Riepilogo tabellare:
+	\begin{center}
+	\begin{tabular}{|l|l|l|}
+	\hline
+	\textbf{Comando} & \textbf{Scopo} & \textbf{Esempio Sintetico} \\
+	\hline
+	CHECK & Vincolo su valori & Wage INTEGER CHECK (Wage > 0) \\
+	ALTER & Modifica struttura tabella & ALTER TABLE T ADD COLUMN C INT; \\
+	CREATE INDEX & Crea indice per velocizzare query & CREATE INDEX idx ON T(C); \\
+	\hline
+	\end{tabular}
+	\end{center}
+	
+	\vspace{0.5em}
+	\noindent
+	\fbox{%
+	\parbox{0.97\linewidth}{%
+	\textbf{Riepilogo:}\\
+	\texttt{CHECK} serve per vincoli sui dati.\\
+	\texttt{ALTER} modifica la struttura di tabelle/domìni.\\
+	\texttt{CREATE INDEX} velocizza le ricerche su una o più colonne.\\
+	}
+	}
 	
 	\section{DML (Data Manipulation Language) - Interrogare e Modificare i Dati}
 	
@@ -316,6 +353,35 @@ SELECT P.Name AS GivenName FROM PEOPLE AS P;
 		\begin{minted}{sql}
 WHERE Name LIKE 'J_m%';
 		\end{minted}
+		\item Wildcard nel pattern matching:
+		\begin{itemize}
+			\item \texttt{\%}: Matcha zero o più caratteri qualsiasi
+			\begin{minted}{sql}
+-- Trova tutti i nomi che iniziano con 'Jo'
+WHERE Name LIKE 'Jo%';  -- Match: 'John', 'Joseph', 'Joanna'
+-- Trova tutti i nomi che finiscono con 'son'
+WHERE Name LIKE '%son';  -- Match: 'Johnson', 'Jackson', 'Wilson'
+-- Trova tutti i nomi che contengono 'an'
+WHERE Name LIKE '%an%';  -- Match: 'Frank', 'Andrew', 'Sandra'
+			\end{minted}
+			\item \texttt{\_}: Matcha esattamente un singolo carattere
+			\begin{minted}{sql}
+-- Trova nomi di 4 lettere che iniziano con 'J'
+WHERE Name LIKE 'J___';  -- Match: 'John', 'Jane', 'Jake'
+-- Trova nomi che hanno 'a' come seconda lettera
+WHERE Name LIKE '_a%';   -- Match: 'Sam', 'Paul', 'Mary'
+			\end{minted}
+			\item \texttt{[...]}: Matcha un singolo carattere dalla lista (non supportato in tutti i DBMS)
+			\begin{minted}{sql}
+-- Trova nomi che iniziano con 'A' o 'B'
+WHERE Name LIKE '[AB]%';  -- Match: 'Alice', 'Bob', 'Anna'
+			\end{minted}
+			\item \texttt{[\^{}...]}: Matcha un singolo carattere NON nella lista (non supportato in tutti i DBMS)
+			\begin{minted}{sql}
+-- Trova nomi che iniziano con qualsiasi lettera tranne 'A' e 'B'
+WHERE Name LIKE '[^AB]%';  -- Match: 'Charlie', 'David', 'Emma'
+			\end{minted}
+		\end{itemize}
 		\item \texttt{IS NULL} / \texttt{IS NOT NULL}: Per verificare valori \texttt{NULL}.
 	\end{itemize}
 	
@@ -376,23 +442,63 @@ SELECT Income / 2 AS halvedIncome FROM PEOPLE;
 	\begin{itemize}
 		\item Con operatori di confronto: la subquery deve restituire un valore scalare.
 		\begin{minted}{sql}
-SELECT Name FROM PEOPLE WHERE Income = (SELECT MAX(Income) FROM PEOPLE);
+-- Trova il dipendente con lo stipendio più alto
+SELECT Name FROM EMPLOYEE 
+WHERE Salary = (SELECT MAX(Salary) FROM EMPLOYEE);
+
+-- Trova i dipendenti che guadagnano più della media
+SELECT Name, Salary FROM EMPLOYEE 
+WHERE Salary > (SELECT AVG(Salary) FROM EMPLOYEE);
 		\end{minted}
 		\item \texttt{IN}: Verifica se un valore è nel set di risultati della subquery.
 		\begin{minted}{sql}
-SELECT Name FROM PEOPLE WHERE Name IN (SELECT Father FROM FATHERHOOD);
+-- Trova i dipendenti che lavorano in dipartimenti con budget > 1000000
+SELECT Name FROM EMPLOYEE 
+WHERE Dept IN (SELECT Dept FROM DEPARTMENT WHERE Budget > 1000000);
+
+-- Trova i clienti che hanno fatto almeno un ordine
+SELECT Name FROM CUSTOMER 
+WHERE CustomerID IN (SELECT DISTINCT CustomerID FROM ORDERS);
 		\end{minted}
 		\item \texttt{ANY} / \texttt{SOME}, \texttt{ALL}: Usati con operatori di confronto.
 		\begin{itemize}
 			\item \texttt{valore > ANY (subquery)}: vero se \texttt{valore} $>$ di almeno un valore della subquery.
+			\begin{minted}{sql}
+-- Trova i prodotti più costosi di almeno un prodotto nella categoria 'Electronics'
+SELECT Name, Price FROM PRODUCT 
+WHERE Price > ANY (SELECT Price FROM PRODUCT WHERE Category = 'Electronics');
+			\end{minted}
 			\item \texttt{valore > ALL (subquery)}: vero se \texttt{valore} $>$ di tutti i valori della subquery.
+			\begin{minted}{sql}
+-- Trova i prodotti più costosi di tutti i prodotti nella categoria 'Electronics'
+SELECT Name, Price FROM PRODUCT 
+WHERE Price > ALL (SELECT Price FROM PRODUCT WHERE Category = 'Electronics');
+			\end{minted}
 		\end{itemize}
 		\item \texttt{EXISTS}: Vero se la subquery restituisce almeno una riga.
 		\begin{minted}{sql}
-SELECT Name FROM PEOPLE P
-WHERE EXISTS (SELECT * FROM FATHERHOOD F WHERE F.Father = P.Name);
+-- Trova i dipendenti che hanno almeno un progetto assegnato
+SELECT Name FROM EMPLOYEE E
+WHERE EXISTS (SELECT * FROM PROJECT P WHERE P.LeaderID = E.ID);
+
+-- Trova i clienti che hanno fatto ordini nel 2023
+SELECT Name FROM CUSTOMER C
+WHERE EXISTS (
+    SELECT * FROM ORDERS O 
+    WHERE O.CustomerID = C.ID 
+    AND YEAR(O.OrderDate) = 2023
+);
 		\end{minted}
 		\item \texttt{NOT EXISTS}: Vero se la subquery non restituisce righe.
+		\begin{minted}{sql}
+-- Trova i dipendenti che non hanno progetti assegnati
+SELECT Name FROM EMPLOYEE E
+WHERE NOT EXISTS (SELECT * FROM PROJECT P WHERE P.LeaderID = E.ID);
+
+-- Trova i prodotti che non sono mai stati ordinati
+SELECT Name FROM PRODUCT P
+WHERE NOT EXISTS (SELECT * FROM ORDER_ITEMS OI WHERE OI.ProductID = P.ID);
+		\end{minted}
 	\end{itemize}
 	
 	\subsubsection{Visibilità (Scope)}
