@@ -7,3 +7,4 @@
 _minted*
 .env
 node_modules/
+uml_images/

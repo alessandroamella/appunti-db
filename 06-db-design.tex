@@ -20,7 +20,8 @@
 % --- Liste personalizzate ---
 \usepackage{enumitem}
 
-
+% --- Immagini ---
+\usepackage{float}
 \usepackage{tikz}
 \usetikzlibrary{shapes.geometric, positioning, calc}
 
@@ -50,9 +51,6 @@
 	breaklines=true, % A capo automatico per linee lunghe
 	style=monokai    % Stile di highlighting
 }
-\newminted{sql}{frame=lines, framesep=2mm, fontsize=\small, breaklines=true, style=monokai}
-\newminted{prisma}{frame=lines, framesep=2mm, fontsize=\small, breaklines=true, style=monokai}
-
 
 % --- Titolo ---
 \title{Appunti sulla Modellazione Concettuale dei Dati}
@@ -399,7 +397,7 @@ CREATE TABLE EsamiSostenuti (
 	\begin{itemize}
 		\item \texttt{(0,1)}: Attributo opzionale (può essere \texttt{NULL}). Es. \texttt{NumeroTelefonoSecondario}.
 		\item \texttt{(1,1)}: Attributo obbligatorio, singolo valore (default). Es. \texttt{CodiceFiscale}.
-		\item \texttt{(0,N)} o \texttt{(1,N)}: Attributo multivalore (un'entità può avere più valori per quell'attributo). Es. \texttt{NumeroTelefono} (una persona può avere più numeri).
+		\item \texttt{(0,N)} o \texttt{(1,N)}: Attributo multivalore (un'entità può avere più valori per quell'attributo). Es. \texttt{NumeriTelefono} (una persona può avere più numeri).
 		\begin{itemize}
 			\item \textit{Paragone Pratico (Multivalore):} In SQL, si usa una tabella separata: \texttt{Persona(ID\_Persona)}, \texttt{NumeriTelefono(ID\_Persona\_FK, Numero)}. In MongoDB, si usa un array: \texttt{telefoni: ["123", "456"]}.
 		\end{itemize}
@@ -460,12 +458,12 @@ CREATE TABLE EsamiSostenuti (
 		\begin{itemize}
 			\item \textbf{Identificatore Interno:} Formato da attributi della stessa entità.
 			\begin{itemize}
-				\item Es. \texttt{CodiceFiscale} per l'entità \texttt{Persona}.
+				\item Es. \texttt{codiceFiscale} per l'entità \texttt{Persona}.
 				\item \textit{Paragone Pratico:} \texttt{PRIMARY KEY} in SQL; \texttt{\_id} in MongoDB; \texttt{@id} in Prisma.
 			\end{itemize}
 			\item \textbf{Identificatore Esterno:} Formato da attributi dell'entità più l'identificatore di un'entità esterna a cui è collegata tramite una relazione con cardinalità \texttt{(1,1)} dal lato dell'entità da identificare. Usato per ``entità deboli'' che non possono esistere o essere identificate senza l'entità ``forte''.
 			\begin{itemize}
-				\item Es. \texttt{NumeroRiga} (attributo di \texttt{RigaOrdine}) + \texttt{ID\_Ordine} (dall'entità \texttt{Ordine}) identifica univocamente una \texttt{RigaOrdine}. \texttt{RigaOrdine} è un'entità debole rispetto a \texttt{Ordine}.
+				\item Es. \texttt{lineId} (attributo di \texttt{OrderItem}) + \texttt{orderId} (dall'entità \texttt{Order}) identifica univocamente un \texttt{OrderItem}. \texttt{OrderItem} è un'entità debole rispetto a \texttt{Order}.
 			\end{itemize}
 		\end{itemize}
 		\item Ogni entità deve avere almeno un identificatore.
@@ -495,14 +493,14 @@ CREATE TABLE EsamiSostenuti (
 			key/.style={attribute, draw=white, ultra thick}
 		]
 			% Strong entity with internal key
-			\node[entity] (ordine) {Ordine};
-			\node[key] (id) [above=1cm of ordine] {ID\_Ordine};
+			\node[entity] (ordine) {Order};
+			\node[key] (id) [above=1cm of ordine] {orderId};
 			\draw[white, ultra thick] (ordine) -- (id);
 			
 			% Weak entity with external key
-			\node[weak] (riga) [right=3cm of ordine] {RigaOrdine};
-			\node[attribute] (num) [above=1cm of riga] {NumeroRiga};
-			\node[attribute] (qty) [right=1cm of riga] {Quantità};
+			\node[weak] (riga) [right=3cm of ordine] {OrderItem};
+			\node[attribute] (num) [above=1cm of riga] {lineId};
+			\node[attribute] (qty) [right=1cm of riga] {quantity};
 			
 			\draw[white] (riga) -- (num);
 			\draw[white] (riga) -- (qty);
@@ -511,8 +509,42 @@ CREATE TABLE EsamiSostenuti (
 			% Dashed line for identifying relationship
 			\draw[white, dashed] (id) -- (num);
 		\end{tikzpicture}
-		\caption{Esempio di entità forte (Ordine) con identificatore interno e entità debole (RigaOrdine) con identificatore esterno.}
+		\caption{Esempio di entità forte (Order) con identificatore interno e entità debole (OrderItem) con identificatore esterno.}
 	\end{figure}
+	
+	\begin{minted}{graphql}
+// Esempio con Prisma
+model Order {
+  orderId    Int         @id @default(autoincrement())
+  // altri campi dell'ordine
+  orderItems OrderItem[]
+}
+
+model OrderItem {
+  orderId     Int
+  lineId      Int
+  quantity    Int
+  order       Order  @relation(fields: [orderId], references: [orderId])
+  
+  @@id([orderId, lineId]) // Chiave primaria composta
+}
+	\end{minted}
+	
+	\begin{minted}{sql}
+-- Definizione SQL dello schema
+CREATE TABLE "Order" (
+  orderId    SERIAL PRIMARY KEY,
+  // altri campi dell'ordine
+);
+
+CREATE TABLE OrderItem (
+  orderId     INT,
+  lineId      INT,
+  quantity    INT,
+  PRIMARY KEY (orderId, lineId),
+  FOREIGN KEY (orderId) REFERENCES "Order"(orderId) ON DELETE CASCADE
+);
+	\end{minted}
 	
 	\subsection{Generalizzazione/Specializzazione (Inheritance)}
 	\begin{itemize}
@@ -542,7 +574,7 @@ CREATE TABLE EsamiSostenuti (
 		\end{itemize}
 	\end{itemize}
 
-	\begin{figure}[h]
+	\begin{figure}[H]
 		\centering
 		\begin{tikzpicture}[
 			every node/.style={font=\small},
@@ -586,7 +618,7 @@ CREATE TABLE EsamiSostenuti (
 	\section{Documentazione}
 	\begin{itemize}
 		\item \textbf{Dizionario dei Dati:} Descrive in dettaglio ogni entità, relazione e attributo.
-		\item \textbf{Vincoli Non Esprimibili:} Alcuni vincoli di business non possono essere rappresentati graficamente nell'ERD (es. ``Lo stipendio di un impiegato non può superare quello del suo manager''). Vanno documentati a parte.
+		\item \textbf{Vincoli Non Esprimibili:} Alcuni vincoli non possono essere rappresentati graficamente nell'ERD (es. ``Lo stipendio di un impiegato non può superare quello del suo manager''). Vanno documentati a parte.
 		\begin{itemize}
 			\item \textit{Paragone Pratico:} Questi vincoli si implementano spesso con \texttt{CHECK constraints} in SQL, \texttt{triggers}, o a livello applicativo.
 		\end{itemize}
@@ -607,5 +639,164 @@ CREATE TABLE EsamiSostenuti (
 			\item \textbf{Concetti specifici UML:} Aggregazione (rombo vuoto), Composizione (rombo pieno).
 		\end{itemize}
 	\end{itemize}
+
 	
-\end{document}
+	% --- Assicurati che questi pacchetti siano nel tuo preambolo ---
+% \usepackage{graphicx}
+% \usepackage{float} % Per l'opzione [H] delle figure
+% \usepackage[section]{placeins} % Opzionale, per un controllo più stretto del float
+% -------------------------------------------------------------
+
+	% --- Continua dalla sezione precedente ---
+
+	\section{Modellazione Concettuale con UML (Unified Modeling Language)}
+
+	UML è un linguaggio di modellazione standardizzato e ampiamente utilizzato per specificare, visualizzare, costruire e documentare gli artefatti di un sistema software. Sebbene l'ERD sia specifico per i database, UML offre un approccio più generale e può essere utilizzato anche per la modellazione concettuale dei dati, principalmente attraverso i \textbf{Diagrammi delle Classi (Class Diagrams)}.
+
+	\subsection{Classi (Classes)}
+	In UML, un'entità del modello ER corrisponde a una \textbf{Classe}. Una classe è rappresentata come un rettangolo, tipicamente diviso in tre sezioni:
+	\begin{enumerate}
+			\item \textbf{Nome della Classe:} In alto, in grassetto.
+			\item \textbf{Attributi (Attributes):} Al centro, elencano le proprietà della classe.
+			\item \textbf{Operazioni (Operations/Methods):} In basso (spesso omessa nella modellazione concettuale dei dati puri, poiché ci si concentra sulla struttura).
+	\end{enumerate}
+
+	\begin{figure}[H]
+			\centering
+			\includegraphics[width=0.8\textwidth]{uml_images/fig_classes_employee_project.png}
+			\caption{Esempio di Classi UML: Employee e Project.}
+			\label{fig:uml_classes_employee_project}
+	\end{figure}
+
+	\subsection{Associazioni (Associations)}
+	Le relazioni del modello ER sono chiamate \textbf{Associazioni} in UML. Un'associazione rappresenta una relazione semantica tra due o più classi. È disegnata come una linea continua che connette le classi.
+	\begin{itemize}
+			\item \textbf{Nome dell'Associazione (opzionale):} Può essere scritto vicino alla linea, spesso con una freccetta che indica la direzione di lettura (se il nome è un verbo).
+			\item \textbf{Ruoli (opzionale):} Nomi posti alle estremità della linea di associazione per chiarire il ruolo che una classe gioca nell'associazione.
+			\item \textbf{Molteplicità (Multiplicity):} Equivalente alla cardinalità ER, indica quante istanze di una classe possono essere collegate a un'istanza dell'altra classe. Notazioni comuni:
+			\begin{itemize}
+					\item \texttt{1} (esattamente uno)
+					\item \texttt{0..1} (zero o uno)
+					\item \texttt{*} (zero o molti)
+					\item \texttt{1..*} (uno o molti)
+					\item \texttt{m..n} (da m a n)
+			\end{itemize}
+	\end{itemize}
+
+	\begin{figure}[H]
+			\centering
+			\includegraphics[width=0.9\textwidth]{uml_images/fig_associations_examples.png}
+			\caption{Esempi di Associazioni UML con nomi, ruoli e molteplicità.}
+			\label{fig:uml_associations_examples}
+	\end{figure}
+
+	\subsection{Classe di Associazione (Association Class)}
+	Quando un'associazione stessa ha attributi o operazioni, può essere modellata come una \textbf{Classe di Associazione}. È rappresentata come una classe normale collegata da una linea tratteggiata all'associazione che descrive.
+	\textit{Esempio:} L'associazione "Sostiene Esame" tra \texttt{Student} e \texttt{Course} può avere attributi come \texttt{Date} e \texttt{Degree}. \texttt{Exam} diventa una classe di associazione.
+
+	\begin{figure}[H]
+			\centering
+			\includegraphics[width=0.6\textwidth]{uml_images/fig_association_class_exam.png}
+			\caption{Esempio di Classe di Associazione UML: Exam.}
+			\label{fig:uml_association_class_exam}
+	\end{figure}
+
+	\subsection{Associazione N-aria (N-ary Association) e Reificazione}
+	Un'associazione può coinvolgere più di due classi (ternaria, quaternaria, ecc.). Graficamente, si usa un rombo (come in ER) a cui sono collegate le classi. Se l'associazione n-aria ha attributi, una classe di associazione viene collegata al rombo.
+	Le associazioni n-arie (n > 2) sono spesso complesse da gestire e interpretare. Una pratica comune è la \textbf{reificazione} (o "promozione a classe"): l'associazione n-aria viene trasformata in una nuova classe regolare, che viene poi collegata alle classi originariamente coinvolte tramite associazioni binarie.
+
+	\begin{figure}[H]
+			\centering
+			\includegraphics[width=0.45\textwidth]{uml_images/fig_ternary_association.png}\hfill
+			\includegraphics[width=0.45\textwidth]{uml_images/fig_reification.png}
+			\caption{Associazione Ternaria con classe di associazione (a, sinistra) e sua Reificazione (b, destra) in UML.}
+			\label{fig:uml_nary_reification}
+	\end{figure}
+
+	\subsection{Aggregazione e Composizione (Aggregation and Composition)}
+	Sono tipi speciali di associazione che rappresentano relazioni "parte-di" (whole-part).
+	\begin{itemize}
+			\item \textbf{Aggregazione (Aggregation):} Rappresenta una relazione "ha-un" debole. Le parti possono esistere indipendentemente dal tutto. È indicata da un \textbf{rombo vuoto} dal lato del "tutto" (aggregato).
+			\textit{Esempio:} Un \texttt{Team} è composto da \texttt{Technician}. Un tecnico può esistere anche se il team viene sciolto, o può appartenere a più team (a seconda della molteplicità).
+			\item \textbf{Composizione (Composition):} Rappresenta una relazione "ha-un" forte. Le parti dipendono esistenzialmente dal tutto; se il tutto viene distrutto, anche le parti lo sono. È indicata da un \textbf{rombo pieno} dal lato del "tutto" (composito). La molteplicità dal lato del composito verso la parte è solitamente \texttt{1} o \texttt{0..1} (una parte appartiene a un solo tutto).
+			\textit{Esempio:} Un'automobile (\texttt{Car}) è composta da un motore (\texttt{Engine}). Se l'automobile viene rottamata, anche il suo motore specifico (come parte di quell'auto) cessa di esistere in quel contesto. Una \texttt{Agency} è parte di una \texttt{Firm}.
+	\end{itemize}
+
+	\begin{figure}[H]
+			\centering
+			\includegraphics[width=0.7\textwidth]{uml_images/fig_aggregation_composition.png}
+			\caption{Esempio di Aggregazione (Team-Technician) e Composizione (Firm-Agency) in UML.}
+			\label{fig:uml_aggregation_composition}
+	\end{figure}
+
+	\subsection{Identificatori (Identifiers)}
+	In UML, gli attributi che compongono l'identificatore (chiave primaria) di una classe possono essere contrassegnati con la proprietà \texttt{\{id\}} o talvolta sottolineati (anche se \texttt{\{id\}} è più comune in UML2).
+
+	\begin{figure}[H]
+			\centering
+			\includegraphics[width=0.8\textwidth]{uml_images/fig_identifiers.png}
+			\caption{Esempio di Identificatori UML con \texttt{\{id\}}.}
+			\label{fig:uml_identifiers}
+	\end{figure}
+
+	\subsection{Identificatore Esterno (External Identifier) e Associazioni Qualificate}
+	Un concetto simile all'identificatore esterno ER si ha quando l'identità di una classe (la "debole") dipende parzialmente da un'altra classe attraverso un'associazione. Questo può essere indicato con:
+	\begin{itemize}
+			\item Uno \textbf{stereotipo} sull'associazione, come \texttt{<<identifying>>} (come suggerito nelle slide del prof., anche se non standard UML stretto per questo specifico caso).
+			\item Una \textbf{Associazione Qualificata}: un piccolo rettangolo (il qualificatore) è attaccato alla classe "forte", contenente un attributo della classe "debole" che, insieme all'istanza della classe forte, identifica univocamente l'istanza della classe debole.
+			\item La molteplicità dal lato della classe "debole" verso la "forte" è spesso \texttt{1} in un'associazione identificante.
+	\end{itemize}
+	Nelle slide del Prof. Montesi (slide 100), si usa lo stereotipo \texttt{<<identifiying>>} (probabile typo per \texttt{<<identifying>>}) sull'associazione e \texttt{\{id\}} sugli attributi che compongono la chiave, inclusi quelli della classe "debole" e quelli ereditati implicitamente tramite l'associazione identificante.
+
+	\begin{figure}[H]
+			\centering
+			\includegraphics[width=0.9\textwidth]{uml_images/fig_identifying_association.png}
+			\caption{Esempio di associazione identificante con stereotipo (come da slide 100).}
+			\label{fig:uml_identifying_association}
+	\end{figure}
+	\textit{Nota:} L'attributo \texttt{Number} di \texttt{Student} è \texttt{\{id\}} nel contesto dell'associazione con \texttt{University}. La vera chiave univoca di \texttt{Student} sarebbe una combinazione di \texttt{Student.Number} e l'identificatore di \texttt{University}.
+
+	\subsection{Generalizzazione (Generalization)}
+	Corrisponde alla generalizzazione/specializzazione del modello ER e rappresenta una relazione "è-un-tipo-di" (is-a-kind-of) tra una classe più generale (superclasse) e una classe più specifica (sottoclasse).
+	\begin{itemize}
+			\item \textbf{Rappresentazione Grafica:} Una linea continua con una \textbf{grande freccia triangolare vuota} che punta dalla sottoclasse alla superclasse.
+			\item \textbf{Ereditarietà:} La sottoclasse eredita attributi, operazioni e associazioni della superclasse.
+			\item \textbf{Vincoli:} Simili a ER, si possono specificare vincoli come:
+			\begin{itemize}
+					\item \texttt{\{complete, disjoint\}} o \texttt{\{total, disjoint\}}: Ogni istanza della superclasse è esattamente una delle sottoclassi.
+					\item \texttt{\{incomplete, disjoint\}} o \texttt{\{partial, disjoint\}}: Un'istanza della superclasse può essere una delle sottoclassi o nessuna di esse (solo la superclasse), ma non più di una.
+					\item \texttt{\{overlapping\}}: Una sottoclasse può essere istanza di più sottoclassi (più raro).
+			\end{itemize}
+			Questi vincoli sono scritti vicino alla freccia di generalizzazione.
+	\end{itemize}
+
+	\begin{figure}[H]
+			\centering
+			\includegraphics[width=\textwidth]{uml_images/fig_generalization.png}
+			\caption{Esempio di Generalizzazione UML (basato su slide 101).}
+			\label{fig:uml_generalization}
+	\end{figure}
+
+	\subsection{Esempio Complessivo: Schema Concettuale in UML}
+	La slide 102 del Prof. Montesi mostra un diagramma ER tradotto in UML Class Diagram.
+	Notiamo:
+	\begin{itemize}
+			\item Le entità diventano Classi (\texttt{Employee}, \texttt{Dept}, \texttt{Project}, \texttt{Office}).
+			\item Le relazioni diventano Associazioni (\texttt{Management}, \texttt{Affiliation}, \texttt{Attendance}).
+			\item \texttt{Affiliation} è una classe di associazione perché ha l'attributo \texttt{Date}.
+			\item \texttt{Composition} tra \texttt{Dept} e \texttt{Office} è una composizione forte (rombo pieno) e identificante (\texttt{<<identifying>>}).
+			\item Le cardinalità ER sono tradotte in molteplicità UML.
+			\item Gli identificatori sono marcati con \texttt{\{id\}}.
+			\item Una nota è attaccata alla classe \texttt{Project}.
+	\end{itemize}
+
+	\begin{figure}[H]
+	\centering
+	\includegraphics[width=\textwidth]{uml_images/fig_overall_example_slide102.png}
+	\caption{Diagramma concettuale UML basato sulla slide 102.}
+	\label{fig:uml_overall_example_slide102}
+	\end{figure}
+
+	\textit{Conclusione:} UML offre un set ricco di costrutti per la modellazione concettuale dei dati, con una notazione leggermente diversa ma concettualmente simile a ER. La scelta tra ER e UML Class Diagrams spesso dipende dalle convenzioni del team o dalla necessità di integrare il modello dati con altri modelli UML del sistema.
+
+\end{document} % Assicurati che questo sia alla fine del tuo file principale

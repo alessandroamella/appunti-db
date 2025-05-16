@@ -45,6 +45,20 @@ const octokit = new Octokit({
 });
 
 /**
+ * Generate images used in the PDF by running generate_images.sh
+ */
+function generateImages() {
+  try {
+    console.log("Generating images for PDFs...");
+    execSync("./generate_images.sh", { stdio: "inherit" });
+    console.log("Image generation completed successfully");
+  } catch (error) {
+    console.error("Error generating images:", error.message);
+    process.exit(1);
+  }
+}
+
+/**
  * Find PDF files in the repository and sort them numerically
  */
 function findPDFFiles() {
@@ -214,6 +228,9 @@ async function main() {
       break;
 
     case "release": {
+      // Generate images first
+      generateImages();
+      // Then process PDFs
       const pdfFiles = findPDFFiles();
       const pdfInfo = await combinePDFs(pdfFiles);
       await createGitHubRelease(pdfInfo, args.message);
