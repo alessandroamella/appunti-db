@@ -22,7 +22,7 @@
 
 
 \usepackage{tikz}
-\usetikzlibrary{shapes.geometric, positioning}
+\usetikzlibrary{shapes.geometric, positioning, calc}
 
 % --- Hyperlink ---
 \usepackage{hyperref}
@@ -100,7 +100,7 @@
 		\item \textbf{Input:} Schema Concettuale.
 		\item \textbf{Output:} \textbf{Schema Logico} (es. definizione di tabelle per un DB relazionale, o collezioni per un DB NoSQL come MongoDB).
 		\item \textbf{Focus:} Il ``COME?'' – come traduciamo il modello concettuale in un modello supportato da un tipo di DBMS (es. relazionale, a documenti, a grafo). È indipendente dal DBMS specifico, ma non dal \textit{tipo} di DBMS.
-		\item \textit{Esempio Pratico (Relazionale):}\\
+		\item \textit{Esempio Pratico:}\\
 		\begin{center}
 			\begin{tikzpicture}[
 				entity/.style={rectangle, draw=white, fill=black!90, text=gray!10, minimum width=3cm, minimum height=1.2cm, font=\bfseries},
@@ -129,53 +129,41 @@
 		\end{center}
 		
 		
-		\item Dallo schema concettuale sopra, un esempio molto \textit{loose} potrebbe essere:
+		\item Dallo schema concettuale sopra, con un po' d'immaginazione sulle releazioni, con SQL potrebbe essere:
 		\begin{minted}{sql}
 -- Table: Studente
 CREATE TABLE Studente (
-id INT PRIMARY KEY,
-nome VARCHAR(100)
+	id INT PRIMARY KEY,
+	nome VARCHAR(100)
 );
 
 -- Table: Lezione
 CREATE TABLE Lezione (
-id INT PRIMARY KEY,
-titolo VARCHAR(100)
+	id INT PRIMARY KEY,
+	titolo VARCHAR(100)
 );
 
 -- Join Table: Esame (between Studente and Lezione)
 CREATE TABLE Esame (
-studente_id INT,
-lezione_id INT,
-data DATE,
-voto INT,
-PRIMARY KEY (studente_id, lezione_id),
-FOREIGN KEY (studente_id) REFERENCES Studente(id),
-FOREIGN KEY (lezione_id) REFERENCES Lezione(id)
+	studente_id INT,
+	lezione_id INT,
+	data DATE,
+	voto INT,
+	PRIMARY KEY (studente_id, lezione_id),
+	FOREIGN KEY (studente_id) REFERENCES Studente(id),
+	FOREIGN KEY (lezione_id) REFERENCES Lezione(id)
 );
 
 -- Table: Impiegato
 CREATE TABLE Impiegato (
-id INT PRIMARY KEY,
-nome VARCHAR(100)
+	id INT PRIMARY KEY,
+	nome VARCHAR(100)
 );
 
 -- Table: Città
 CREATE TABLE Città (
-id INT PRIMARY
-		\end{minted}
-		\item \textit{Esempio Pratico (MongoDB/Prisma):} Potresti avere una collezione \texttt{Studenti} con un array di \texttt{ID\_Corso} a cui sono iscritti, o una collezione \texttt{Corsi} con un array di \texttt{ID\_Studente} iscritti. Prisma ti permette di definire queste relazioni in modo più astratto:
-		\begin{minted}{graphql}
-model Studente {
-	id    Int     @id @default(autoincrement())
-	nome  String
-	corsi Corso[] @relation("Iscrizioni")
-}
-model Corso {
-	id        Int        @id @default(autoincrement())
-	titolo    String
-	studenti  Studente[] @relation("Iscrizioni")
-}
+	id INT PRIMARY
+)
 		\end{minted}
 	\end{itemize}
 	
@@ -216,6 +204,30 @@ model Corso {
 		\item \textbf{Convenzioni:} Nomi singolari, significativi.
 		\item \textit{Paragone Pratico:} Simile a una classe in OOP, un \texttt{model} in Prisma, o una collezione in MongoDB.
 	\end{itemize}
+
+	\begin{figure}[h]
+		\centering
+		\begin{tikzpicture}[
+			every node/.style={font=\small},
+			entity/.style={rectangle, draw=white, fill=black!80, text=white, minimum width=2cm, minimum height=1cm},
+			attribute/.style={ellipse, draw=white, fill=black!60, text=white, minimum width=1.5cm, minimum height=0.8cm},
+			key/.style={attribute, draw=white, ultra thick}
+		]
+			\node[entity] (studente) {Studente};
+			\node[attribute] (matricola) [above=1cm of studente] {Matricola};
+			\node[attribute] (nome) [above right=0.5cm and 1cm of studente] {Nome};
+			\node[attribute] (cognome) [right=1cm of studente] {Cognome};
+			\node[attribute] (data) [below right=0.5cm and 1cm of studente] {DataNascita};
+			
+			\draw[white] (studente) -- (matricola);
+			\draw[white] (studente) -- (nome);
+			\draw[white] (studente) -- (cognome);
+			\draw[white] (studente) -- (data);
+			
+			\draw[white, ultra thick] (studente) -- (matricola);
+		\end{tikzpicture}
+		\caption{Esempio di entità Studente con i suoi attributi. La linea spessa indica l'identificatore (Matricola).}
+	\end{figure}
 	
 	\subsection{Relazione (Relationship)}
 	\begin{itemize}
@@ -234,6 +246,23 @@ model Corso {
 		\end{itemize}
 		\item \textbf{Ruoli:} Utili nelle relazioni ricorsive per chiarire il significato (es. \texttt{Presidente} -(Precedente/Successivo)-> \texttt{Successione}).
 	\end{itemize}
+
+	\begin{figure}[h]
+		\centering
+		\begin{tikzpicture}[
+			every node/.style={font=\small},
+			entity/.style={rectangle, draw=white, fill=black!80, text=white, minimum width=2cm, minimum height=1cm},
+			relationship/.style={diamond, draw=white, fill=black!70, text=white, minimum width=1.5cm, minimum height=1cm}
+		]
+			\node[entity] (studente) {Studente};
+			\node[relationship] (frequenta) [right=2cm of studente] {Frequenta};
+			\node[entity] (corso) [right=2cm of frequenta] {Corso};
+			
+			\draw[white] (studente) -- node[above, text=white] {(0,N)} (frequenta);
+			\draw[white] (frequenta) -- node[above, text=white] {(0,N)} (corso);
+		\end{tikzpicture}
+		\caption{Esempio di relazione molti-a-molti tra Studente e Corso.}
+	\end{figure}
 	
 	\subsection{Promozione di Relazioni a Entità}
 	\textbf{Quando?}
@@ -255,6 +284,30 @@ CREATE TABLE EsamiSostenuti (
 );
 		\end{minted}
 	\end{itemize}
+
+	\begin{figure}[h]
+		\centering
+		\begin{tikzpicture}[
+			every node/.style={font=\small},
+			entity/.style={rectangle, draw=white, fill=black!80, text=white, minimum width=2cm, minimum height=1cm},
+			relationship/.style={diamond, draw=white, fill=black!70, text=white, minimum width=1.5cm, minimum height=1cm},
+			weak/.style={rectangle, draw=white, fill=black!60, text=white, minimum width=2cm, minimum height=1cm, double}
+		]
+			\node[entity] (studente) {Studente};
+			\node[weak] (esame) [right=2cm of studente] {IstanzaEsame};
+			\node[entity] (corso) [right=2cm of esame] {Corso};
+			
+			\draw[white] (studente) -- node[above, text=white] {(0,N)} (esame);
+			\draw[white] (esame) -- node[above, text=white] {(1,1)} (corso);
+			
+			\node[draw=white, fill=black!50, text=white, ellipse, minimum width=1cm, minimum height=0.5cm] (data) [above=0.5cm of esame] {Data};
+			\node[draw=white, fill=black!50, text=white, ellipse, minimum width=1cm, minimum height=0.5cm] (voto) [below=0.5cm of esame] {Voto};
+			
+			\draw[white] (esame) -- (data);
+			\draw[white] (esame) -- (voto);
+		\end{tikzpicture}
+		\caption{Esempio di promozione della relazione Esame a entità debole (doppio bordo) con attributi propri.}
+	\end{figure}
 	
 	\subsection{Attributi (Attribute)}
 	\begin{itemize}
@@ -301,6 +354,32 @@ CREATE TABLE EsamiSostenuti (
 			\end{itemize}
 		\end{itemize}
 	\end{itemize}
+
+	\begin{figure}[h]
+		\centering
+		\begin{tikzpicture}[
+			every node/.style={font=\small},
+			entity/.style={rectangle, draw=white, fill=black!80, text=white, minimum width=2cm, minimum height=1cm},
+			relationship/.style={diamond, draw=white, fill=black!70, text=white, minimum width=1.5cm, minimum height=1cm}
+		]
+			% 1:1 relationship
+			\node[entity] (persona) {Persona};
+			\node[relationship] (possiede) [right=2cm of persona] {Possiede};
+			\node[entity] (pacemaker) [right=2cm of possiede] {Pacemaker};
+			
+			\draw[white] (persona) -- node[above, text=white] {(0,1)} (possiede);
+			\draw[white] (possiede) -- node[above, text=white] {(0,1)} (pacemaker);
+			
+			% 1:N relationship
+			\node[entity] (cliente) [below=2cm of persona] {Cliente};
+			\node[relationship] (effettua) [right=2cm of cliente] {Effettua};
+			\node[entity] (ordine) [right=2cm of effettua] {Ordine};
+			
+			\draw[white] (cliente) -- node[above, text=white] {(1,1)} (effettua);
+			\draw[white] (effettua) -- node[above, text=white] {(0,N)} (ordine);
+		\end{tikzpicture}
+		\caption{Esempi di relazioni uno-a-uno (Persona-Pacemaker) e uno-a-molti (Cliente-Ordine).}
+	\end{figure}
 	
 	\subsubsection{Cardinalità degli Attributi}
 	\begin{itemize}
@@ -311,6 +390,39 @@ CREATE TABLE EsamiSostenuti (
 			\item \textit{Paragone Pratico (Multivalore):} In SQL, si usa una tabella separata: \texttt{Persona(ID\_Persona)}, \texttt{NumeriTelefono(ID\_Persona\_FK, Numero)}. In MongoDB, si usa un array: \texttt{telefoni: ["123", "456"]}.
 		\end{itemize}
 	\end{itemize}
+
+	\begin{figure}[h]
+		\centering
+		\begin{tikzpicture}[
+			every node/.style={font=\small},
+			entity/.style={rectangle, draw=white, fill=black!80, text=white, minimum width=2cm, minimum height=1cm},
+			attribute/.style={ellipse, draw=white, fill=black!60, text=white, minimum width=1.5cm, minimum height=0.8cm},
+			multivalue/.style={ellipse, draw=white, fill=black!50, text=white, minimum width=1.5cm, minimum height=0.8cm, double}
+		]
+			\node[entity] (persona) {Persona};
+			
+			% Single value attributes
+			\node[attribute] (cf) [above=1cm of persona] {CF};
+			\node[attribute] (nome) [above right=0.5cm and 1cm of persona] {Nome};
+			
+			% Optional attribute
+			\node[attribute] (tel2) [right=1cm of persona] {Tel2};
+			
+			% Multivalue attribute
+			\node[multivalue] (tel) [below right=0.5cm and 1cm of persona] {Telefoni};
+			
+			\draw[white] (persona) -- (cf);
+			\draw[white] (persona) -- (nome);
+			\draw[white] (persona) -- (tel2);
+			\draw[white] (persona) -- (tel);
+			
+			% Cardinality labels
+			\node[text=white] at ($(cf)!0.5!(persona)$) [left] {(1,1)};
+			\node[text=white] at ($(tel2)!0.5!(persona)$) [right] {(0,1)};
+			\node[text=white] at ($(tel)!0.5!(persona)$) [right] {(0,N)};
+		\end{tikzpicture}
+		\caption{Esempi di attributi con diverse cardinalità: obbligatorio (CF), opzionale (Tel2), e multivalore (Telefoni).}
+	\end{figure}
 	
 	\subsection{Identificatori (Chiavi - Keys)}
 	\begin{itemize}
@@ -331,6 +443,35 @@ CREATE TABLE EsamiSostenuti (
 		\item Ogni entità deve avere almeno un identificatore.
 		\item Le relazioni di solito non hanno identificatori (se ne hanno bisogno, si promuovono a entità).
 	\end{itemize}
+
+	\begin{figure}[h]
+		\centering
+		\begin{tikzpicture}[
+			every node/.style={font=\small},
+			entity/.style={rectangle, draw=white, fill=black!80, text=white, minimum width=2cm, minimum height=1cm},
+			weak/.style={rectangle, draw=white, fill=black!60, text=white, minimum width=2cm, minimum height=1cm, double},
+			attribute/.style={ellipse, draw=white, fill=black!60, text=white, minimum width=1.5cm, minimum height=0.8cm},
+			key/.style={attribute, draw=white, ultra thick}
+		]
+			% Strong entity with internal key
+			\node[entity] (ordine) {Ordine};
+			\node[key] (id) [above=1cm of ordine] {ID\_Ordine};
+			\draw[white, ultra thick] (ordine) -- (id);
+			
+			% Weak entity with external key
+			\node[weak] (riga) [right=3cm of ordine] {RigaOrdine};
+			\node[attribute] (num) [above=1cm of riga] {NumeroRiga};
+			\node[attribute] (qty) [right=1cm of riga] {Quantità};
+			
+			\draw[white] (riga) -- (num);
+			\draw[white] (riga) -- (qty);
+			\draw[white] (ordine) -- node[above, text=white] {(1,1)} (riga);
+			
+			% Dashed line for identifying relationship
+			\draw[white, dashed] (id) -- (num);
+		\end{tikzpicture}
+		\caption{Esempio di entità forte (Ordine) con identificatore interno e entità debole (RigaOrdine) con identificatore esterno.}
+	\end{figure}
 	
 	\subsection{Generalizzazione/Specializzazione (Inheritance)}
 	\begin{itemize}
@@ -359,6 +500,47 @@ CREATE TABLE EsamiSostenuti (
 			\item Prisma: Può essere modellato con campi discriminatori o modelli separati con relazioni.
 		\end{itemize}
 	\end{itemize}
+
+	\begin{figure}[h]
+		\centering
+		\begin{tikzpicture}[
+			every node/.style={font=\small},
+			entity/.style={rectangle, draw=white, fill=black!80, text=white, minimum width=2cm, minimum height=1cm},
+			subclass/.style={rectangle, draw=white, fill=black!70, text=white, minimum width=2cm, minimum height=1cm},
+			attribute/.style={ellipse, draw=white, fill=black!60, text=white, minimum width=1.5cm, minimum height=0.8cm},
+			generalization/.style={white, fill=white, draw=white, line width=1pt, shape=isosceles triangle, shape border rotate=90, isosceles triangle stretches=true, minimum height=0.6cm, minimum width=0.8cm}
+		]
+			% Parent class
+			\node[entity] (veicolo) {Veicolo};
+			\node[attribute] (targa) [above=1cm of veicolo] {Targa};
+			\node[attribute] (anno) [right=1cm of veicolo] {Anno};
+			
+			% Subclasses
+			\node[subclass] (auto) [below=2.5cm of veicolo, xshift=-2cm] {Automobile};
+			\node[subclass] (moto) [below=2.5cm of veicolo, xshift=2cm] {Motocicletta};
+			
+			% Subclass attributes
+			\node[attribute] (porte) [below=0.5cm of auto] {NumPorte};
+			\node[attribute] (cilindrata) [below=0.5cm of moto] {Cilindrata};
+			
+			% Attributes connections
+			\draw[white] (veicolo) -- (targa);
+			\draw[white] (veicolo) -- (anno);
+			\draw[white] (auto) -- (porte);
+			\draw[white] (moto) -- (cilindrata);
+			
+			% Generalization triangle
+			\node[generalization] (gen) at ($(veicolo.south) + (0,-0.5)$) {};
+			
+			% Lines from triangle to subclasses
+			\draw[white] (gen.south) -- ($(gen.south) + (0,-0.2)$) -| (auto);
+			\draw[white] (gen.south) -- ($(gen.south) + (0,-0.2)$) -| (moto);
+			
+			% Line from superclass to triangle
+			\draw[white] (veicolo) -- (gen);
+		\end{tikzpicture}
+		\caption{Esempio di generalizzazione/specializzazione: Veicolo come superclasse e Automobile/Motocicletta come sottoclassi con simbolo di ereditarietà (triangolo vuoto).}
+	\end{figure}
 	
 	\section{Documentazione}
 	\begin{itemize}
