@@ -20,5 +20,8 @@
     "date-fns": "^4.1.0",
     "dotenv-safe": "^9.1.0",
     "tmp": "^0.2.3"
+  },
+  "bin": {
+    "github-auto-release": "./github-auto-release.js"
   }
 }

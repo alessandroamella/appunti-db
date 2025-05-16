@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
-const fs = require("fs");
-const path = require("path");
-const { execSync } = require("child_process");
+const fs = require("node:fs");
+const path = require("node:path");
+const { execSync } = require("node:child_process");
 const { Octokit } = require("@octokit/rest");
 const dotenv = require("dotenv-safe");
 const tmp = require("tmp");
@@ -17,6 +17,21 @@ const REPO_OWNER = process.env.REPO_OWNER || "alessandroamella";
 const REPO_NAME = process.env.REPO_NAME || path.basename(process.cwd());
 const PDF_PATTERN = process.env.PDF_PATTERN || "*.pdf";
 const RELEASE_PREFIX = process.env.RELEASE_PREFIX || "appunti";
+
+// Parse command line arguments
+function parseArgs() {
+  const args = process.argv.slice(2);
+  const result = { command: args[0], message: "" };
+
+  for (let i = 1; i < args.length; i++) {
+    if (args[i] === "-m" && i + 1 < args.length) {
+      result.message = args[i + 1];
+      i++; // Skip the next argument as it's the message content
+    }
+  }
+
+  return result;
+}
 
 // Validate required environment variables
 if (!GITHUB_TOKEN) {
@@ -88,7 +103,7 @@ async function combinePDFs(pdfFiles) {
 /**
  * Create a GitHub release with the combined PDF
  */
-async function createGitHubRelease(pdfInfo) {
+async function createGitHubRelease(pdfInfo, customMessage = "") {
   const { filePath, fileName } = pdfInfo;
   const timestamp = Math.floor(Date.now() / 1000);
   const releaseTag = `release-${timestamp}`;
@@ -103,7 +118,14 @@ async function createGitHubRelease(pdfInfo) {
     // Generate release body with PDF file names in Italian
     const pdfFiles = findPDFFiles();
     const fileList = pdfFiles.map(file => `- ${path.basename(file)}`).join("\n");
-    const releaseBody = `Appunti aggiornati al ${formattedDate}.\n\nFile inclusi in questa pubblicazione:\n${fileList}`;
+    let releaseBody = `Appunti aggiornati al ${formattedDate}.`;
+
+    // Add custom message if provided
+    if (customMessage) {
+      releaseBody += `\n\n${customMessage}`;
+    }
+
+    releaseBody += `\n\nFile inclusi in questa pubblicazione:\n${fileList}`;
 
     // Create the release
     const release = await octokit.repos.createRelease({
@@ -183,7 +205,8 @@ node "${scriptPath}" release
  * Main function
  */
 async function main() {
-  const command = process.argv[2];
+  const args = parseArgs();
+  const command = args.command;
 
   switch (command) {
     case "setup":
@@ -193,7 +216,7 @@ async function main() {
     case "release": {
       const pdfFiles = findPDFFiles();
       const pdfInfo = await combinePDFs(pdfFiles);
-      await createGitHubRelease(pdfInfo);
+      await createGitHubRelease(pdfInfo, args.message);
       break;
     }
 
@@ -203,8 +226,15 @@ async function main() {
       console.log("This script automates creating GitHub releases with combined PDFs.");
       console.log("");
       console.log("Usage:");
-      console.log("  node github-auto-release.js setup   - Set up the automatic release system");
-      console.log("  node github-auto-release.js release - Manually trigger a release");
+      console.log(
+        "  node github-auto-release.js setup                 - Set up the automatic release system"
+      );
+      console.log(
+        "  node github-auto-release.js release               - Manually trigger a release"
+      );
+      console.log(
+        '  node github-auto-release.js release -m "message" - Trigger a release with a custom message'
+      );
       console.log("");
       console.log("Make sure to create a .env file with your GitHub token.");
   }
