@@ -59,13 +59,13 @@ cat >appunti_completi.tex <<'EOT'
     linkcolor=white,
     filecolor=magenta,
     urlcolor=cyan,
-    pdftitle={Appunti Completi su Basi di Dati},
+    pdftitle={Appunti Completi di Basi di Dati},
     pdfauthor={Alessandro Amella},
     pdfpagemode=FullScreen,
 }
 
 % Titolo del documento unificato
-\title{\Huge Appunti Completi su Basi di Dati\\
+\title{\Huge Appunti Completi di Basi di Dati\\
   \large Basati sulle dispense del Prof. Danilo Montesi}
 \author{Alessandro Amella, Gemini e Claude}
 \date{\today}
