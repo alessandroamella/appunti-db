@@ -35,6 +35,13 @@ if [ "$MISSING" = true ]; then
   exit 1
 fi
 
+# Verifica che fix_minted_indent.sh sia presente
+if [ ! -f "fix_minted_indent.sh" ]; then
+  echo "⚠️ File mancante: fix_minted_indent.sh"
+  echo "Lo script per correggere l'indentazione dei blocchi minted non è disponibile."
+  exit 1
+fi
+
 echo "✅ Tutti i file necessari sono presenti."
 
 # 1. Crea il documento master
@@ -78,12 +85,14 @@ Questo documento è la versione compilata automaticamente di tutti i miei appunt
   \item \textbf{Fonte}: Tutti gli appunti sono disponibili come file separati nella repository GitHub: 
         \url{https://github.com/alessandroamella/appunti-db}
   \item \textbf{Generazione}: Questo PDF è stato generato automaticamente utilizzando uno script che unisce tutti i singoli file .tex degli appunti.
+  \item \textbf{Immagini}: Le immagini sono generate con PlantUML. Maggiori informazioni sono disponibili nel \href{https://github.com/alessandroamella/appunti-db/blob/master/README.md}{README} del progetto.
   \item \textbf{Aggiornamenti}: Per la versione più recente degli appunti, visita la pagina delle release:
         \url{https://github.com/alessandroamella/appunti-db/releases/latest}
   \item \textbf{Uso di AI}: Ho usato Gemini e Claude a manetta.
-\end{itemize}
 
-Sentiti libero di utilizzare, condividere o contribuire a questi appunti attraverso la repository GitHub. Licenza MIT.
+\doclicenseThis
+
+Sentiti libero di utilizzare, condividere o contribuire a questi appunti attraverso la repository GitHub.
 
 \clearpage
 
@@ -127,22 +136,30 @@ echo "Creando preambolo_comune_modificato.tex..."
 sed '/\\documentclass/d' preambolo_comune.tex >preambolo_comune_modificato.tex
 echo "✅ preambolo_comune_modificato.tex creato."
 
-# 3. Per ogni file .tex, estrai il contenuto senza modificare i livelli di sezione
-echo "Estraendo contenuto dai file..."
+# 3. Per ogni file .tex, estrai il contenuto e correggi l'indentazione minted
+echo "Estraendo contenuto dai file e correggendo l'indentazione minted..."
 
 for FILE in "${FILES[@]:0:10}"; do
   CONTENT_FILE="${FILE%.tex}-content.tex"
+  TEMP_FILE="${FILE%.tex}-temp.tex"
   echo "Elaborazione di $FILE -> $CONTENT_FILE"
 
   # Estrai contenuto tra \begin{document} e \end{document}
   sed -n '/\\begin{document}/,/\\end{document}/p' "$FILE" |
     # Rimuovi righe specifiche
-    grep -v '\\begin{document}\|\\end{document}\|\\maketitle\|\\tableofcontents\|\\newpage' >"$CONTENT_FILE"
+    grep -v '\\begin{document}\|\\end{document}\|\\maketitle\|\\tableofcontents\|\\newpage' >"$TEMP_FILE"
 
-  echo "✅ $CONTENT_FILE creato."
+  # Correggi l'indentazione dei blocchi minted
+  echo "Correggendo l'indentazione minted in $TEMP_FILE..."
+  ./fix_minted_indent.sh "$TEMP_FILE" >"$CONTENT_FILE"
+
+  # Rimuovi il file temporaneo
+  rm "$TEMP_FILE"
+
+  echo "✅ $CONTENT_FILE creato con indentazione minted corretta."
 done
 
-echo "✅ Estrazione completata."
+echo "✅ Estrazione e correzione completate."
 
 # 4. Compila il documento automaticamente
 echo

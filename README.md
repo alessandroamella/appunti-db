@@ -53,7 +53,7 @@ pnpm release -m "msg"     # Crea una release con messaggio personalizzato
 
 ## Licenza
 
-Fai quel che ti pare: licenza [MIT](LICENSE).
+[CC-BY-SA-4.0](LICENSE).
 
 ## By
 

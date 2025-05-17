@@ -14,7 +14,7 @@
     "automation"
   ],
   "author": "",
-  "license": "MIT",
+  "license": "CC-BY-SA-4.0",
   "dependencies": {
     "@octokit/rest": "^19.0.13",
     "archiver": "^7.0.1",
