@@ -13,3 +13,6 @@ plantuml.jar
 
 # remove releases
 *.pdf
+
+appunti_completi.tex
+*-content.tex

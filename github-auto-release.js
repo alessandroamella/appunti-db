@@ -18,7 +18,6 @@ const REPO_OWNER = process.env.REPO_OWNER || "alessandroamella";
 const REPO_NAME = process.env.REPO_NAME || path.basename(process.cwd());
 const PDF_PATTERN = process.env.PDF_PATTERN || "*.pdf";
 const RELEASE_PREFIX = process.env.RELEASE_PREFIX || "appunti";
-const TEX_PATTERN = process.env.TEX_PATTERN || "*.tex";
 
 // Parse command line arguments
 function parseArgs() {
@@ -47,59 +46,20 @@ const octokit = new Octokit({
 });
 
 /**
- * Find and compile LaTeX files into PDFs
+ * Generate PDF using the generate_notes.sh script
  */
-function compileTexFiles() {
+function generatePDF() {
   try {
-    console.log("Finding and compiling LaTeX files...");
+    console.log("Generating PDF using generate_notes.sh...");
+    execSync("./generate_notes.sh", { stdio: "inherit" });
+    console.log("PDF generation completed successfully");
 
-    // Find all .tex files
-    const result = execSync(`find . -name "${TEX_PATTERN}" | sort -V`).toString().trim();
-    const texFiles = result
-      .split("\n")
-      .filter(file => file && path.basename(file) !== "preambolo_comune.tex");
-
-    if (texFiles.length === 0) {
-      console.log("No LaTeX (.tex) files found in the repository.");
-      return;
+    // Check if the PDF was generated correctly
+    if (!fs.existsSync("appunti_completi.pdf")) {
+      throw new Error("Failed to generate appunti_completi.pdf");
     }
-
-    // Compile each LaTeX file to PDF
-    for (const texFile of texFiles) {
-      console.log(`Compiling ${texFile}...`);
-      const texDir = path.dirname(texFile);
-      const texFilename = path.basename(texFile);
-
-      try {
-        // Change to the directory containing the .tex file and compile it
-        execSync(
-          `cd "${texDir}" && pdflatex -shell-escape -synctex=1 -interaction=nonstopmode "${texFilename}"`,
-          { stdio: "inherit" }
-        );
-        console.log(`Successfully compiled ${texFile}`);
-      } catch (compileError) {
-        console.error(`Error: Failed to compile ${texFile}: ${compileError.message}`);
-        process.exit(1); // Exit if compilation fails
-      }
-    }
-
-    console.log("LaTeX compilation completed");
   } catch (error) {
-    console.error("Error processing LaTeX files:", error.message);
-    process.exit(1);
-  }
-}
-
-/**
- * Generate images used in the PDF by running generate_images.sh
- */
-function generateImages() {
-  try {
-    console.log("Generating images for PDFs...");
-    execSync("./generate_images.sh", { stdio: "inherit" });
-    console.log("Image generation completed successfully");
-  } catch (error) {
-    console.error("Error generating images:", error.message);
+    console.error("Error generating PDF:", error.message);
     process.exit(1);
   }
 }
@@ -126,29 +86,17 @@ function findPDFFiles() {
 }
 
 /**
- * Combine PDF files into a single document
+ * Create a ZIP archive of all individual PDFs
  */
-async function combinePDFs(pdfFiles) {
+async function createZipArchive(pdfFiles) {
   const formattedDate = format(new Date(), "yyyy-MM-dd_HH-mm-ss");
-  const combinedPdfOutputFile = `${RELEASE_PREFIX}_${formattedDate}.pdf`;
   const zipOutputFileName = `${RELEASE_PREFIX}_all_pdfs_${formattedDate}.zip`;
 
   // Create temp directory for the operation
   const tmpobj = tmp.dirSync({ unsafeCleanup: true });
-  const tempCombinedPdfPath = path.join(tmpobj.name, combinedPdfOutputFile);
   const tempZipPath = path.join(tmpobj.name, zipOutputFileName);
 
   try {
-    console.log("Combining PDFs into a single file...");
-    // Use pdftk to combine PDFs
-    const pdftkCommand = `pdftk ${pdfFiles.join(" ")} cat output "${tempCombinedPdfPath}"`;
-    execSync(pdftkCommand, { stdio: "inherit" });
-
-    if (!fs.existsSync(tempCombinedPdfPath)) {
-      throw new Error("Failed to create combined PDF file");
-    }
-    console.log(`Combined PDF created: ${combinedPdfOutputFile}`);
-
     console.log("Creating ZIP archive of all PDFs...");
     const outputZip = fs.createWriteStream(tempZipPath);
     const archive = archiver("zip", {
@@ -169,10 +117,6 @@ async function combinePDFs(pdfFiles) {
     console.log(`ZIP archive created: ${zipOutputFileName}`);
 
     return {
-      combinedPdf: {
-        filePath: tempCombinedPdfPath,
-        fileName: combinedPdfOutputFile
-      },
       zipArchive: {
         filePath: tempZipPath,
         fileName: zipOutputFileName
@@ -181,16 +125,15 @@ async function combinePDFs(pdfFiles) {
     };
   } catch (error) {
     tmpobj.removeCallback();
-    console.error("Error in PDF/ZIP processing:", error.message);
+    console.error("Error in ZIP processing:", error.message);
     process.exit(1);
   }
 }
 
 /**
- * Create a GitHub release with the combined PDF
+ * Create a GitHub release with the combined PDF and ZIP archive
  */
-async function createGitHubRelease(assetsInfo, customMessage = "") {
-  const { combinedPdf, zipArchive } = assetsInfo;
+async function createGitHubRelease(zipInfo, customMessage = "") {
   const timestamp = Math.floor(Date.now() / 1000);
   const releaseTag = `release-${timestamp}`;
   const formattedDate = format(new Date(), "yyyy-MM-dd HH:mm:ss");
@@ -227,33 +170,36 @@ async function createGitHubRelease(assetsInfo, customMessage = "") {
     console.log(`GitHub release created: ${releaseName}`);
 
     // Upload the combined PDF asset
-    const combinedPdfData = fs.readFileSync(combinedPdf.filePath);
+    const combinedPdfPath = path.join(process.cwd(), "appunti_completi.pdf");
+    const combinedPdfData = fs.readFileSync(combinedPdfPath);
+    const combinedPdfFileName = `${RELEASE_PREFIX}_${formattedDate}.pdf`;
+
     await octokit.repos.uploadReleaseAsset({
       owner: REPO_OWNER,
       repo: REPO_NAME,
       release_id: release.data.id,
-      name: combinedPdf.fileName,
+      name: combinedPdfFileName,
       data: combinedPdfData
     });
-    console.log(`Combined PDF file uploaded to release: ${combinedPdf.fileName}`);
+    console.log(`Combined PDF file uploaded to release: ${combinedPdfFileName}`);
 
     // Upload the ZIP archive asset
-    const zipData = fs.readFileSync(zipArchive.filePath);
+    const zipData = fs.readFileSync(zipInfo.zipArchive.filePath);
     await octokit.repos.uploadReleaseAsset({
       owner: REPO_OWNER,
       repo: REPO_NAME,
       release_id: release.data.id,
-      name: zipArchive.fileName,
+      name: zipInfo.zipArchive.fileName,
       data: zipData
     });
-    console.log(`ZIP archive uploaded to release: ${zipArchive.fileName}`);
+    console.log(`ZIP archive uploaded to release: ${zipInfo.zipArchive.fileName}`);
 
     console.log(`Release URL: ${release.data.html_url}`);
 
     // Clean up
-    assetsInfo.cleanup();
+    zipInfo.cleanup();
   } catch (error) {
-    assetsInfo.cleanup();
+    zipInfo.cleanup();
     console.error("Error creating GitHub release:", error.message);
     if (error.response) {
       console.error("API response:", error.response.data);
@@ -311,14 +257,14 @@ async function main() {
       break;
 
     case "release": {
-      // First compile LaTeX files to generate PDFs
-      compileTexFiles();
-      // Then generate images
-      generateImages();
-      // Process PDFs
+      // Generate the combined PDF using the shell script
+      generatePDF();
+      // Find all individual PDFs
       const pdfFiles = findPDFFiles();
-      const assetsInfo = await combinePDFs(pdfFiles);
-      await createGitHubRelease(assetsInfo, args.message);
+      // Create ZIP archive with individual PDFs
+      const zipInfo = await createZipArchive(pdfFiles);
+      // Create release with generated PDF and ZIP
+      await createGitHubRelease(zipInfo, args.message);
       break;
     }
 
