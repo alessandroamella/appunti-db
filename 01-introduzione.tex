@@ -1,60 +1,19 @@
-\documentclass{article}
-
-% --- Encoding e lingua ---
-\usepackage[utf8]{inputenc}
-\usepackage[italian]{babel}
-
-% --- Margini e layout ---
-\usepackage{geometry}
-\geometry{a4paper, margin=1in}
-
-% --- Font sans-serif ---
-\usepackage[scaled]{helvet}
-\renewcommand{\familydefault}{\sfdefault}
-\usepackage[T1]{fontenc}
-
-% --- Matematica ---
-\usepackage{amsmath}
-\usepackage{amssymb}
-
-% --- Liste personalizzate ---
-\usepackage{enumitem}
-
-% --- Immagini ---
-\usepackage{float}
-% \usepackage{tikz} % Non utilizzato in questo documento
-% \usetikzlibrary{shapes.geometric, positioning, calc} % Non utilizzato
+\input{preambolo_comune.tex}
 
 % --- Hyperlink ---
 \usepackage{hyperref}
 \hypersetup{
 	colorlinks=true,
-	linkcolor=white,     % Cambiato per visibilità su sfondo nero
+	linkcolor=white,
 	filecolor=magenta,
-	urlcolor=cyan,       % Cambiato da blue a cyan per migliore visibilità su nero
-	pdftitle={Appunti Corso di Database: Introduzione},
+	urlcolor=cyan,
+	pdftitle={Introduzione ai Database},
+	pdfauthor={Alessandro Amella},
 	pdfpagemode=FullScreen,
 }
 
-% --- Colori e sfondo nero ---
-\usepackage{xcolor}
-\pagecolor{black}
-\color{white}
-
-% --- Evidenziazione del codice (richiede -shell-escape) ---
-% Compilare con: pdflatex -shell-escape nomefile.tex
-\usepackage{minted}
-\setminted{
-	frame=lines,     % Cornice attorno al codice
-	framesep=2mm,
-	fontsize=\small,
-	breaklines=true, % A capo automatico per linee lunghe
-	style=monokai    % Stile di highlighting (buono per sfondo scuro)
-}
-\usemintedstyle{monokai} % Assicura che lo stile sia applicato
-
 % --- Titolo ---
-\title{Appunti Corso di Database: Introduzione}
+\title{Introduzione ai Database}
 \author{Basato sulle slide del Prof. Danilo Montesi}
 \date{\today}
 

@@ -1,25 +1,4 @@
-\documentclass{article}
-
-% --- Encoding e lingua ---
-\usepackage[utf8]{inputenc}
-\usepackage[italian]{babel}
-
-% --- Margini e layout ---
-\usepackage{geometry}
-\geometry{a4paper, margin=1in}
-
-% --- Font sans-serif ---
-\usepackage[scaled]{helvet}
-\renewcommand{\familydefault}{\sfdefault}
-\usepackage[T1]{fontenc}
-
-
-% --- Matematica ---
-\usepackage{amsmath}
-\usepackage{amssymb}
-
-% --- Liste personalizzate ---
-\usepackage{enumitem}
+\input{preambolo_comune.tex}
 
 % --- Hyperlink ---
 \usepackage{hyperref}
@@ -27,25 +6,10 @@
 	colorlinks=true,
 	linkcolor=white,
 	filecolor=magenta,
-	urlcolor=blue,
+	urlcolor=cyan,
 	pdftitle={Algebra Relazionale e Calcolo Relazionale},
+	pdfauthor={Alessandro Amella},
 	pdfpagemode=FullScreen,
-}
-
-% --- Colori e sfondo nero ---
-\usepackage{xcolor}
-\pagecolor{black}
-\color{white}
-
-% --- Evidenziazione del codice (richiede -shell-escape) ---
-% Compilare con: pdflatex -shell-escape nomefile.tex
-\usepackage{minted}
-\setminted{
-	frame=lines,     % Cornice attorno al codice
-	framesep=2mm,
-	fontsize=\small,
-	breaklines=true, % A capo automatico per linee lunghe
-	style=monokai    % Stile di highlighting (assicurati che pygments lo supporti)
 }
 
 
@@ -80,7 +44,7 @@
 
 
 % --- Titolo ---
-\title{Appunti su Algebra Relazionale e Calcolo Relazionale}
+\title{Algebra Relazionale e Calcolo Relazionale}
 \author{Basato sulle slide del Prof. Danilo Montesi}
 \date{\today}
 

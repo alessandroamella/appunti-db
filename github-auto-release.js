@@ -76,8 +76,8 @@ function compileTexFiles() {
         );
         console.log(`Successfully compiled ${texFile}`);
       } catch (compileError) {
-        console.error(`Warning: Error compiling ${texFile}: ${compileError.message}`);
-        // Continue with the next file rather than exiting
+        console.error(`Error: Failed to compile ${texFile}: ${compileError.message}`);
+        process.exit(1); // Exit if compilation fails
       }
     }
 

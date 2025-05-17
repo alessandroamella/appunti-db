@@ -1,61 +1,19 @@
-\documentclass{article}
-
-% --- Encoding e lingua ---
-\usepackage[utf8]{inputenc}
-\usepackage[italian]{babel}
-
-% --- Margini e layout ---
-\usepackage{geometry}
-\geometry{a4paper, margin=1in}
-
-% --- Font sans-serif ---
-\usepackage[scaled]{helvet}
-\renewcommand{\familydefault}{\sfdefault}
-\usepackage[T1]{fontenc}
-
-% --- Matematica ---
-\usepackage{amsmath}
-\usepackage{amssymb}
-
-% --- Liste personalizzate ---
-\usepackage{enumitem}
-\setlist{nosep} % Rimuove spazio extra tra gli item delle liste
-
-% --- Immagini ---
-\usepackage{float}
-% \usepackage{tikz} % Non utilizzato attivamente in questo output, ma presente nel template
-% \usetikzlibrary{shapes.geometric, positioning, calc}
+\input{preambolo_comune.tex}
 
 % --- Hyperlink ---
 \usepackage{hyperref}
 \hypersetup{
 	colorlinks=true,
-	linkcolor=white,     % Cambiato per migliore visibilità su sfondo nero
+	linkcolor=white,
 	filecolor=magenta,
-	urlcolor=blue,
-	citecolor=green,    % Aggiunto per coerenza
-	pdftitle={Appunti sul Modello Relazionale dei Dati},
+	urlcolor=cyan,
+	pdftitle={Modello Relazionale dei Dati},
+	pdfauthor={Alessandro Amella},
 	pdfpagemode=FullScreen,
 }
 
-% --- Colori e sfondo nero ---
-\usepackage{xcolor}
-\pagecolor{black}
-\color{white}
-
-% --- Evidenziazione del codice (richiede -shell-escape) ---
-% Compilare con: pdflatex -shell-escape nomefile.tex
-\usepackage{minted}
-\setminted{
-	frame=lines,     % Cornice attorno al codice
-	framesep=2mm,
-	fontsize=\small,
-	breaklines=true, % A capo automatico per linee lunghe
-	style=monokai,   % Stile di highlighting
-}
-
 % --- Titolo ---
-\title{Appunti sul Modello Relazionale dei Dati}
+\title{Modello Relazionale dei Dati}
 \author{Basato sulle slide del Prof. Danilo Montesi}
 \date{\today}
 

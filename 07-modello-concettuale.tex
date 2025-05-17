@@ -1,61 +1,17 @@
-\documentclass{article}
-
-% --- Encoding e lingua ---
-\usepackage[utf8]{inputenc}
-\usepackage[italian]{babel}
-
-% --- Margini e layout ---
-\usepackage{geometry}
-\geometry{a4paper, margin=1in}
-
-% --- Font sans-serif ---
-\usepackage[scaled]{helvet}
-\renewcommand{\familydefault}{\sfdefault}
-\usepackage[T1]{fontenc}
-
-% --- Matematica ---
-\usepackage{amsmath}
-\usepackage{amssymb}
-
-% --- Liste personalizzate ---
-\usepackage{enumitem}
-
-% --- Tabelle lunghe ---
-\usepackage{longtable}
-\usepackage{array} % Per definire la larghezza delle colonne
+\input{preambolo_comune.tex}
 
 % --- Hyperlink ---
 \usepackage{hyperref}
 \hypersetup{
 	colorlinks=true,
-	linkcolor=white, % Link interni più visibili su sfondo nero
+	linkcolor=white,
 	filecolor=magenta,
-	urlcolor=cyan,   % URL più visibili
-	pdftitle={Appunti sulla Progettazione Concettuale di Basi di Dati},
+	urlcolor=cyan,
+	pdftitle={Modellazione Concettuale dei Dati},
+	pdfauthor={Alessandro Amella},
 	pdfpagemode=FullScreen,
-	citecolor=green % Se usi citazioni
 }
 
-% --- Colori e sfondo nero ---
-\usepackage{xcolor}
-\pagecolor{black}
-\color{white}
-
-% --- Evidenziazione del codice (richiede -shell-escape) ---
-% Compilare con: pdflatex -shell-escape nomefile.tex
-\usepackage{minted}
-\setminted{
-	frame=lines,     % Cornice attorno al codice
-	framesep=2mm,
-	fontsize=\small,
-	breaklines=true, % A capo automatico per linee lunghe
-	style=monokai   % Stile di highlighting
-}
-\usemintedstyle{monokai} % Assicura che lo stile sia applicato globalmente
-
-% --- Comandi personalizzati (se necessari per questo contesto, altrimenti rimuovere) ---
-% \newcommand{\Rel}[1]{\textit{#1}}
-% \newcommand{\Attr}[1]{\textsf{#1}}
 
 % --- Titolo ---
 \title{Appunti sulla Progettazione Concettuale di Basi di Dati}

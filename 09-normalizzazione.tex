@@ -1,59 +1,15 @@
-\documentclass{article}
-
-% --- Encoding e lingua ---
-\usepackage[utf8]{inputenc}
-\usepackage[italian]{babel}
-
-% --- Margini e layout ---
-\usepackage{geometry}
-\geometry{a4paper, margin=1in}
-
-% --- Font sans-serif ---
-\usepackage[scaled]{helvet}
-\renewcommand{\familydefault}{\sfdefault}
-\usepackage[T1]{fontenc}
-
-% --- Matematica ---
-\usepackage{amsmath}
-\usepackage{amssymb}
-
-% --- Liste personalizzate ---
-\usepackage{enumitem}
-
-% --- Immagini (non usate attivamente qui ma nel template originale) ---
-\usepackage{float}
-\usepackage{tikz}
-\usetikzlibrary{shapes.geometric, positioning, calc}
-
-% --- Tabelle ---
-\usepackage{array} % Per colonne >{\centering\arraybackslash}m{width}
-\usepackage{booktabs} % Per tabelle più professionali (toprule, midrule, bottomrule)
+\input{preambolo_comune.tex}
 
 % --- Hyperlink ---
 \usepackage{hyperref}
 \hypersetup{
 	colorlinks=true,
-	linkcolor=white,     % Cambiato per visibilità su sfondo nero
+	linkcolor=white,
 	filecolor=magenta,
-	urlcolor=blue,
-	pdftitle={Appunti sulla Normalizzazione dei Database},
+	urlcolor=cyan,
+	pdftitle={Normalizzazione dei Database},
+	pdfauthor={Alessandro Amella},
 	pdfpagemode=FullScreen,
-}
-
-% --- Colori e sfondo nero ---
-\usepackage{xcolor}
-\pagecolor{black}
-\color{white}
-
-% --- Evidenziazione del codice (richiede -shell-escape) ---
-% Compilare con: pdflatex -shell-escape nomefile.tex
-\usepackage{minted}
-\setminted{
-	frame=lines,     % Cornice attorno al codice
-	framesep=2mm,
-	fontsize=\small,
-	breaklines=true, % A capo automatico per linee lunghe
-	style=monokai,   % Stile di highlighting
 }
 
 % --- Titolo ---

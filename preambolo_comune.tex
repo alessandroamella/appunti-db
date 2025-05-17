@@ -1,0 +1,80 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% PREAMBOLO COMUNE PER APPUNTI (Stile Scuro)
+%
+% Questo file contiene tutte le impostazioni e i pacchetti comuni.
+% NON contiene \begin{document} o \end{document}.
+%
+% Istruzioni per la compilazione del file principale:
+% pdflatex -shell-escape nomefile_principale.tex
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass{article}
+
+% --- Encoding e lingua ---
+\usepackage[utf8]{inputenc}
+\usepackage[italian]{babel}
+
+% --- Margini e layout ---
+\usepackage{geometry}
+\geometry{a4paper, margin=1in}
+
+% --- Font sans-serif (come Helvetica) ---
+\usepackage[scaled]{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage[T1]{fontenc}
+
+% --- Matematica ---
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+% --- Liste personalizzate ---
+\usepackage{enumitem}
+% \setlist{nosep}
+
+% --- Immagini e Grafica ---
+\usepackage{float}
+% \usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, positioning, calc}
+
+% --- Tabelle Avanzate ---
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{longtable}
+
+% --- Hyperlink e Metadati PDF ---
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=white,
+    filecolor=magenta,
+    urlcolor=cyan,
+    citecolor=green,
+    % pdftitle, pdfauthor, ecc. verranno impostati nel file principale
+    pdfpagemode=FullScreen,
+    bookmarksopen=true,
+    bookmarksnumbered=true
+}
+
+% --- Colori e Sfondo Nero ---
+\usepackage{xcolor}
+\pagecolor{black}
+\color{white}
+
+% --- Evidenziazione del Codice ---
+\usepackage{minted}
+\setminted{
+    frame=lines,
+    framesep=2mm,
+    fontsize=\small,
+    breaklines=true,
+    style=monokai,
+    bgcolor=black!80
+}
+\usemintedstyle{monokai}
+
+% --- Comandi Personalizzati (Opzionali) ---
+% \newcommand{\Rel}[1]{\textit{#1}}
+% ... (altri comandi se necessario) ...
+
+% NESSUN \title, \author, \date, \begin{document} o \end{document} QUI
