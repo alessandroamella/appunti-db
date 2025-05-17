@@ -217,6 +217,175 @@ SELECT Nome, Cognome FROM ImpiegatiIT WHERE Stipendio > 60000;
 	\end{minted}
 	Il DBMS traduce la query sulla vista in una query sulle tabelle base (es. $\myselectop{\Attr{Stipendio} > 60000}{(\myselectop{\Attr{Dipartimento} = \text{'IT'}}{(\Rel{Impiegati})})}$ ).
 	
+	\section{Esempi Completi di Algebra Relazionale}
+	
+	In questa sezione presentiamo esempi completi di espressioni in algebra relazionale, simili a quelli che potrebbero apparire negli esercizi d'esame. Utilizzeremo uno schema di database di esempio relativo a concerti ed eventi musicali.
+	
+	\subsection{Schema di Esempio}
+	
+	\begin{table}[htbp]
+		\centering
+		\begin{tabular}{|l|l|}
+			\hline
+			\multicolumn{2}{|c|}{\textbf{PERSONA}} \\
+			\hline
+			\textbf{IDPersona} & Chiave primaria \\
+			\textbf{Nome} & Nome della persona \\
+			\textbf{Cognome} & Cognome della persona \\
+			\textbf{DataNascita} & Data di nascita \\
+			\hline
+		\end{tabular}
+		\hspace{1cm}
+		\begin{tabular}{|l|l|}
+			\hline
+			\multicolumn{2}{|c|}{\textbf{CONCERTO}} \\
+			\hline
+			\textbf{IDConcerto} & Chiave primaria \\
+			\textbf{Titolo} & Titolo del concerto \\
+			\textbf{DataEvento} & Data del concerto \\
+			\textbf{Genere} & Genere musicale \\
+			\textbf{Citta} & Città dove si svolge \\
+			\hline
+		\end{tabular}
+		
+		\vspace{0.5cm}
+		
+		\begin{tabular}{|l|l|}
+			\hline
+			\multicolumn{2}{|c|}{\textbf{BIGLIETTO}} \\
+			\hline
+			\textbf{IDBiglietto} & Chiave primaria \\
+			\textbf{IDConcerto} & Chiave esterna $\rightarrow$ CONCERTO \\
+			\textbf{IDPersona} & Chiave esterna $\rightarrow$ PERSONA \\
+			\textbf{Prezzo} & Prezzo del biglietto \\
+			\textbf{Settore} & Settore del posto \\
+			\hline
+		\end{tabular}
+		\hspace{1cm}
+		\begin{tabular}{|l|l|}
+			\hline
+			\multicolumn{2}{|c|}{\textbf{ARTISTA}} \\
+			\hline
+			\textbf{IDArtista} & Chiave primaria \\
+			\textbf{Nome} & Nome dell'artista/band \\
+			\textbf{Nazionalita} & Nazionalità dell'artista \\
+			\hline
+		\end{tabular}
+		
+		\vspace{0.5cm}
+		
+		\begin{tabular}{|l|l|}
+			\hline
+			\multicolumn{2}{|c|}{\textbf{PARTECIPAZIONE}} \\
+			\hline
+			\textbf{IDArtista} & Chiave esterna $\rightarrow$ ARTISTA \\
+			\textbf{IDConcerto} & Chiave esterna $\rightarrow$ CONCERTO \\
+			\textbf{Cachet} & Compenso dell'artista \\
+			\hline
+		\end{tabular}
+		\caption{Schema del database dei concerti}
+	\end{table}
+	
+	\subsection{Esempi di Query in Algebra Relazionale}
+	
+	\subsubsection{Esempio 1: Persone che hanno acquistato biglietti per concerti pop a Berlino}
+	
+	\noindent Vogliamo trovare i nominativi (nome e cognome) delle persone che hanno acquistato biglietti per concerti pop tenutisi a Berlino.
+	
+	\begin{align*}
+		& \text{Step 1: Selezionare i concerti pop a Berlino} \\
+		& \text{ConcertiPopBerlino} \leftarrow \myselectop{\Attr{Genere} = \text{'Pop'} \mylandop \Attr{Citta} = \text{'Berlino'}}{(\Rel{CONCERTO})} \\
+		& \\
+		& \text{Step 2: Trovare i biglietti per questi concerti} \\
+		& \text{BigliettiPopBerlino} \leftarrow \Rel{BIGLIETTO} \mynaturaljoin \text{ConcertiPopBerlino} \\
+		& \\
+		& \text{Step 3: Trovare le persone che hanno acquistato questi biglietti} \\
+		& \text{PersonePopBerlino} \leftarrow \text{BigliettiPopBerlino} \mynaturaljoin \Rel{PERSONA} \\
+		& \\
+		& \text{Step 4: Proiettare solo nome e cognome} \\
+		& \text{Risultato} \leftarrow \myproject{\Attr{Nome}, \Attr{Cognome}}{(\text{PersonePopBerlino})}
+	\end{align*}
+	
+	\noindent Oppure, in un'unica espressione compatta:
+	
+	\begin{align*}
+		\text{Risultato} \leftarrow \myproject{\Attr{Nome}, \Attr{Cognome}}{( \Rel{PERSONA} \mynaturaljoin (\Rel{BIGLIETTO} \mynaturaljoin \myselectop{\Attr{Genere} = \text{'Pop'} \mylandop \Attr{Citta} = \text{'Berlino'}}{(\Rel{CONCERTO})} ))}
+	\end{align*}
+	
+	\subsubsection{Esempio 2: Città che non hanno mai ospitato un concerto rock}
+	
+	\noindent Vogliamo trovare i nomi delle città che non hanno mai ospitato un concerto rock. Per questo abbiamo bisogno di una tabella aggiuntiva $\Rel{CITTA}$ con tutte le città.
+	
+	\begin{align*}
+		& \text{Step 1: Trovare le città che hanno ospitato concerti rock} \\
+		& \text{CittaRock} \leftarrow \myproject{\Attr{Citta}}{(\myselectop{\Attr{Genere} = \text{'Rock'}}{(\Rel{CONCERTO})})} \\
+		& \\
+		& \text{Step 2: Trovare le città che non sono in CittaRock} \\
+		& \text{Risultato} \leftarrow \myproject{\Attr{Nome}}{(\Rel{CITTA})} \mydifference \text{CittaRock}
+	\end{align*}
+	
+	\noindent Alternativamente, assumendo che non abbiamo una tabella $\Rel{CITTA}$ separata, possiamo usare la differenza con l'insieme di tutte le città presenti nella tabella $\Rel{CONCERTO}$:
+	
+	\begin{align*}
+		\text{Risultato} \leftarrow \myproject{\Attr{Citta}}{(\Rel{CONCERTO})} \mydifference \myproject{\Attr{Citta}}{(\myselectop{\Attr{Genere} = \text{'Rock'}}{(\Rel{CONCERTO})})}
+	\end{align*}
+	
+	\subsubsection{Esempio 3: Artisti che hanno partecipato a tutti i concerti in Italia}
+	
+	\noindent Questo è un esempio di divisione relazionale (implementata con differenza e proiezione).
+	
+	\begin{align*}
+		& \text{Step 1: Trovare tutti i concerti in Italia} \\
+		& \text{ConcertiItalia} \leftarrow \myproject{\Attr{IDConcerto}}{(\myselectop{\Attr{Citta} \text{ in } \{\text{'Roma'}, \text{'Milano'}, \text{'Napoli'}, ...\}}{(\Rel{CONCERTO})})} \\
+		& \\
+		& \text{Step 2: Per ogni artista, trovare le coppie (artista, concerto) che NON esistono in PARTECIPAZIONE} \\
+		& \text{TutteCombinazioniPossibili} \leftarrow \myproject{\Attr{IDArtista}}{(\Rel{ARTISTA})} \mycartesian \text{ConcertiItalia} \\
+		& \text{CombinazioniMancanti} \leftarrow \text{TutteCombinazioniPossibili} \mydifference \myproject{\Attr{IDArtista}, \Attr{IDConcerto}}{(\Rel{PARTECIPAZIONE})} \\
+		& \\
+		& \text{Step 3: Trovare gli artisti che non hanno combinazioni mancanti (hanno partecipato a tutti i concerti)} \\
+		& \text{ArtistiConMancanze} \leftarrow \myproject{\Attr{IDArtista}}{(\text{CombinazioniMancanti})} \\
+		& \text{Risultato} \leftarrow \myproject{\Attr{IDArtista}, \Attr{Nome}}{(\Rel{ARTISTA})} \mydifference \myproject{\Attr{IDArtista}, \Attr{Nome}}{(\Rel{ARTISTA} \mynaturaljoin \text{ArtistiConMancanze})}
+	\end{align*}
+	
+	\subsubsection{Esempio 4: Persone che hanno acquistato biglietti per tutti gli artisti di nazionalità francese}
+	
+	\begin{align*}
+		& \text{Step 1: Trovare tutti gli artisti francesi} \\
+		& \text{ArtistiFrancesi} \leftarrow \myproject{\Attr{IDArtista}}{(\myselectop{\Attr{Nazionalita} = \text{'Francese'}}{(\Rel{ARTISTA})})} \\
+		& \\
+		& \text{Step 2: Trovare i concerti dove si esibiscono artisti francesi} \\
+		& \text{ConcertiFrancesi} \leftarrow \myproject{\Attr{IDConcerto}}{(\Rel{PARTECIPAZIONE} \mynaturaljoin \text{ArtistiFrancesi})} \\
+		& \\
+		& \text{Step 3: Trovare tutte le combinazioni possibili (persona, artista francese)} \\
+		& \text{TutteCombinazioniPossibili} \leftarrow \myproject{\Attr{IDPersona}}{(\Rel{PERSONA})} \mycartesian \text{ArtistiFrancesi} \\
+		& \\
+		& \text{Step 4: Trovare le persone che hanno visto ciascun artista francese} \\
+		& \text{PersoneArtistiFrancesi} \leftarrow \myproject{\Attr{IDPersona}, \Attr{IDArtista}}{(
+			\Rel{PERSONA} \mynaturaljoin \Rel{BIGLIETTO} \mynaturaljoin \Rel{CONCERTO} \mynaturaljoin \Rel{PARTECIPAZIONE} \mynaturaljoin \myselectop{\Attr{Nazionalita} = \text{'Francese'}}{(\Rel{ARTISTA})}
+		)} \\
+		& \\
+		& \text{Step 5: Trovare le combinazioni mancanti} \\
+		& \text{CombinazioniMancanti} \leftarrow \text{TutteCombinazioniPossibili} \mydifference \text{PersoneArtistiFrancesi} \\
+		& \\
+		& \text{Step 6: Trovare le persone senza combinazioni mancanti} \\
+		& \text{PersoneConMancanze} \leftarrow \myproject{\Attr{IDPersona}}{(\text{CombinazioniMancanti})} \\
+		& \text{Risultato} \leftarrow \myproject{\Attr{Nome}, \Attr{Cognome}}{(\Rel{PERSONA})} \mydifference \myproject{\Attr{Nome}, \Attr{Cognome}}{(\Rel{PERSONA} \mynaturaljoin \text{PersoneConMancanze})}
+	\end{align*}
+	
+	\subsubsection{Esempio 5: Concerti con prezzo medio dei biglietti superiore alla media generale}
+	
+	Nota: Questo esempio illustra un limite dell'algebra relazionale standard, che non supporta funzioni di aggregazione. In pratica, si userebbero estensioni dell'algebra relazionale o SQL.
+	
+	\begin{align*}
+		& \text{In SQL questa query sarebbe:} \\
+		& \text{SELECT C.IDConcerto, C.Titolo, AVG(B.Prezzo) as PrezzoMedio} \\
+		& \text{FROM CONCERTO C JOIN BIGLIETTO B ON C.IDConcerto = B.IDConcerto} \\
+		& \text{GROUP BY C.IDConcerto, C.Titolo} \\
+		& \text{HAVING AVG(B.Prezzo) > (SELECT AVG(Prezzo) FROM BIGLIETTO)}
+	\end{align*}
+	
+	\noindent Quest'ultimo esempio evidenzia perché SQL, con il suo supporto per aggregazioni e costrutti come GROUP BY e HAVING, è spesso più conveniente dell'algebra relazionale pura per query complesse.
+	
 	\section{Calcolo Relazionale}
 	Il calcolo relazionale è un linguaggio di query formale, \textbf{dichiarativo}, basato sulla logica dei predicati del primo ordine. Specifica \textit{cosa} si vuole ottenere, non \textit{come}.
 	Esistono due forme principali:
