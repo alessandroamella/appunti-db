@@ -66,24 +66,24 @@ function generatePDF() {
 
 /**
  * Find PDF files in the repository and sort them numerically
- * Excludes files that are in .gitignore
  */
 function findPDFFiles() {
   try {
-    // Use git ls-files to get tracked PDF files (excludes files in .gitignore)
-    const result = execSync(
-      `git ls-files "*.pdf" | grep -E "${PDF_PATTERN.replace("*", ".*")}" | sort -V`
-    )
-      .toString()
-      .trim();
+    // Use find command to get all PDF files
+    const result = execSync(`find . -name "${PDF_PATTERN}" | sort -V`).toString().trim();
     const files = result.split("\n").filter(file => file);
 
     if (files.length === 0) {
-      console.log("No PDF files found in the repository or all PDFs are excluded by .gitignore.");
+      console.log("No PDF files found in the repository.");
       process.exit(0);
     }
 
-    return files;
+    // Filter out appunti_completi.pdf
+    const filteredFiles = files.filter(
+      file => !file.endsWith("/appunti_completi.pdf") && !file.endsWith("./appunti_completi.pdf")
+    );
+
+    return filteredFiles;
   } catch (error) {
     console.error("Error finding PDF files:", error.message);
     process.exit(1);
