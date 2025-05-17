@@ -146,7 +146,7 @@
 			\begin{itemize}
 				\item Si mantengono E0, E1, E2 come entità separate.
 				\item Si creano relazioni 1-a-1 tra E0 ed E1, e tra E0 ed E2. La chiave primaria di E1 (e E2) sarà anche chiave esterna verso E0.
-				\item \textit{Esempio Pratico:} Tabella \texttt{VEICOLI(targa\_PK, marca, modello)}. Tabella \texttt{AUTO(targa\_FK\_PK, numPorte)}. Tabella \texttt{MOTO(targa\_FK\_PK, cilindrata)}. Per avere tutti i dati di un'auto, fai un \texttt{JOIN}.
+				\item \textit{Esempio:} Tabella \texttt{VEICOLI(targa\_PK, marca, modello)}. Tabella \texttt{AUTO(targa\_FK\_PK, numPorte)}. Tabella \texttt{MOTO(targa\_FK\_PK, cilindrata)}. Per avere tutti i dati di un'auto, fai un \texttt{JOIN}.
 				\item \textbf{Quando usarla:} Se i figli sono acceduti indipendentemente dal padre.
 			\end{itemize}
 		\end{enumerate}
@@ -270,10 +270,10 @@ CAPO(Codice_PK, Cognome, Salario)
 DIPARTIMENTO(Nome_PK, Ufficio, Telefono, CodiceCapo_FK_UNIQUE, DataInizioSupervisione)
 				\end{minted}
 				\item \textbf{Cardinalità (0,1) - Opzionale:}
-				\begin{itemize}
-					\item Se una partecipazione è opzionale, la \texttt{FOREIGN KEY} è \texttt{NULL}abile (ma sempre \texttt{UNIQUE} se presente).
-					\item Se entrambe sono \texttt{(0,1)}: la soluzione più pulita è una tabella separata per la relazione \texttt{SUPERVISIONE(CodiceCapo\_FK\_PK, NomeDipartimento\_FK\_PK, DataInizio)}.
-				\end{itemize}
+				
+				Se una partecipazione è opzionale, la \texttt{FOREIGN KEY} è \texttt{NULL}abile (ma sempre \texttt{UNIQUE} se presente).
+				
+				Se entrambe sono \texttt{(0,1)}: la soluzione più pulita è una tabella separata per la relazione \texttt{SUPERVISIONE(CodiceCapo\_FK\_PK, NomeDipartimento\_FK\_PK, DataInizio)}.
 			\end{itemize}
 		\end{itemize}
 	\end{itemize}
