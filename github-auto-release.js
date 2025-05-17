@@ -66,15 +66,20 @@ function generatePDF() {
 
 /**
  * Find PDF files in the repository and sort them numerically
+ * Excludes files that are in .gitignore
  */
 function findPDFFiles() {
   try {
-    // Use find command to get all PDF files
-    const result = execSync(`find . -name "${PDF_PATTERN}" | sort -V`).toString().trim();
+    // Use git ls-files to get tracked PDF files (excludes files in .gitignore)
+    const result = execSync(
+      `git ls-files "*.pdf" | grep -E "${PDF_PATTERN.replace("*", ".*")}" | sort -V`
+    )
+      .toString()
+      .trim();
     const files = result.split("\n").filter(file => file);
 
     if (files.length === 0) {
-      console.log("No PDF files found in the repository.");
+      console.log("No PDF files found in the repository or all PDFs are excluded by .gitignore.");
       process.exit(0);
     }
 
