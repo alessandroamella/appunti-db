@@ -17,6 +17,7 @@
   "license": "MIT",
   "dependencies": {
     "@octokit/rest": "^19.0.13",
+    "archiver": "^7.0.1",
     "date-fns": "^4.1.0",
     "dotenv-safe": "^9.1.0",
     "tmp": "^0.2.3"

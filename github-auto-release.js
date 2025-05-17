@@ -7,6 +7,7 @@ const { Octokit } = require("@octokit/rest");
 const dotenv = require("dotenv-safe");
 const tmp = require("tmp");
 const { format } = require("date-fns");
+const archiver = require("archiver");
 
 // Load environment variables from .env file
 dotenv.config();
@@ -127,32 +128,58 @@ function findPDFFiles() {
  */
 async function combinePDFs(pdfFiles) {
   const formattedDate = format(new Date(), "yyyy-MM-dd_HH-mm-ss");
-  const outputFile = `${RELEASE_PREFIX}_${formattedDate}.pdf`;
+  const combinedPdfOutputFile = `${RELEASE_PREFIX}_${formattedDate}.pdf`;
+  const zipOutputFileName = `${RELEASE_PREFIX}_all_pdfs_${formattedDate}.zip`;
 
   // Create temp directory for the operation
   const tmpobj = tmp.dirSync({ unsafeCleanup: true });
-  const tempOutputPath = path.join(tmpobj.name, outputFile);
+  const tempCombinedPdfPath = path.join(tmpobj.name, combinedPdfOutputFile);
+  const tempZipPath = path.join(tmpobj.name, zipOutputFileName);
 
   try {
     console.log("Combining PDFs into a single file...");
-
     // Use pdftk to combine PDFs
-    const pdftkCommand = `pdftk ${pdfFiles.join(" ")} cat output "${tempOutputPath}"`;
+    const pdftkCommand = `pdftk ${pdfFiles.join(" ")} cat output "${tempCombinedPdfPath}"`;
     execSync(pdftkCommand, { stdio: "inherit" });
 
-    if (!fs.existsSync(tempOutputPath)) {
+    if (!fs.existsSync(tempCombinedPdfPath)) {
       throw new Error("Failed to create combined PDF file");
     }
+    console.log(`Combined PDF created: ${combinedPdfOutputFile}`);
 
-    console.log(`Combined PDF created: ${outputFile}`);
+    console.log("Creating ZIP archive of all PDFs...");
+    const outputZip = fs.createWriteStream(tempZipPath);
+    const archive = archiver("zip", {
+      zlib: { level: 9 } // Sets the compression level.
+    });
+
+    archive.pipe(outputZip);
+
+    pdfFiles.forEach(file => {
+      archive.file(file, { name: path.basename(file) });
+    });
+
+    await archive.finalize();
+
+    if (!fs.existsSync(tempZipPath)) {
+      throw new Error("Failed to create ZIP archive");
+    }
+    console.log(`ZIP archive created: ${zipOutputFileName}`);
+
     return {
-      filePath: tempOutputPath,
-      fileName: outputFile,
+      combinedPdf: {
+        filePath: tempCombinedPdfPath,
+        fileName: combinedPdfOutputFile
+      },
+      zipArchive: {
+        filePath: tempZipPath,
+        fileName: zipOutputFileName
+      },
       cleanup: () => tmpobj.removeCallback()
     };
   } catch (error) {
     tmpobj.removeCallback();
-    console.error("Error combining PDFs:", error.message);
+    console.error("Error in PDF/ZIP processing:", error.message);
     process.exit(1);
   }
 }
@@ -160,8 +187,8 @@ async function combinePDFs(pdfFiles) {
 /**
  * Create a GitHub release with the combined PDF
  */
-async function createGitHubRelease(pdfInfo, customMessage = "") {
-  const { filePath, fileName } = pdfInfo;
+async function createGitHubRelease(assetsInfo, customMessage = "") {
+  const { combinedPdf, zipArchive } = assetsInfo;
   const timestamp = Math.floor(Date.now() / 1000);
   const releaseTag = `release-${timestamp}`;
   const formattedDate = format(new Date(), "yyyy-MM-dd HH:mm:ss");
@@ -197,23 +224,34 @@ async function createGitHubRelease(pdfInfo, customMessage = "") {
 
     console.log(`GitHub release created: ${releaseName}`);
 
-    // Upload the asset
-    const fileData = fs.readFileSync(filePath);
+    // Upload the combined PDF asset
+    const combinedPdfData = fs.readFileSync(combinedPdf.filePath);
     await octokit.repos.uploadReleaseAsset({
       owner: REPO_OWNER,
       repo: REPO_NAME,
       release_id: release.data.id,
-      name: fileName,
-      data: fileData
+      name: combinedPdf.fileName,
+      data: combinedPdfData
     });
+    console.log(`Combined PDF file uploaded to release: ${combinedPdf.fileName}`);
 
-    console.log(`PDF file uploaded to release: ${fileName}`);
+    // Upload the ZIP archive asset
+    const zipData = fs.readFileSync(zipArchive.filePath);
+    await octokit.repos.uploadReleaseAsset({
+      owner: REPO_OWNER,
+      repo: REPO_NAME,
+      release_id: release.data.id,
+      name: zipArchive.fileName,
+      data: zipData
+    });
+    console.log(`ZIP archive uploaded to release: ${zipArchive.fileName}`);
+
     console.log(`Release URL: ${release.data.html_url}`);
 
     // Clean up
-    pdfInfo.cleanup();
+    assetsInfo.cleanup();
   } catch (error) {
-    pdfInfo.cleanup();
+    assetsInfo.cleanup();
     console.error("Error creating GitHub release:", error.message);
     if (error.response) {
       console.error("API response:", error.response.data);
@@ -277,8 +315,8 @@ async function main() {
       generateImages();
       // Process PDFs
       const pdfFiles = findPDFFiles();
-      const pdfInfo = await combinePDFs(pdfFiles);
-      await createGitHubRelease(pdfInfo, args.message);
+      const assetsInfo = await combinePDFs(pdfFiles);
+      await createGitHubRelease(assetsInfo, args.message);
       break;
     }
 
