@@ -54,7 +54,6 @@
 	fontsize=\small,
 	breaklines=true, % A capo automatico per linee lunghe
 	style=monokai,   % Stile di highlighting
-	bgcolor=gray!20  % Sfondo leggermente diverso per i blocchi minted
 }
 
 % --- Titolo ---
@@ -139,20 +138,31 @@
 	\end{itemize}
 	
 	\section{Dipendenze Funzionali (Functional Dependencies - FD)}
-	Per studiare e risolvere queste anomalie in modo sistematico, introduciamo il concetto di \textbf{Dipendenza Funzionale (DF)}.
-	Una DF è un vincolo di integrità che descrive una relazione tra attributi all'interno di una tabella.
+	Per studiare e risolvere queste anomalie in modo sistematico, introduciamo il concetto di \textbf{Dipendenza Funzionale (FD)}.
+	Una FD è un vincolo di integrità che descrive una relazione tra attributi all'interno di una tabella.
 	
 	\subsection{Definizione Formale}
 	Data una relazione $r$ con uno schema $R(X)$ (dove X è l'insieme di tutti gli attributi), e dati due sottoinsiemi non vuoti di attributi $Y$ e $Z$ (contenuti in X), esiste una dipendenza funzionale $Y \rightarrow Z$ (si legge "Y determina funzionalmente Z" o "Z dipende funzionalmente da Y") se e solo se:
 	\textit{Per ogni coppia di tuple (righe) $t_1$ e $t_2$ in $r$, se i valori degli attributi in $Y$ sono uguali in $t_1$ e $t_2$ (cioè $t_1[Y] = t_2[Y]$), allora anche i valori degli attributi in $Z$ devono essere uguali (cioè $t_1[Z] = t_2[Z]$).}
 	
 	In parole povere: se conosci il valore di $Y$, puoi determinare \textit{univocamente} il valore di $Z$.
+
+	\subsection{Spiegazione in termini più semplici}
+	"Determinare funzionalmente" significa semplicemente che se conosci il valore di un attributo, puoi conoscere con certezza il valore di un altro attributo.
 	
-	\subsection{Esempi dalla tabella precedente}
+	\subsubsection{Esempi dalla tabella precedente}
 	\begin{itemize}
 		\item $\text{Employee} \rightarrow \text{Wage}$
 		\item $\text{Project} \rightarrow \text{Budget}$
 		\item $\{\text{Employee, Project}\} \rightarrow \text{Role}$
+	\end{itemize}
+
+	\subsubsection{Spiegazione}
+	
+	\begin{itemize}
+		\item $\text{Employee} \rightarrow \text{Wage}$ significa: "Se sai chi è l'impiegato, sai sicuramente quanto guadagna". Nella nostra tabella, ogni volta che appare "Smith", il salario è sempre "35", ogni volta che appare "Jones" il salario è sempre "20". Il nome dell'impiegato \textit{determina} univocamente il suo stipendio.
+		
+		\item $\text{Project} \rightarrow \text{Budget}$ significa: "Se sai qual è il progetto, sai sicuramente qual è il suo budget". Ogni volta che vedi "Mars" come progetto, il budget è sempre "2", ogni volta che vedi "Jupiter", il budget è sempre "15".
 	\end{itemize}
 	
 	\subsection{FD Triviali e Non Triviali}
@@ -160,6 +170,26 @@
 		\item Una FD $Y \rightarrow A$ è \textbf{triviale} se $A \subseteq Y$ (es. $\{\text{Employee, Project}\} \rightarrow \text{Project}$). Sono sempre vere e poco utili.
 		\item Una FD $Y \rightarrow A$ è \textbf{non triviale} se $A \not\subseteq Y$. Sono queste che ci interessano per la normalizzazione.
 	\end{itemize}
+	
+	\subsubsection{Spiegazione semplice con esempi pratici}
+	
+	\textbf{Dipendenza Funzionale Triviale} - In termini semplici, è come dire "se conosci qualcosa, allora conosci anche una parte di quel qualcosa". 
+	
+	\begin{itemize}
+		\item \textbf{Esempio pratico:} In una tabella SQL \texttt{Clienti(ID, Nome, Cognome, Email)}, la dipendenza funzionale \texttt{\{ID, Nome, Cognome\} → Nome} è triviale perché ovviamente se conosci l'insieme \{ID, Nome, Cognome\}, allora conosci anche il Nome (che è già incluso nell'insieme).
+		
+		\item \textbf{In SQL:} Se scrivi \texttt{SELECT Nome FROM Clienti WHERE ID = 123 AND Nome = 'Mario' AND Cognome = 'Rossi'}, è ovvio che otterrai 'Mario' come risultato, perché è nelle condizioni stesse della query.
+	\end{itemize}
+	
+	\textbf{Dipendenza Funzionale Non Triviale} - Significa che conoscendo alcuni attributi, puoi determinare altri attributi che \textit{non} sono già contenuti nei primi.
+	
+	\begin{itemize}
+		\item \textbf{Esempio pratico:} Nella tabella \texttt{Clienti(ID, Nome, Cognome, Email)}, la dipendenza \texttt{ID → Nome} è non triviale perché il Nome non è parte dell'ID e non è ovvio che l'ID determini il Nome.
+		
+		\item \textbf{In SQL:} Se scrivi \texttt{SELECT Nome FROM Clienti WHERE ID = 123}, otterrai un nome specifico perché esiste una dipendenza funzionale dall'ID al Nome (supponendo che ID sia una chiave primaria).
+	\end{itemize}
+	
+	\textbf{Perché le FD triviali non sono utili per la normalizzazione?} Perché non rivelano nulla di nuovo sulla struttura dei dati. Sono sempre vere per definizione e non causano anomalie. Le dipendenze non triviali, invece, possono causare anomalie se non trattate correttamente.
 	
 	\subsection{Come le FD causano anomalie}
 	Le anomalie sorgono principalmente quando abbiamo FD $X \rightarrow Y$ dove $X$ \textbf{non è una superchiave} (o chiave candidata) della tabella.
@@ -181,9 +211,124 @@
 	
 	Nella nostra tabella di esempio iniziale, non è in BCNF a causa di $\text{Employee} \rightarrow \text{Wage}$ e $\text{Project} \rightarrow \text{Budget}$.
 	
+	\subsubsection{Spiegazione della violazione BCNF}
+	Ricordiamo la definizione di BCNF: per ogni dipendenza funzionale non triviale $X \rightarrow Y$, $X$ deve essere una superchiave della relazione.
+	
+	Nel nostro esempio:
+	\begin{itemize}
+		\item $\text{Employee} \rightarrow \text{Wage}$: L'attributo \texttt{Employee} determina funzionalmente \texttt{Wage}. Ma \texttt{Employee} da solo non è una superchiave della tabella, perché non può determinare univocamente tutti gli altri attributi (come \texttt{Project}, \texttt{Budget}, \texttt{Role}). La chiave primaria della tabella è $\{\text{Employee, Project}\}$.
+		\item $\text{Project} \rightarrow \text{Budget}$: Similmente, \texttt{Project} determina \texttt{Budget}, ma \texttt{Project} da solo non è una superchiave della tabella.
+	\end{itemize}
+	
+	Queste violazioni causano le anomalie di inserimento, cancellazione e aggiornamento che abbiamo descritto in precedenza.
+	
+	\textbf{Perché questo viola BCNF?} Perché BCNF richiede che quando un attributo (o gruppo di attributi) determina funzionalmente un altro attributo, il primo deve essere una "superchiave". In termini semplici, una superchiave è un attributo (o gruppo di attributi) che può identificare univocamente ogni riga nella tabella.
+	
 	\subsection{Cosa fare se una relazione non è in BCNF?}
 	Si \textbf{decompone} la relazione in più relazioni più piccole, ognuna delle quali sia in BCNF.
 	
+	\begin{center}
+	\begin{tikzpicture}[
+		node distance=1cm and 0.8cm,
+		box/.style={rectangle, rounded corners, draw, fill=black!80, minimum width=3.5cm, minimum height=1.2cm, align=center, text width=3.5cm},
+		arrow/.style={->, >=stealth, thick}
+	]
+	% Step 1
+	\node[box] (start) {Relazione $R$ \\ non in BCNF};
+	
+	% Step 2
+	\node[box, below=of start] (identify) {Identificare FD $X \rightarrow Y$ \\ che viola BCNF};
+	
+	% Step 3
+	\node[box, below=of identify] (decompose) {Decomporre $R$ in \\ $R_1(X \cup Y)$ e $R_2(Z - (Y - X))$};
+	
+	% Step 4
+	\node[box, below=of decompose] (check) {Verificare se $R_1$ e $R_2$ \\ sono in BCNF};
+	
+	% Two branches
+	\node[box, below left=of check] (done) {Le relazioni \\ sono in BCNF};
+	\node[box, below right=of check] (repeat) {Ripetere};
+	
+	% Arrows
+	\draw[arrow] (start) -- (identify);
+	\draw[arrow] (identify) -- (decompose);
+	\draw[arrow] (decompose) -- (check);
+	\draw[arrow] (check) -- node[above left, align=center] {Sì} (done);
+	\draw[arrow] (check) -- node[above right, align=center] {No} (repeat);
+	\draw[arrow] (repeat) to[out=180, in=0] (identify);
+	\end{tikzpicture}
+	\end{center}
+	
+	\subsubsection{Esempio pratico di decomposizione}
+	
+	\begin{minted}{text}
+Esami(Matricola, Corso, Docente, Voto, Aula, Edificio)
+    ↓ FDs che violano BCNF:
+    * Corso → Docente     (Corso non è superchiave)
+    * Aula → Edificio     (Aula non è superchiave)
+	\end{minted}
+
+	\noindent\textbf{Decomposizione in BCNF:}
+
+	\begin{center}
+	\begin{tikzpicture}[
+		level distance=2.5cm,
+		sibling distance=5cm,
+		edge from parent/.style={draw, -latex},
+		box/.style={rectangle, rounded corners, draw, fill=black!80, text width=4.5cm, align=center}
+	]
+	\node[box] {Esami\\(Matricola, Corso, Docente, \\Voto, Aula, Edificio)}
+	child {
+		node[box] {CorsiDocenti\\(Corso, Docente)}
+		edge from parent node[left, align=center] {Corso→Docente}
+	}
+	child {
+		node[box] {Esami\_Rest\\(Matricola, Corso, \\Voto, Aula, Edificio)}
+		child {
+			node[box] {AuleEdifici\\(Aula, Edificio)}
+			edge from parent node[left, align=center] {Aula→Edificio}
+		}
+		child {
+			node[box] {Esami\_Rest2\\(Matricola, Corso, \\Voto, Aula)}
+			child {
+				node[box] {CorsiAule\\(Corso, Aula)}
+				edge from parent node[left, align=center] {Corso→Aula}
+			}
+			child {
+				node[box] {EsamiStudenti\\(Matricola, Corso, \\Voto)}
+				edge from parent node[right, align=center] {BCNF}
+			}
+			edge from parent node[right, align=center] {Non BCNF}
+		}
+		edge from parent node[right, align=center] {Non BCNF}
+	};
+	\end{tikzpicture}
+	\end{center}
+
+	\subsubsection{Esempio con dipendenze più complesse}
+	
+	\begin{minted}{text}
+OrdiniFornitori(IDOrdine, CodiceArticolo, QuantitàOrdinata,
+                CodiceFornitore, RagioneSocialeFornitore, CittàFornitore)
+FDs:
+• IDOrdine → CodiceFornitore
+• {IDOrdine, CodiceArticolo} → QuantitàOrdinata     (chiave)
+• CodiceFornitore → {RagioneSocialeFornitore, CittàFornitore}
+	\end{minted}
+
+	\begin{center}
+	\begin{tabular}{|c|c|c|}
+		\hline
+		% \rowcolor{gray!30}
+		\textbf{Ordini} & \textbf{Fornitori} & \textbf{DettagliOrdine} \\
+		\hline
+		\underline{IDOrdine} & \underline{CodiceFornitore} & \underline{IDOrdine, CodiceArticolo} \\
+		CodiceFornitore & RagioneSocialeFornitore & QuantitàOrdinata \\
+		& CittàFornitore & \\
+		\hline
+	\end{tabular}
+	\end{center}
+
 	\subsection{Esempio di Decomposizione (per la tabella iniziale)}
 	\begin{enumerate}
 		\item \textbf{ImpiegatiStipendi}(\underline{Employee}, Wage)
@@ -197,7 +342,7 @@
 	
 	\subsubsection{Lossless Join Property (Proprietà di Join Senza Perdita)}
 	Dobbiamo essere in grado di ricreare la tabella originale facendo il JOIN delle tabelle decomposte.
-	\textbf{Condizione:} Una decomposizione di $r(X)$ in $r_1(X_1)$ e $r_2(X_2)$ è senza perdita se l'intersezione degli attributi $X_0 = X_1 \cap X_2$ forma una chiave per almeno una delle relazioni decomposte ($X_0 \rightarrow X_1$ oppure $X_0 \rightarrow X_2$).
+	\textbf{Condizione:} Una decomposizione di $r(X)$ in $r_1(X_1)$ e $r_2(X_2)$ è senza perdita se l'intersezione degli attributi $X_0 = X_1 \cap X_2$ forma una chiave per almeno una delle relazioni decomposte ($X_0 \rightarrow X_1$ oppure $X_0 \rightarrow X_2$).\
 	
 	\textbf{Esempio di Decomposizione CON PERDITA:}
 	Supponiamo $R(\text{Employee, Project, Office})$ con FD: $\text{Employee} \rightarrow \text{Office}$ e $\text{Project} \rightarrow \text{Office}$.
@@ -206,7 +351,51 @@
 		\item $R_1(\text{Employee, Office})$
 		\item $R_2(\text{Project, Office})$
 	\end{itemize}
-	Attributo comune: \texttt{Office}. \texttt{Office} non è chiave né per $R_1$ né per $R_2$. Il join può generare tuple spurie.
+	
+	\noindent Tabella originale:
+	\begin{center}
+	\begin{tabular}{|l|l|l|}
+		\hline
+		\textbf{Employee} & \textbf{Project} & \textbf{Office} \\ \hline
+		Smith & Alpha & A101 \\ \hline
+		Jones & Beta & B202 \\ \hline
+		Brown & Alpha & C303 \\ \hline
+	\end{tabular}
+	\end{center}
+
+	\noindent Tabelle decomposte:
+	\begin{center}
+	\begin{tabular}{|l|l|}
+		\hline
+		\textbf{Employee} & \textbf{Office} \\ \hline
+		Smith & A101 \\ \hline
+		Jones & B202 \\ \hline
+		Brown & C303 \\ \hline
+	\end{tabular}
+	\quad
+	\begin{tabular}{|l|l|}
+		\hline
+		\textbf{Project} & \textbf{Office} \\ \hline
+		Alpha & A101 \\ \hline
+		Beta & B202 \\ \hline
+		Alpha & C303 \\ \hline
+	\end{tabular}
+	\end{center}
+
+	\noindent Risultato del JOIN (genera tuple spurie):
+	\begin{center}
+	\begin{tabular}{|l|l|l|c|}
+		\hline
+		\textbf{Employee} & \textbf{Project} & \textbf{Office} & \textbf{Tuple Spurie} \\ \hline
+		Smith & Alpha & A101 & \\ \hline
+		Jones & Beta & B202 & \\ \hline
+		Brown & Alpha & C303 & \\ \hline
+		Smith & Alpha & C303 & \checkmark \\ \hline
+		Brown & Alpha & A101 & \checkmark \\ \hline
+	\end{tabular}
+	\end{center}
+	
+	\noindent Attributo comune: \texttt{Office}. \texttt{Office} non è chiave né per $R_1$ né per $R_2$. Il join può generare tuple spurie.
 	
 	\textbf{Esempio di Decomposizione SENZA PERDITA:}
 	Tabella $R(\text{Employee, Project, Office})$ con FD: $\text{Employee} \rightarrow \text{Office}$ e chiave primaria $\{\text{Employee, Project}\}$.
@@ -215,11 +404,200 @@
 		\item $R_1(\text{\underline{Employee}}, \text{Office})$
 		\item $R_2(\text{\underline{Employee, Project}})$
 	\end{itemize}
-	Attributo comune: \texttt{Employee}. \texttt{Employee} è chiave per $R_1$. Lossless.
+	
+	\noindent Tabella originale:
+	\begin{center}
+	\begin{tabular}{|l|l|l|}
+		\hline
+		\textbf{Employee} & \textbf{Project} & \textbf{Office} \\ \hline
+		Smith & Alpha & A101 \\ \hline
+		Smith & Beta & A101 \\ \hline
+		Jones & Gamma & B202 \\ \hline
+	\end{tabular}
+	\end{center}
+
+	\noindent Tabelle decomposte:
+	\begin{center}
+	\begin{tabular}{|l|l|}
+		\hline
+		\textbf{Employee} & \textbf{Office} \\ \hline
+		Smith & A101 \\ \hline
+		Jones & B202 \\ \hline
+	\end{tabular}
+	\quad
+	\begin{tabular}{|l|l|}
+		\hline
+		\textbf{Employee} & \textbf{Project} \\ \hline
+		Smith & Alpha \\ \hline
+		Smith & Beta \\ \hline
+		Jones & Gamma \\ \hline
+	\end{tabular}
+	\end{center}
+
+	\noindent Risultato del JOIN (senza tuple spurie):
+	\begin{center}
+	\begin{tabular}{|l|l|l|}
+		\hline
+		\textbf{Employee} & \textbf{Project} & \textbf{Office} \\ \hline
+		Smith & Alpha & A101 \\ \hline
+		Smith & Beta & A101 \\ \hline
+		Jones & Gamma & B202 \\ \hline
+	\end{tabular}
+	\end{center}
+	
+	\noindent Attributo comune: \texttt{Employee}. \texttt{Employee} è chiave per $R_1$. Lossless.
 	
 	\subsubsection{Dependency Preservation (Conservazione delle Dipendenze)}
 	Tutte le dipendenze funzionali originali devono poter essere verificate esaminando una singola tabella nello schema decomposto.
-	Nell'esempio di decomposizione $R(\text{E, P, O})$ con $\text{E} \rightarrow \text{O}$ e $\text{P} \rightarrow \text{O}$ (slide 28), se decomponiamo in $R_1(\text{E,O})$ e $R_2(\text{E,P})$, la FD $\text{P} \rightarrow \text{O}$ non è preservata.
+	\newline
+	\newline
+	\textbf{In parole semplici:} La proprietà di conservazione delle dipendenze garantisce che, dopo aver decomposto una tabella in più tabelle, ogni regola (dipendenza funzionale) della tabella originale possa essere verificata esaminando \textit{una sola} delle tabelle risultanti, senza dover eseguire join.
+	
+	Se $F$ è l'insieme delle dipendenze funzionali su $R$, e $R$ viene decomposto in $R_1, R_2, \ldots, R_n$, allora:
+	\begin{itemize}
+		\item Per ogni dipendenza $X \rightarrow Y$ in $F$, deve esistere almeno un $R_i$ tale che $X \cup Y \subseteq R_i$
+		\item Se nessun $R_i$ contiene tutti gli attributi di una dipendenza, allora quella dipendenza non può essere verificata senza combinare più tabelle
+	\end{itemize}
+	
+	\textbf{Perché è importante?} Senza la conservazione delle dipendenze:
+	\begin{itemize}
+		\item Diventa difficile mantenere l'integrità dei dati
+		\item Le operazioni di controllo richiedono join costosi
+		\item L'efficienza del database ne risente significativamente
+	\end{itemize}
+	
+	\noindent Esempio di Decomposizione che \textbf{NON} preserva le dipendenze:
+
+	$R(\text{Employee}, \text{Project}, \text{Office})$ con dipendenze:
+
+	\begin{itemize}
+		\item $\text{Employee} \rightarrow \text{Office}$
+		\item $\text{Project} \rightarrow \text{Office}$
+	\end{itemize}
+
+	\noindent Tabella originale R:
+	\begin{center}
+	\begin{tabular}{|l|l|l|}
+		\hline
+		\textbf{Employee} & \textbf{Project} & \textbf{Office} \\ \hline
+		Jones & Mars & Rome \\ \hline
+		Smith & Jupiter & Milan \\ \hline
+		Smith & Venus & Milan \\ \hline
+		White & Saturn & Milan \\ \hline
+		White & Venus & Milan \\ \hline
+		White & Mars & Milan \\ \hline
+	\end{tabular}
+	\end{center}
+
+	\noindent Decomposizione in $R_1(\text{Employee, Office})$ e $R_2(\text{Employee, Project})$:
+	\begin{center}
+	\begin{tabular}{|l|l|}
+		\hline
+		\textbf{Employee} & \textbf{Office} \\ \hline
+		Jones & Rome \\ \hline
+		Smith & Milan \\ \hline
+		White & Milan \\ \hline
+	\end{tabular}
+	\quad
+	\begin{tabular}{|l|l|}
+		\hline
+		\textbf{Employee} & \textbf{Project} \\ \hline
+		Jones & Mars \\ \hline
+		Smith & Jupiter \\ \hline
+		Smith & Venus \\ \hline
+		White & Saturn \\ \hline
+		White & Venus \\ \hline
+		White & Mars \\ \hline
+	\end{tabular}
+	\end{center}
+
+	\noindent La FD $\text{Project} \rightarrow \text{Office}$ \textbf{non è preservata} perché:
+	\begin{itemize}
+		\item In $R_1$ manca l'attributo Project, quindi non può verificare Project → Office
+		\item In $R_2$ manca l'attributo Office, quindi non può verificare Project → Office
+		\item Non esiste nessuna singola tabella in cui possiamo verificare questa dipendenza
+	\end{itemize}
+	
+	\noindent \textbf{Una decomposizione alternativa che preserva le dipendenze:}
+	
+	Per preservare tutte le dipendenze funzionali, possiamo decomporre $R$ in tre tabelle:
+	\begin{itemize}
+		\item $R_1(\text{Employee, Office})$ - preserva $\text{Employee} \rightarrow \text{Office}$
+		\item $R_2(\text{Project, Office})$ - preserva $\text{Project} \rightarrow \text{Office}$
+		\item $R_3(\text{Employee, Project})$ - mantiene la relazione tra Employee e Project
+	\end{itemize}
+
+	\noindent Decomposizione che preserva le dipendenze:
+	\begin{center}
+	\begin{tabular}{|l|l|}
+		\hline
+		\textbf{Employee} & \textbf{Office} \\ \hline
+		Jones & Rome \\ \hline
+		Smith & Milan \\ \hline
+		White & Milan \\ \hline
+	\end{tabular}
+	\quad
+	\begin{tabular}{|l|l|}
+		\hline
+		\textbf{Project} & \textbf{Office} \\ \hline
+		Mars & Rome \\ \hline
+		Jupiter & Milan \\ \hline
+		Venus & Milan \\ \hline
+		Saturn & Milan \\ \hline
+	\end{tabular}
+	\quad
+	\begin{tabular}{|l|l|}
+		\hline
+		\textbf{Employee} & \textbf{Project} \\ \hline
+		Jones & Mars \\ \hline
+		Smith & Jupiter \\ \hline
+		Smith & Venus \\ \hline
+		White & Saturn \\ \hline
+		White & Venus \\ \hline
+		White & Mars \\ \hline
+	\end{tabular}
+	\end{center}
+	
+	\noindent Questa decomposizione preserva tutte le dipendenze, (perché ogni dipendenza funzionale $X \rightarrow Y$ è contenuta interamente in almeno una delle tabelle risultanti: $\text{Employee} \rightarrow \text{Office}$ è in $R_1$ e $\text{Project} \rightarrow \text{Office}$ è in $R_2$) ma purtroppo \textbf{non garantisce} la proprietà di join senza perdita (lossless join). Infatti, quando riuniamo le tre tabelle, potremmo generare tuple spurie (ad esempio, dal join otterremmo che White lavora a Mars con Office = Rome, mentre nella tabella originale White lavora a Mars ma con Office = Milan; oppure potremmo ottenere Smith lavora a Mars, che non esiste nella relazione originale).
+	
+	\noindent Il trade-off tra "Dependency Preservation" e "Lossless Join" è uno dei motivi per cui è stata definita la Terza Forma Normale (3NF).
+	
+	\section{Recap: Quello che abbiamo imparato finora}
+	
+	Piccolo riassunto di quanto visto finora:
+	
+	\begin{itemize}
+		\item \textbf{Normalizzazione:} È un processo per organizzare i dati in un database in modo da evitare ridondanze e anomalie. Serve a verificare e migliorare uno schema già progettato, non a crearlo da zero.
+		
+		\item \textbf{Anomalie:} Sono problemi che possono verificarsi quando lo schema del database non è ben progettato:
+		\begin{itemize}
+			\item \textbf{Anomalia di inserimento:} Non posso inserire certi dati se non ho altri dati correlati.
+			\item \textbf{Anomalia di cancellazione:} Cancellando alcuni dati perdo accidentalmente altre informazioni importanti.
+			\item \textbf{Anomalia di aggiornamento:} Devo aggiornare lo stesso dato in più punti, rischiando inconsistenze.
+		\end{itemize}
+		
+		\item \textbf{Dipendenze Funzionali (FD):} Sono vincoli che esprimono come un attributo (o set di attributi) determina univocamente un altro attributo. Esempio: \texttt{Codice\_Fiscale → Data\_Nascita, Comune\_Nascita} significa che conoscendo il CF posso determinare con certezza la data di nascita e il comune di nascita.
+		
+		\item \textbf{Forma Normale di Boyce-Codd (BCNF):} Una tabella è in BCNF se per ogni dipendenza funzionale X → Y, X deve essere una superchiave (cioè deve poter identificare univocamente ogni riga della tabella).
+		
+		\item \textbf{Decomposizione:} Quando una tabella non è in BCNF, la dividiamo in tabelle più piccole che siano in BCNF.
+		
+		\item \textbf{Proprietà della decomposizione:}
+		\begin{itemize}
+			\item \textbf{Lossless Join:} La decomposizione deve permettere di ricostruire la tabella originale senza generare tuple spurie. Garantita se l'intersezione degli attributi forma una chiave per almeno una delle tabelle.
+			\begin{itemize}
+				\item \textbf{Esempio:} Se decompongo \texttt{Studenti(Matricola, Nome, CorsoDiLaurea)} in \newline \texttt{Anagrafica(Matricola, Nome)} e \texttt{Iscrizione(Matricola, CorsoDiLaurea)}, l'attributo comune \texttt{Matricola} è chiave per entrambe, quindi il join sarà senza perdita.
+			\end{itemize}
+			\item \textbf{Dependency Preservation:} Le dipendenze funzionali originali devono essere verificabili nelle tabelle decomposte senza fare join.
+			\begin{itemize}
+				\item \textbf{Esempio:} Se ho la FD \texttt{Matricola → CorsoDiLaurea} nella tabella originale, dopo la decomposizione devo poterla verificare in una singola tabella, ovvero \texttt{Iscrizione}.
+			\end{itemize}
+		\end{itemize}
+		
+		\item \textbf{Il problema:} Non sempre è possibile ottenere una decomposizione che sia sia lossless che preservi tutte le dipendenze e sia in BCNF.
+	\end{itemize}
+	
+	Questo è il motivo per cui ora introduciamo la Terza Forma Normale (3NF), che è un po' meno restrittiva della BCNF ma garantisce sempre una decomposizione che preserva le dipendenze e ha la proprietà di lossless join.
 	
 	\section{Terza Forma Normale (3NF)}
 	La 3NF è una forma normale leggermente meno stringente della BCNF che permette sempre una decomposizione lossless e che preserva le dipendenze.
@@ -241,16 +619,56 @@
 	\end{itemize}
 	
 	\subsection{Esempio 3NF (ma non BCNF)}
-	Tabella $R(\text{Chief, Project, Office})$
-	FDs:
+	Consideriamo una tabella $R(\text{Chief, Project, Office})$.
+	Supponiamo di avere le seguenti Dipendenze Funzionali (FDs):
 	\begin{enumerate}
-		\item $\{\text{Project, Office}\} \rightarrow \text{Chief}$ (chiave candidata: $\{\text{Project, Office}\}$ )
+		\item $\{\text{Project, Office}\} \rightarrow \text{Chief}$ (questa è una chiave candidata)
 		\item $\text{Chief} \rightarrow \text{Office}$
 	\end{enumerate}
-	Analizziamo $\text{Chief} \rightarrow \text{Office}$:
+	
+	\noindent Un'istanza di esempio della tabella $R$ potrebbe essere:
+	\begin{center}
+		\begin{tabular}{lll}
+			\toprule
+			\textbf{Chief} & \textbf{Project} & \textbf{Office} \\
+			\midrule
+			Rossi   & Alpha    & Stanza101 \\
+			Rossi   & Beta     & Stanza101 \\
+			Verdi   & Gamma    & Stanza202 \\
+			Bianchi & Alpha    & Stanza303 \\ % Aggiunta per mostrare che {Project, Office} è chiave
+			\bottomrule
+		\end{tabular}
+	\end{center}
+	
+	\noindent Da questa tabella, osserviamo:
 	\begin{itemize}
-		\item \textbf{BCNF:} $\text{Chief}$ non è superchiave. \textbf{NON è in BCNF.}
-		\item \textbf{3NF:} $\text{Chief}$ non è superchiave. MA $\text{Office}$ è parte della chiave candidata $\{\text{Project, Office}\}$. \textbf{È in 3NF.}
+		\item Per la FD $\{\text{Project, Office}\} \rightarrow \text{Chief}$:
+		\begin{itemize}
+			\item $(\text{Alpha, Stanza101}) \rightarrow \text{Rossi}$
+			\item $(\text{Beta, Stanza101}) \rightarrow \text{Rossi}$
+			\item $(\text{Gamma, Stanza202}) \rightarrow \text{Verdi}$
+			\item $(\text{Alpha, Stanza303}) \rightarrow \text{Bianchi}$
+		\end{itemize}
+		La coppia $\{\text{Project, Office}\}$ identifica univocamente \texttt{Chief}, quindi è una chiave candidata.
+		
+		\item Per la FD $\text{Chief} \rightarrow \text{Office}$:
+		\begin{itemize}
+			\item $\text{Rossi} \rightarrow \text{Stanza101}$
+			\item $\text{Verdi} \rightarrow \text{Stanza202}$
+			\item $\text{Bianchi} \rightarrow \text{Stanza303}$
+		\end{itemize}
+		L'attributo \texttt{Chief} determina univocamente \texttt{Office}.
+	\end{itemize}
+	
+	Analizziamo ora la FD $\text{Chief} \rightarrow \text{Office}$ rispetto alle forme normali:
+	\begin{itemize}
+		\item \textbf{BCNF:} La FD $\text{Chief} \rightarrow \text{Office}$ viola la BCNF perché $\text{Chief}$ non è una superchiave. (Ad esempio, \texttt{Chief} da solo non determina \texttt{Project}: Rossi è associato sia al progetto Alpha che Beta). \textbf{Quindi, R NON è in BCNF.}
+		\item \textbf{3NF:} Per la FD $\text{Chief} \rightarrow \text{Office}$:
+		\begin{enumerate}
+			\item $\text{Chief}$ non è una superchiave. (Condizione 1 non soddisfatta)
+			\item MA, ogni attributo in $Y$ (che è $\{\text{Office}\}$ in questo caso) è parte di almeno una chiave candidata di $R$. L'attributo $\text{Office}$ è infatti parte della chiave candidata $\{\text{Project, Office}\}$. (Condizione 2 soddisfatta)
+		\end{enumerate}
+		Poiché la seconda condizione è soddisfatta, \textbf{la relazione R È in 3NF.}
 	\end{itemize}
 	
 	\subsection{Algoritmo di Decomposizione in 3NF (Idea Generale)}
@@ -259,7 +677,41 @@
 		\item Per ogni FD $X \rightarrow Y$ in questa copertura, crea una tabella con attributi $X \cup Y$.
 		\item Se nessuna delle tabelle create contiene una chiave candidata della relazione originale, aggiungi un'ulteriore tabella contenente solo gli attributi di una chiave candidata originale.
 	\end{enumerate}
-	
+
+	\begin{center}
+	\begin{tikzpicture}[
+		node distance=1cm and 0.8cm,
+		box/.style={rectangle, rounded corners, draw, fill=black!80, minimum width=3.5cm, minimum height=1.2cm, align=center, text width=3.5cm},
+		arrow/.style={->, >=stealth, thick}
+	]
+	% Step 1
+	\node[box] (start) {Relazione $R$ \\ con FDs $F$ \\ (non in 3NF)};
+
+	% Step 2
+	\node[box, below=of start] (mincover) {1. Calcolare la \\ copertura canonica $F_c$ di $F$.};
+
+	% Step 3
+	\node[box, below=of mincover] (decomporre) {2. Per ogni FD $X \rightarrow Y$ in $F_c$, creare una relazione $R_i(X \cup Y)$.};
+
+	% Step 4
+	\node[box, below=of decomporre] (checkkey) {3. Verificare se una chiave candidata di $R$ è contenuta in una delle $R_i$.};
+
+	% Step 5a (Yes)
+	\node[box, below left=of checkkey, xshift=-1cm] (done) {Le relazioni $R_i$ \\ sono la decomposizione \\ in 3NF.};
+
+	% Step 5b (No)
+	\node[box, below right=of checkkey, xshift=1cm] (addkey) {Aggiungere una relazione $R_k$ contenente solo gli attributi di una chiave candidata di $R$. \\ Le $R_i \cup \{R_k\}$ sono la decomposizione in 3NF.};
+
+	% Arrows
+	\draw[arrow] (start) -- (mincover);
+	\draw[arrow] (mincover) -- (decomporre);
+	\draw[arrow] (decomporre) -- (checkkey);
+	\draw[arrow] (checkkey.west) -- node[above, pos=0.4, align=center] {Sì} (done.north);
+	\draw[arrow] (checkkey.east) -- node[above, pos=0.4, align=center] {No} (addkey.north);
+
+	\end{tikzpicture}
+	\end{center}
+
 	\subsection{Approccio Pratico Consigliato}
 	\begin{enumerate}
 		\item Decomponi la relazione per raggiungere la 3NF.
