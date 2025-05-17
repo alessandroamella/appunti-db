@@ -17,6 +17,7 @@ const REPO_OWNER = process.env.REPO_OWNER || "alessandroamella";
 const REPO_NAME = process.env.REPO_NAME || path.basename(process.cwd());
 const PDF_PATTERN = process.env.PDF_PATTERN || "*.pdf";
 const RELEASE_PREFIX = process.env.RELEASE_PREFIX || "appunti";
+const TEX_PATTERN = process.env.TEX_PATTERN || "*.tex";
 
 // Parse command line arguments
 function parseArgs() {
@@ -43,6 +44,48 @@ if (!GITHUB_TOKEN) {
 const octokit = new Octokit({
   auth: GITHUB_TOKEN
 });
+
+/**
+ * Find and compile LaTeX files into PDFs
+ */
+function compileTexFiles() {
+  try {
+    console.log("Finding and compiling LaTeX files...");
+
+    // Find all .tex files
+    const result = execSync(`find . -name "${TEX_PATTERN}" | sort -V`).toString().trim();
+    const texFiles = result.split("\n").filter(file => file);
+
+    if (texFiles.length === 0) {
+      console.log("No LaTeX (.tex) files found in the repository.");
+      return;
+    }
+
+    // Compile each LaTeX file to PDF
+    for (const texFile of texFiles) {
+      console.log(`Compiling ${texFile}...`);
+      const texDir = path.dirname(texFile);
+      const texFilename = path.basename(texFile);
+
+      try {
+        // Change to the directory containing the .tex file and compile it
+        execSync(
+          `cd "${texDir}" && pdflatex -shell-escape -synctex=1 -interaction=nonstopmode "${texFilename}"`,
+          { stdio: "inherit" }
+        );
+        console.log(`Successfully compiled ${texFile}`);
+      } catch (compileError) {
+        console.error(`Warning: Error compiling ${texFile}: ${compileError.message}`);
+        // Continue with the next file rather than exiting
+      }
+    }
+
+    console.log("LaTeX compilation completed");
+  } catch (error) {
+    console.error("Error processing LaTeX files:", error.message);
+    process.exit(1);
+  }
+}
 
 /**
  * Generate images used in the PDF by running generate_images.sh
@@ -228,9 +271,11 @@ async function main() {
       break;
 
     case "release": {
-      // Generate images first
+      // First compile LaTeX files to generate PDFs
+      compileTexFiles();
+      // Then generate images
       generateImages();
-      // Then process PDFs
+      // Process PDFs
       const pdfFiles = findPDFFiles();
       const pdfInfo = await combinePDFs(pdfFiles);
       await createGitHubRelease(pdfInfo, args.message);
