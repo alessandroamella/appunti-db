@@ -55,7 +55,9 @@ function compileTexFiles() {
 
     // Find all .tex files
     const result = execSync(`find . -name "${TEX_PATTERN}" | sort -V`).toString().trim();
-    const texFiles = result.split("\n").filter(file => file);
+    const texFiles = result
+      .split("\n")
+      .filter(file => file && path.basename(file) !== "preambolo_comune.tex");
 
     if (texFiles.length === 0) {
       console.log("No LaTeX (.tex) files found in the repository.");
