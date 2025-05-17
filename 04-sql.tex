@@ -12,36 +12,6 @@
 	pdfpagemode=FullScreen,
 }
 
-
-% --- Comandi personalizzati per algebra relazionale (meno usati qui, ma presenti nel template) ---
-\newcommand{\Rel}[1]{\textit{#1}} % Per i nomi delle relazioni
-\newcommand{\Attr}[1]{\textsf{#1}} % Per i nomi degli attributi
-
-\newcommand{\myunion}{\cup}
-\newcommand{\myintersection}{\cap}
-\newcommand{\mydifference}{-}
-\newcommand{\myrename}[2]{\rho_{#1}(#2)}
-\newcommand{\myselectop}[2]{\sigma_{#1}(#2)}
-\newcommand{\myproject}[2]{\pi_{#1}(#2)}
-\newcommand{\mycartesian}{\times}
-\newcommand{\mynaturaljoin}{\bowtie}
-\newcommand{\mythetajoin}[3]{#1 \bowtie_{#2} #3}
-
-% --- Comandi personalizzati per logica ---
-\newcommand{\mylandop}{\wedge}
-\newcommand{\myvel}{\vee}
-\newcommand{\mynegop}{\neg}
-\newcommand{\myforallop}{\forall}
-\newcommand{\myexistsop}{\exists}
-
-% --- Join esterni (outer join) ---
-\def\ojoin{\setbox0=\hbox{$\mynaturaljoin$}%
-	\rule[-.02ex]{.25em}{.4pt}\llap{\rule[\ht0]{.25em}{.4pt}}}
-\newcommand{\myleftouterjoin}{\mathbin{\ojoin\mkern-5.8mu\mynaturaljoin}}
-\newcommand{\myrightouterjoin}{\mathbin{\mynaturaljoin\mkern-5.8mu\ojoin}}
-\newcommand{\myfullouterjoin}{\mathbin{\ojoin\mkern-5.8mu\mynaturaljoin\mkern-5.8mu\ojoin}}
-
-
 % --- Titolo ---
 \title{SQL Base\\
   \large Appunti basati sulle dispense del Prof. Danilo Montesi}
