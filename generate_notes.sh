@@ -89,6 +89,7 @@ Questo documento è la versione compilata automaticamente di tutti i miei appunt
   \item \textbf{Aggiornamenti}: Per la versione più recente degli appunti, visita la pagina delle release:
         \url{https://github.com/alessandroamella/appunti-db/releases/latest}
   \item \textbf{Uso di AI}: Ho usato Gemini e Claude a manetta.
+\end{itemize}
 
 \doclicenseThis
 
