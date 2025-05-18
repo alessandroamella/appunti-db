@@ -175,9 +175,9 @@ echo "✅ Compilazione completata."
 echo "Il documento PDF è stato generato come 'appunti_completi.pdf'"
 
 # 5. Rimuovi il file preambolo_comune.tex dopo la compilazione
-echo "Rimuovo il file preambolo_comune_modificato.tex..."
-rm preambolo_comune_modificato.tex
-echo "✅ File preambolo_comune_modificato.tex rimosso."
+# echo "Rimuovo il file preambolo_comune_modificato.tex..."
+# rm preambolo_comune_modificato.tex
+# echo "✅ File preambolo_comune_modificato.tex rimosso."
 
 echo "==================================================================="
 echo "Processo completato con successo!"

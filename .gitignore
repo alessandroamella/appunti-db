@@ -10,9 +10,12 @@ node_modules/
 uml_images/
 plantuml.jar
 *.puml
+*.fdb_latexmk
+*.fls
 
 # remove releases
 *.pdf
 
 appunti_completi.tex
 *-content.tex
+preambolo_comune_modificato.tex
