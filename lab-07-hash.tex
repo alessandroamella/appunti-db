@@ -39,6 +39,54 @@ Struttura risultante:
     \item Bucket 1: [\texttt{1001}, \texttt{1100}]
 \end{itemize}
 
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[node distance=2.5cm]
+    % Stile per i nodi
+    \tikzstyle{key}=[rectangle, draw, fill=darkgray!90, text=white, text width=1.8cm, text centered, minimum height=1cm, node distance=3cm, line width=1.2pt, draw=cyan]
+    \tikzstyle{hash}=[rectangle, draw, fill=violet!50!blue!70, text=white, text width=2.5cm, text centered, rounded corners, minimum height=1cm, line width=1.2pt, draw=white]
+    \tikzstyle{bucket}=[rectangle, draw, fill=teal!70!black, text=white, text width=2.5cm, minimum height=2cm, node distance=4cm, line width=1.2pt, draw=yellow!70]
+    \tikzstyle{overflow}=[rectangle, draw, fill=orange!50!black, text=white, text width=2.5cm, minimum height=1.5cm, node distance=4cm, line width=1.2pt, draw=yellow!70, dashed]
+    \tikzstyle{arrow}=[->, thick, yellow!80!orange]
+    \tikzstyle{overflow_arrow}=[->, thick, orange!90, dashed]
+    
+    % Chiavi di input
+    \node[key] (key1) at (0,0) {\texttt{0001}};
+    \node[key] (key2) at (0,-1.5) {\texttt{1001}};
+    \node[key] (key3) at (0,-3) {\texttt{1100}};
+    
+    % Funzione hash
+    \node[hash] (hash) at (3.5,-1.5) {$H_1(K)$\\(primo bit)};
+    
+    % Bucket
+    \node[bucket] (bucket0) at (7.5,0) {Bucket 0\\[0.3cm]\texttt{0001}};
+    \node[bucket] (bucket1) at (7.5,-3) {Bucket 1\\[0.3cm]\texttt{1001}\\[0.3cm]\texttt{1100}};
+    
+    % Etichette dei bucket
+    \node[text=white] at (7.5,-4.5) {$N = 2$ bucket};
+    
+    % Frecce dalle chiavi alla funzione hash
+    \draw[arrow] (key1) -- (hash);
+    \draw[arrow] (key2) -- (hash);
+    \draw[arrow] (key3) -- (hash);
+    
+    % Frecce dalla funzione hash ai bucket
+    \draw[arrow] (hash) -- node[above, text=orange!80] {bit=0} (bucket0);
+    \draw[arrow] (hash) -- node[above, text=orange!80] {bit=1} (bucket1);
+    
+    % Annotazioni per evidenziare il primo bit
+    \node[draw, circle, pink, inner sep=1pt, line width=1pt] at (0.15,0.3) {};
+    \node[pink] at (0.15,0.7) {0};
+    
+    \node[draw, circle, pink, inner sep=1pt, line width=1pt] at (0.15,-1.2) {};
+    \node[pink] at (0.15,-0.8) {1};
+    
+    \node[draw, circle, pink, inner sep=1pt, line width=1pt] at (0.15,-2.7) {};
+    \node[pink] at (0.15,-2.3) {1};
+\end{tikzpicture}
+\caption{Visualizzazione dell'hashing statico con $H_1$ (primo bit)}
+\end{figure}
+
 \subsubsection{Ricerca (Searching)}
 Si calcola l'hash della chiave data per trovare il bucket e si cerca il record all'interno di quel bucket (e delle sue eventuali catene di overflow).
 
@@ -68,6 +116,47 @@ Struttura dopo inserimento di \texttt{1010}:
     \item Bucket 0: [\texttt{0001}]
     \item Bucket 1: [\texttt{1001}, \texttt{1100}] $\rightarrow$ [\texttt{1010}] (overflow)
 \end{itemize}
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[node distance=2.5cm]
+    % Stile per i nodi
+    \tikzstyle{key}=[rectangle, draw, fill=darkgray!90, text=white, text width=1.8cm, text centered, minimum height=1cm, node distance=3cm, line width=1.2pt, draw=cyan]
+    \tikzstyle{hash}=[rectangle, draw, fill=violet!50!blue!70, text=white, text width=2.5cm, text centered, rounded corners, minimum height=1cm, line width=1.2pt, draw=white]
+    \tikzstyle{bucket}=[rectangle, draw, fill=teal!70!black, text=white, text width=2.5cm, minimum height=2cm, node distance=4cm, line width=1.2pt, draw=yellow!70]
+    \tikzstyle{overflow}=[rectangle, draw, fill=orange!50!black, text=white, text width=2.5cm, minimum height=1.5cm, node distance=4cm, line width=1.2pt, draw=yellow!70, dashed]
+    \tikzstyle{arrow}=[->, thick, yellow!80!orange]
+    \tikzstyle{overflow_arrow}=[->, thick, orange!90, dashed]
+    
+    % Chiave di input nuova
+    \node[key] (key4) at (0,0) {\texttt{1010}};
+    
+    % Funzione hash
+    \node[hash] (hash) at (3.5,0) {$H_1(K)$\\(primo bit)};
+    
+    % Bucket
+    \node[bucket] (bucket0) at (7.5,2) {Bucket 0\\[0.3cm]\texttt{0001}};
+    \node[bucket] (bucket1) at (7.5,-0.5) {Bucket 1\\[0.1cm]\texttt{1001}\\[0.1cm]\texttt{1100}};
+    \node[overflow] (overflow) at (7.5,-3) {\texttt{1010}\\(overflow)};
+    
+    % Etichette
+    \node[text=white] at (7.5,-4.5) {$N = 2$ bucket (fisso)};
+    \node[text=white] at (7.5,-5) {3 blocchi totali};
+    
+    % Frecce
+    \draw[arrow] (key4) -- (hash);
+    \draw[arrow] (hash) -- node[above, text=orange!80] {bit=1} (bucket1);
+    \draw[overflow_arrow] (bucket1) -- (overflow);
+    
+    % Annotazione per evidenziare il primo bit
+    \node[draw, circle, pink, inner sep=1pt, line width=1pt] at (0.15,0.3) {};
+    \node[pink] at (0.15,0.7) {1};
+    
+    % Annotazione per spiegare l'overflow
+    \node[text=orange!90, align=center] at (10,-1.8) {Bucket pieno\\$\downarrow$\\Creazione blocco\\di overflow};
+\end{tikzpicture}
+\caption{Inserimento con overflow nell'hashing statico: il bucket 1 è pieno, quindi \texttt{1010} viene inserito in un blocco di overflow}
+\end{figure}
 
 \textbf{Domande Tipiche:}
 Data la struttura risultante dall'inserimento di \texttt{1010}:
@@ -173,78 +262,80 @@ Introduce un livello di indirezione: una \textbf{directory di puntatori} ai bloc
         \begin{enumerate}
             \item \textbf{Incrementa $i$:} La profondità globale della directory diventa $i+1$.
             \item \textbf{Raddoppia la directory:} Ogni vecchia entry $w$ (lunga $i$ bit) nella directory genera due nuove entry $w0$ e $w1$ (lunghe $i+1$ bit). Inizialmente, entrambe puntano al blocco a cui puntava $w$.
-            \item \textbf{Ora $j < i$ (nuovo $i$):} Procedi come nel Caso A per splittare il blocco B (la cui profondità locale $j$ è ora minore della nuova profondità globale $i$).
-            \begin{itemize}
-                \item Split blocco $B$ in $B$ e $B'$.
-                \item Profondità locale di $B$ e $B'$ diventa $j+1$ (che sarà uguale al nuovo $i$).
-                \item Distribuisci i record.
-                \item Aggiorna le entry della directory (quelle create al passo 2.2 che puntavano al vecchio $B$) per puntare a $B$ o $B'$ correttamente.
-            \end{itemize}
+            \item \textbf{Ora $j < i$ (nuovo $i$):} Procedi come nel Caso A per splittare il blocco B (la cui profondità locale $j$ è ora minore del nuovo $i$). La $j$ dei due blocchi risultanti diventerà $j_{\text{vecchio}}+1$.
         \end{enumerate}
     \end{itemize}
 \end{enumerate}
 
-\textbf{Esempio Inserimento Dettagliato (inserire \texttt{1010})}
+\textbf{Esempio Inserimento (inserire \texttt{1010})}
 
-Stato iniziale:
-\begin{itemize}
-    \item $i = 1$. Directory: \texttt{0} $\rightarrow$ \texttt{BloccoA\{0001, j=1\}}, \texttt{1} $\rightarrow$ \texttt{BloccoB\{1001, 1100, j=1\}}.
-    \item Limite per blocco: 2 record.
-\end{itemize}
-
-Inserire $K_2 = \texttt{1010}$:
-\begin{enumerate}
-    \item $H_1(\texttt{1010}) \rightarrow \texttt{1}$. Directory[\texttt{1}] punta a \texttt{BloccoB}.
-    \item \texttt{BloccoB \{1001, 1100\}} è pieno. Dobbiamo inserire \texttt{1010}.
-    \item Profondità locale di \texttt{BloccoB} è $j=1$. Profondità globale $i=1$.
-    Siamo nel \textbf{Caso B: $j == i$} ($1 == 1$).
-    \begin{enumerate}
-        \item \textbf{Incrementa $i$:} $i$ diventa $2$.
-        \item \textbf{Raddoppia la directory:}
-        \begin{itemize}
-            \item Vecchia \texttt{0} $\rightarrow$ Nuove \texttt{00}, \texttt{01}. Entrambe puntano a \texttt{BloccoA}.
-            \item Vecchia \texttt{1} $\rightarrow$ Nuove \texttt{10}, \texttt{11}. Entrambe puntano a \texttt{BloccoB}.
-        \end{itemize}
-        Directory ora:
-        \begin{itemize}
-            \item \texttt{00} $\rightarrow$ \texttt{BloccoA\{0001, j=1\}}
-            \item \texttt{01} $\rightarrow$ \texttt{BloccoA\{0001, j=1\}}
-            \item \texttt{10} $\rightarrow$ \texttt{BloccoB\{1001, 1100, j=1\}} $\leftarrow$ Qui avviene lo split
-            \item \texttt{11} $\rightarrow$ \texttt{BloccoB\{1001, 1100, j=1\}}
-        \end{itemize}
-        \item Ora, per \texttt{BloccoB}, la sua $j=1$ è minore del nuovo $i=2$. Procediamo come nel \textbf{Caso A} per \texttt{BloccoB} (puntato da \texttt{10} e \texttt{11}).
-        \begin{enumerate}
-            \item \textbf{Split \texttt{BloccoB}:} Crea \texttt{BloccoB'}.
-            \item \textbf{Incrementa $j$:} $j$ di \texttt{BloccoB} e \texttt{BloccoB'} diventa $1+1 = 2$.
-            \item \textbf{Distribuisci record} (vecchi di \texttt{BloccoB}: \texttt{1001}, \texttt{1100}; nuovo: \texttt{1010}) usando i primi 2 bit:
-            \begin{itemize}
-                \item Record che iniziano con \texttt{10..}: \texttt{1001}, \texttt{1010}. Vanno in \texttt{BloccoB} (rinominato).
-                \item Record che iniziano con \texttt{11..}: \texttt{1100}. Va in \texttt{BloccoB'}.
-            \end{itemize}
-            \texttt{BloccoB} ora è \texttt{\{1001, 1010, j=2\}}. \texttt{BloccoB'} ora è \texttt{\{1100, j=2\}}.
-            \item \textbf{Aggiorna directory:}
-            \begin{itemize}
-                \item Entry \texttt{10} (primi 2 bit \texttt{10}) punta a \texttt{BloccoB \{1001, 1010, j=2\}}.
-                \item Entry \texttt{11} (primi 2 bit \texttt{11}) punta a \texttt{BloccoB' \{1100, j=2\}}.
-            \end{itemize}
-        \end{enumerate}
-    \end{enumerate}
-\end{enumerate}
-
-Stato finale:
-\begin{itemize}
-    \item $i = 2$.
-    \item Directory:
-    \begin{itemize}
-        \item \texttt{00} $\rightarrow$ \texttt{BloccoA \{0001, j=1\}}
-        \item \texttt{01} $\rightarrow$ \texttt{BloccoA \{0001, j=1\}}
-        \item \texttt{10} $\rightarrow$ \texttt{BloccoB \{1001, 1010, j=2\}}
-        \item \texttt{11} $\rightarrow$ \texttt{BloccoB' \{1100, j=2\}}
-    \end{itemize}
-\end{itemize}
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[node distance=2.5cm, scale=0.9, transform shape]
+    % Stili per i nodi
+    \tikzstyle{directory}=[rectangle, draw, fill=purple!40!black, text=white, minimum width=1.2cm, minimum height=0.8cm, line width=1.2pt, draw=cyan!70]
+    \tikzstyle{block}=[rectangle, draw, fill=teal!70!black, text=white, text width=2.5cm, minimum height=1.5cm, line width=1.2pt, draw=yellow!70]
+    \tikzstyle{arrow}=[->, thick, yellow!80!orange]
+    \tikzstyle{stepbox}=[rectangle, draw, fill=violet!70!blue!40, text=black, text width=4.5cm, text centered, rounded corners, minimum height=1cm, line width=1.2pt, draw=white]
+    % Prima fase - Stato iniziale
+    \node[stepbox] at (0,8) {Stato iniziale: $i=1$};
+    
+    \node[directory] (dir0) at (0,6) {0};
+    \node[directory] (dir1) at (3,6) {1};
+    \node[block] (blockA1) at (0,4) {BloccoA\\$\{$\texttt{0001}$\}$\\$j=1$};
+    \node[block] (blockB1) at (3,4) {BloccoB\\$\{$\texttt{1001},\texttt{1100}$\}$\\$j=1$};
+    
+    \draw[arrow] (dir0) -- (blockA1);
+    \draw[arrow] (dir1) -- (blockB1);
+    
+    % Nuova chiave da inserire
+    \node[rectangle, draw, fill=darkgray!90, text=white, text centered, minimum height=0.8cm, line width=1.2pt, draw=cyan] (key) at (6,5) {\texttt{1010}};
+    \draw[arrow, dashed] (key) -- node[above, text=orange!80] {$H_1$=1} (blockB1);
+    
+    % Seconda fase - Raddoppio directory
+    \node[stepbox] at (11,8) {Fase 1: Raddoppio directory $i=2$};
+    
+    \node[directory] (dir00) at (8,6) {00};
+    \node[directory] (dir01) at (10,6) {01};
+    \node[directory] (dir10) at (12,6) {10};
+    \node[directory] (dir11) at (14,6) {11};
+    
+    \node[block] (blockA2) at (9,4) {BloccoA\\$\{$\texttt{0001}$\}$\\$j=1$};
+    \node[block] (blockB2) at (13,4) {BloccoB\\$\{$\texttt{1001},\texttt{1100}$\}$\\$j=1$};
+    
+    \draw[arrow] (dir00) -- (blockA2);
+    \draw[arrow] (dir01) -- (blockA2);
+    \draw[arrow] (dir10) -- (blockB2);
+    \draw[arrow] (dir11) -- (blockB2);
+    
+    \node[draw, fill=orange!50!black, text=white, align=center, rounded corners] at (11,2.5) {Blocco B pieno e $j=i$\\$\Rightarrow$ Raddoppia directory};
+    % Terza fase - Split blocco
+    \node[stepbox] at (5.5,1) {Fase 2: Split blocco B con redistribuzione usando 2 bit};
+    
+    \node[directory] (dir00f) at (0,0) {00};
+    \node[directory] (dir01f) at (2,0) {01};
+    \node[directory] (dir10f) at (4,0) {10};
+    \node[directory] (dir11f) at (6,0) {11};
+    
+    \node[block] (blockAf) at (1,-2) {BloccoA\\$\{$\texttt{0001}$\}$\\$j=1$};
+    \node[block] (blockBf) at (4,-2) {BloccoB\\$\{$\texttt{1001},\texttt{1010}$\}$\\$j=2$};
+    \node[block] (blockBpf) at (6,-2) {BloccoB'\\$\{$\texttt{1100}$\}$\\$j=2$};
+    
+    \draw[arrow] (dir00f) -- (blockAf);
+    \draw[arrow] (dir01f) -- (blockAf);
+    \draw[arrow] (dir10f) -- (blockBf);
+    \draw[arrow] (dir11f) -- (blockBpf);
+    
+    % Redistribuzione
+    \node[draw, fill=pink!40!violet, text=white, align=center, rounded corners] at (11,-2) {Redistribuzione\\per 10: \texttt{1001}, \texttt{1010}\\per 11: \texttt{1100}};
+    
+    % Annotazioni finali
+    \node[text=white, align=center] at (5.5,-4) {Stato finale: $i=2$, 4 entry nella directory, 3 blocchi distinti};
+\end{tikzpicture}
+\caption{Visualizzazione dell'inserimento di \texttt{1010} nell'hashing estensibile}
+\end{figure}
 
 \textbf{Domande Tipiche:}
-Dallo stato finale di un esempio di inserimento (dopo molte inserzioni):
 \begin{itemize}
     \item $i = 3$.
     \item Directory: \texttt{000, 001, 010, 011, 100, 101, 110, 111}.
@@ -400,7 +491,362 @@ Riferendosi a uno stato dopo vari inserimenti e split:
         \item Blocco per B10 (contiene \texttt{1010}).
     \end{enumerate}
     Totale: \textbf{4} blocchi (in questo esempio).
-\end{itemize}\section{Recupero di Documenti (Document Retrieval) e Indici Invertiti}
+\end{itemize}
+\section{Riepilogo Tecniche di Hashing Viste Finora}
+
+\subsection{Concetti Fondamentali dell'Hashing (Comuni a Tutti)}
+\begin{itemize}
+    \item \textbf{Scopo:} Mappare una chiave di ricerca (es. un nome, un ID) direttamente a una pagina o a un blocco di memoria dove si trova il dato, per un recupero veloce.
+    \item \textbf{Funzione Hash (H):} Trasforma la chiave in un indirizzo di bucket.
+    \item \textbf{Bucket:} Un contenitore (spesso un blocco su disco) che memorizza i record.
+    \item \textbf{Collisioni:} Quando due chiavi diverse vengono mappate allo stesso bucket.
+    \item \textbf{Overflow:} Quando un bucket è pieno e i nuovi record devono essere memorizzati altrove (es. blocchi di overflow).
+\end{itemize}
+
+\subsection{Hashing Statico}
+\begin{itemize}
+    \item \textbf{Caratteristica Chiave:} Il numero di bucket ($N$) è \textbf{fisso} e deciso all'inizio. Non cambia.
+    \item \textbf{Funzione Hash Semplice:} Spesso $H(K) = K \pmod N$, o, come negli esempi, si usano i primi/ultimi bit della chiave.
+    \item \textbf{Inserimento:}
+    \begin{itemize}
+        \item Calcola l'hash della chiave per trovare il bucket.
+        \item Se il bucket ha spazio, inserisci.
+        \item \textbf{Se il bucket è pieno:} Si usa una \textbf{catena di blocchi di overflow} collegati al bucket primario. Il numero di bucket \textit{non} aumenta.
+    \end{itemize}
+    \item \textbf{Ricerca:}
+    \begin{itemize}
+        \item Calcola l'hash della chiave per trovare il bucket.
+        \item Cerca nel bucket e, se necessario, nella sua catena di overflow.
+    \end{itemize}
+    \item \textbf{Cancellazione:}
+    \begin{itemize}
+        \item Trova il record e rimuovilo.
+        \item Se un blocco di overflow diventa vuoto, può essere deallocato.
+    \end{itemize}
+    \item \textbf{Efficienza:}
+    \begin{itemize}
+        \item \textbf{Ottimo} se non ci sono overflow (un accesso al disco).
+        \item \textbf{Peggiora} con lunghe catene di overflow (un accesso per ogni blocco della catena).
+    \end{itemize}
+    \item \textbf{Domande Tipiche d'Esame:}
+    \begin{itemize}
+        \item Dato un insieme di chiavi e una funzione hash, mostrare la struttura finale.
+        \item Contare il numero di bucket (è sempre $N$).
+        \item Contare il numero totale di blocchi (bucket primari + blocchi di overflow).
+        \item Descrivere i passaggi per inserire/cercare una chiave.
+    \end{itemize}
+\end{itemize}
+
+\subsection{Hashing Estensibile (Extendible Hashing)}
+\begin{itemize}
+    \item \textbf{Scopo:} Superare il limite dei bucket fissi dell'hashing statico, gestendo dinamicamente la crescita dei dati \textbf{senza usare blocchi di overflow tradizionali.}
+    \item \textbf{Componenti Chiave:}
+    \begin{itemize}
+        \item \textbf{Directory:} Un array di puntatori ai blocchi di dati. La sua dimensione è sempre una potenza di 2 ($2^i$).
+        \item \textbf{Profondità Globale ($i$):} Numero di bit della chiave usati per indicizzare la directory. Determina la dimensione della directory.
+        \item \textbf{Blocchi Dati:} Contengono i record.
+        \item \textbf{Profondità Locale ($j$):} Associata a \textit{ciascun blocco dati}. Indica quanti bit sono significativi per i record \textit{in quel blocco}. $j \le i$. Più entry della directory possono puntare allo stesso blocco se la loro profondità locale $j$ è minore di $i$.
+    \end{itemize}
+    \item \textbf{Ricerca:}
+    \begin{enumerate}
+        \item Prendi i primi $i$ bit della chiave.
+        \item Usa questi bit come indice nella directory per trovare il puntatore al blocco.
+        \item Cerca nel blocco.
+    \end{enumerate}
+    \item \textbf{Inserimento (Concetti Chiave):}
+    \begin{enumerate}
+        \item Trova il blocco corretto usando i primi $i$ bit della chiave.
+        \item \textbf{Se c'è spazio nel blocco:} Inserisci. Fatto.
+        \item \textbf{Se il blocco è pieno:}
+        \begin{itemize}
+            \item \textbf{Caso A: Profondità locale del blocco $j < i$ (Profondità globale):}
+            \begin{enumerate}
+                \item \textbf{Split del blocco:} Crea un nuovo blocco.
+                \item Incrementa la profondità locale $j$ dei due blocchi (il vecchio e il nuovo) a $j+1$.
+                \item \textbf{Ridistribuisci i record} del vecchio blocco (più il nuovo record) tra il vecchio e il nuovo blocco, basandoti sul $(j+1)$-esimo bit.
+                \item \textbf{Aggiorna i puntatori nella directory:} Alcune entry che puntavano al vecchio blocco ora punteranno al nuovo blocco.
+            \end{enumerate}
+            \item \textbf{Caso B: Profondità locale del blocco $j = i$ (Profondità globale):}
+            \begin{enumerate}
+                \item \textbf{Raddoppia la directory:} Incrementa la profondità globale $i$ a $i+1$. Ogni vecchia entry $w$ genera due nuove entry $w0$ e $w1$, che inizialmente puntano allo stesso blocco a cui puntava $w$.
+                \item \textbf{Ora $j < i$ (nuovo $i$):} Procedi come nel Caso A per splittare il blocco che era pieno (la sua profondità locale $j$ originale è ora minore del nuovo $i$). La $j$ dei due blocchi risultanti diventerà $j_{\text{vecchio}}+1$.
+            \end{enumerate}
+        \end{itemize}
+    \end{enumerate}
+    \item \textbf{Vantaggi:}
+    \begin{itemize}
+        \item Ricerca veloce (spesso un accesso se la directory è in RAM).
+        \item Non usa catene di overflow dirette.
+    \end{itemize}
+    \item \textbf{Svantaggi:}
+    \begin{itemize}
+        \item La directory può raddoppiare di dimensione, potendo diventare molto grande.
+        \item Split sfortunati possono richiedere split multipli.
+    \end{itemize}
+    \item \textbf{Domande Tipiche d'Esame:}
+    \begin{itemize}
+        \item Mostrare la struttura (directory e blocchi) dopo una serie di inserimenti.
+        \item Indicare i valori di $i$ (profondità globale) e $j$ (profondità locale per ogni blocco).
+        \item Contare il numero di "bucket" (entry nella directory, cioè $2^i$).
+        \item Contare il numero di blocchi dati fisici (distinti).
+        \item Spiegare quando e come la directory raddoppia e quando un blocco splitta.
+    \end{itemize}
+\end{itemize}
+
+\subsection{Hashing Lineare}
+\begin{itemize}
+    \item \textbf{Scopo:} Gestire la crescita dei dati in modo più graduale rispetto all'hashing estensibile, permettendo l'uso di \textbf{blocchi di overflow}.
+    \item \textbf{Componenti Chiave:}
+    \begin{itemize}
+        \item \textbf{Numero di Bucket ($n$ o $n_{\text{buck}}$):} Cresce \textbf{uno alla volta}. Non è necessariamente una potenza di 2.
+        \item \textbf{Livello ($i$):} Numero di bit (di solito i \textbf{meno significativi}, LSB) usati dalla funzione hash principale $H_i$. Vale $2^{i-1} < n \le 2^i$.
+        \item \textbf{Split Pointer ($s$ o \texttt{next}):} Indica il prossimo bucket (del livello $i-1$) che deve essere splittato. Va da $0$ a $2^{i-1}-1$.
+        \item \textbf{Load Factor:} Rapporto tra numero di record ($r$) e numero di bucket ($n$). Uno split avviene quando questo supera una soglia (es. 1.7).
+        \item \textbf{Funzioni Hash:} Si usano due funzioni hash concettualmente: $H_i$ (usa $i$ bit LSB) e $H_{i+1}$ (usa $i+1$ bit LSB durante gli split).
+    \end{itemize}
+    \item \textbf{Ricerca:}
+    \begin{enumerate}
+        \item Calcola $m = H_i(K)$ (ultimi $i$ bit della chiave).
+        \item \textbf{Se $m < n$ (numero attuale di bucket):} La chiave è nel bucket $m$ (o suoi overflow).
+        \item \textbf{Se $m \ge n$:} La chiave è nel bucket $m - 2^{i-1}$ (o suoi overflow). Questo bucket $m - 2^{i-1}$ è il bucket "antenato" che non è stato ancora splittato a questo round per diventare il bucket $m$.
+    \end{enumerate}
+    \item \textbf{Inserimento:}
+    \begin{enumerate}
+        \item Trova il bucket corretto usando la logica di ricerca.
+        \item Inserisci la chiave. Se il bucket è pieno, usa un blocco di overflow.
+        \item Aggiorna il conteggio dei record $r$.
+        \item \textbf{Controlla il Load Factor ($r/n$):} Se supera la soglia:
+        \begin{itemize}
+            \item \textbf{Aggiungi un nuovo bucket:} Il bucket $n$-esimo viene aggiunto fisicamente. $n$ si incrementa.
+            \item \textbf{Splitta il bucket puntato da $s$:} I record nel bucket $s$ vengono ridistribuiti tra il bucket $s$ e il nuovo bucket $s + 2^{i-1}$ (che è il bucket appena aggiunto, se $s$ è il suo "antenato"). La ridistribuzione usa $H_{i+1}$ (o comunque $i+1$ bit).
+            \item \textbf{Avanza lo split pointer $s$:} $s \leftarrow s+1$.
+            \item \textbf{Se $s = 2^{i-1}$ (ha "completato un giro"):} Significa che tutti i bucket del livello $i-1$ sono stati splittati. Resetta $s=0$ e incrementa il livello $i \leftarrow i+1$.
+        \end{itemize}
+    \end{enumerate}
+    \item \textbf{Vantaggi:}
+    \begin{itemize}
+        \item Espansione graduale, un bucket alla volta.
+        \item Non richiede una directory separata enorme.
+    \end{itemize}
+    \item \textbf{Svantaggi:}
+    \begin{itemize}
+        \item L'uso di blocchi di overflow può comunque degradare le prestazioni.
+        \item La logica di ricerca è un po' più complessa.
+    \end{itemize}
+    \item \textbf{Domande Tipiche d'Esame:}
+    \begin{itemize}
+        \item Mostrare la struttura (bucket, overflow, valori di $n, i, s, r$) dopo una serie di inserimenti.
+        \item Determinare in quale bucket cercare una chiave.
+        \item Spiegare quando avviene uno split e quale bucket viene splittato.
+        \item Contare il numero di bucket ($n$).
+        \item Contare il numero di blocchi fisici (bucket primari + blocchi di overflow).
+    \end{itemize}
+\end{itemize}
+
+\subsection{Suggerimenti Generali per gli Esercizi}
+\begin{itemize}
+    \item \textbf{Disegna Sempre:} Visualizzare la struttura (bucket, directory, puntatori, overflow) è fondamentale.
+    \item \textbf{Tieni Traccia dei Parametri:} Annota i valori di $i, j, n, s, r$ e come cambiano.
+    \item \textbf{Funzione Hash:} Presta attenzione a quanti e quali bit (primi/ultimi) usa la funzione hash.
+    \item \textbf{Capacità dei Blocchi:} Gli esercizi di solito specificano quanti record può contenere un blocco.
+\end{itemize}
+
+\subsubsection{Esempi Pratici di Risoluzione}
+
+\paragraph{Esempio di Hashing Statico}
+\begin{table}[h]
+\centering
+\begin{tabular}{|c|c|c|}
+\hline
+\textbf{Parametri} & \textbf{Valore} & \textbf{Note} \\
+\hline
+Funzione hash & $H_1(K)$ & Primo bit \\
+\hline
+Numero bucket & $N = 2^1 = 2$ & Fisso per hashing statico \\
+\hline
+Capacità blocco & 2 chiavi/blocco & \\
+\hline
+\end{tabular}
+\caption{Parametri iniziali per l'esempio di hashing statico}
+\end{table}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+\textbf{Chiave} & \textbf{Binario} & \textbf{Hash} & \textbf{Bucket} & \textbf{Note} \\
+\hline
+K1 & 0001 & 0 & 0 & Inserimento semplice \\
+\hline
+K2 & 1001 & 1 & 1 & Inserimento semplice \\
+\hline
+K3 & 1100 & 1 & 1 & Inserimento semplice \\
+\hline
+K4 & 1010 & 1 & 1 & Overflow: bucket 1 pieno \\
+\hline
+\end{tabular}
+\caption{Tracciamento inserimenti nell'hashing statico}
+\end{table}
+
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\textbf{Domanda} & \textbf{Risposta} \\
+\hline
+Quanti bucket? & 2 (fissi) \\
+\hline
+Quanti blocchi? & 3 (2 primari + 1 overflow) \\
+\hline
+\end{tabular}
+\end{center}
+
+\paragraph{Esempio di Hashing Estensibile}
+\begin{table}[h]
+\centering
+\begin{tabular}{|c|c|c|c|}
+\hline
+\textbf{Parametro} & \textbf{Valore Iniziale} & \textbf{Dopo Split} & \textbf{Note} \\
+\hline
+Profondità globale ($i$) & 1 & 2 & Raddoppiata dopo split \\
+\hline
+Profondità locale ($j_A$) & 1 & 1 & Blocco A non splittato \\
+\hline
+Profondità locale ($j_B$) & 1 & 2 & Blocco B splittato→B,B' \\
+\hline
+\end{tabular}
+\caption{Evoluzione dei parametri nell'hashing estensibile}
+\end{table}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|c|c|c|c|}
+\hline
+\textbf{Directory} & \multicolumn{3}{c|}{\textbf{Stato}} \\
+\hline
+& \textbf{Iniziale ($i$=1)} & \textbf{Dopo Raddoppio} & \textbf{Dopo Split} \\
+\hline
+00 & - & Blocco A & Blocco A \\
+\hline
+01 & - & Blocco A & Blocco A \\
+\hline
+10 & - & Blocco B & Blocco B \\
+\hline
+11 & - & Blocco B & Blocco B' \\
+\hline
+\end{tabular}
+\caption{Evoluzione della directory nell'hashing estensibile}
+\end{table}
+
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\textbf{Domanda} & \textbf{Risposta} \\
+\hline
+Quanti bucket? & $2^i = 2^2 = 4$ (entry nella directory) \\
+\hline
+Quanti blocchi? & 3 (A, B, B') \\
+\hline
+\end{tabular}
+\end{center}
+
+\paragraph{Esempio di Hashing Lineare}
+\begin{table}[h]
+\centering
+\begin{tabular}{|c|c|c|c|}
+\hline
+\textbf{Parametro} & \textbf{Valore Iniziale} & \textbf{Dopo Split} & \textbf{Note} \\
+\hline
+Livello ($i$) & 1 & 2 & Aumentato al completare un round \\
+\hline
+Numero bucket ($n$) & 2 & 3 & Incrementato di 1 \\
+\hline
+Split pointer ($s$) & 0 & 1 & Avanzato dopo ogni split \\
+\hline
+Numero record ($r$) & 3 & 4 & Dopo inserimento K4 \\
+\hline
+\end{tabular}
+\caption{Evoluzione dei parametri nell'hashing lineare}
+\end{table}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+\textbf{Chiave} & \textbf{$H_1(K)$} & \textbf{$H_2(K)$} & \textbf{Bucket Iniziale} & \textbf{Bucket Finale} \\
+\hline
+0000 & 0 & 00 & 0 & 00 \\
+\hline
+1010 & 0 & 10 & 0 & 10 (dopo split) \\
+\hline
+1111 & 1 & 11 & 1 & 01 \\
+\hline
+0101 & 1 & 01 & 1 & 01 \\
+\hline
+\end{tabular}
+\caption{Redistribuzione delle chiavi dopo split nell'hashing lineare}
+\end{table}
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[scale=0.7]
+    % Stili
+    \tikzset{
+        bucket/.style={rectangle, draw, fill=teal!70!black, text=white, minimum width=2cm, minimum height=1.2cm, line width=1.2pt, draw=yellow!70, text centered},
+        arrow/.style={->, thick, draw=orange!90}
+    }
+    
+    % Stato iniziale (2 bucket)
+    \node at (-3,0) {\textbf{Prima dello split:}};
+    \node[bucket] (b0) at (0,0) {B0: \{0000, 1010\}};
+    \node[bucket] (b1) at (0,-2) {B1: \{1111, 0101\}};
+    
+    % Stato dopo split (3 bucket)
+    \node at (7,0) {\textbf{Dopo split ($n$=3):}};
+    \node[bucket] (b00) at (11,1) {B00: \{0000\}};
+    \node[bucket] (b01) at (11,-1) {B01: \{1111, 0101\}};
+    \node[bucket] (b10) at (11,-3) {B10: \{1010\}};
+    
+    % Frecce
+    \draw[arrow] (2.2,0) -- node[above] {Split B0} (8.8,1);
+    \draw[arrow] (2.2,-2) -- node[above] {} (8.8,-1);
+\end{tikzpicture}
+\caption{Visualizzazione dello split nell'hashing lineare}
+\end{figure}
+
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\textbf{Domanda} & \textbf{Risposta} \\
+\hline
+Quanti bucket? & 3 (dopo split) \\
+\hline
+Quanti blocchi? & 3 (ogni bucket ha un blocco) \\
+\hline
+\end{tabular}
+\end{center}
+
+\paragraph{Tabella Riassuntiva di Confronto}
+\begin{table}[h]
+\centering
+\begin{tabular}{|p{3cm}|p{3.5cm}|p{3.5cm}|p{3.5cm}|}
+\hline
+\textbf{Caratteristica} & \textbf{Hashing Statico} & \textbf{Hashing Estensibile} & \textbf{Hashing Lineare} \\
+\hline
+Crescita & Nessuna (fisso) & A potenze di 2 & Lineare (uno a uno) \\
+\hline
+Blocchi overflow & Sì & No & Sì \\
+\hline
+Funzione hash & $H_i(K)$ (primi $i$ bit) & $H_i(K)$ (primi $i$ bit) & $H_i(K)$ (ultimi $i$ bit) \\
+\hline
+Directory & No & Sì & No \\
+\hline
+Complessità ricerca & $O(1)$ senza overflow & $O(1)$ se directory in RAM & $O(1)$ (più complessa) \\
+\hline
+\end{tabular}
+\caption{Confronto tra le tre tecniche di hashing}
+\end{table}
+
+\section{Recupero di Documenti (Document Retrieval) e Indici Invertiti}
 L'Information Retrieval (IR) si occupa di trovare materiale (solitamente documenti testuali non strutturati) che soddisfi un bisogno informativo all'interno di grandi collezioni. Il recupero di documenti basato su parole chiave è un problema classico.
 
 \subsection{Indici Invertiti (Inverted Indexes)}
@@ -467,7 +913,7 @@ Risultato: Documento D3.
     \end{itemize}
     \item Confronto:
     \begin{itemize}
-        \item Per "a": $(\text{D2},2)$. Per "valley": $(\text{D2},4)$. DocID uguali (D2). Posizione di "valley" (4) è uguale a posizione di "a" (2) + 1? $4 == 2+1$? No ($4 \ne 3$).
+        \item Per "a": $(\text{D2},2)$. Per "valley": $(\text{D2},4)$. DocID uguali (D2). Posizione di "valley" (4) è uguale a posizione di "a" (2) + 1? No ($4 \ne 3$).
         \item ... (altri confronti non producono match)
     \end{itemize}
 \end{enumerate}
