@@ -1,34 +1,3 @@
-\input{preambolo_comune.tex}
-
-% --- Hyperlink ---
-\usepackage{hyperref}
-\hypersetup{
-	colorlinks=true,
-	linkcolor=white,
-	filecolor=magenta,
-	urlcolor=cyan,
-	pdftitle={Hash Table e Indici Invertiti},
-	pdfauthor={Alessandro Amella},
-	pdfpagemode=FullScreen,
-}
-
-% --- Titolo ---
-\title{Hash Table e Indici Invertiti
-  \large Appunti basati sulle dispense del Dott. Magistrale Flavio Bertini}
-\author{Alessandro Amella, Gemini e Claude}
-\date{\today}
-
-% --- Titolo ---
-\title{Hash Table e Indici Invertiti}
-\author{Basato sulle slide del Prof. Flavio Bertini}
-\date{\today}
-
-\begin{document}
-
-\maketitle
-\tableofcontents
-\newpage
-
 \section{Indici basati su Hash}
 
 Gli indici basati su hash mappano una chiave di ricerca direttamente all'identificatore di pagina (pid) della pagina (o catena di overflow) che la contiene.
@@ -431,9 +400,7 @@ Riferendosi a uno stato dopo vari inserimenti e split:
         \item Blocco per B10 (contiene \texttt{1010}).
     \end{enumerate}
     Totale: \textbf{4} blocchi (in questo esempio).
-\end{itemize}
-
-\section{Recupero di Documenti (Document Retrieval) e Indici Invertiti}
+\end{itemize}\section{Recupero di Documenti (Document Retrieval) e Indici Invertiti}
 L'Information Retrieval (IR) si occupa di trovare materiale (solitamente documenti testuali non strutturati) che soddisfi un bisogno informativo all'interno di grandi collezioni. Il recupero di documenti basato su parole chiave è un problema classico.
 
 \subsection{Indici Invertiti (Inverted Indexes)}
@@ -515,9 +482,7 @@ Risultato: Nessun documento contiene la sequenza "a valley".
         \item Per "a": $(\text{D2},13)$. Per "clear": $(\text{D2},14)$. DocID D2. $14 == 13+1$? Sì!
     \end{itemize}
 \end{enumerate}
-Risultato: Documento D2 contiene la sequenza "a clear" (dove "a" è in pos 13 e "clear" in pos 14).
-
-\section{Strategie per affrontare gli esercizi}
+Risultato: Documento D2 contiene la sequenza "a clear" (dove "a" è in pos 13 e "clear" in pos 14).\section{Strategie per affrontare gli esercizi}
 \begin{itemize}
     \item \textbf{Hashing:}
     \begin{itemize}
@@ -534,4 +499,3 @@ Risultato: Documento D2 contiene la sequenza "a clear" (dove "a" è in pos 13 e 
     \end{itemize}
 \end{itemize}
 
-\end{document}

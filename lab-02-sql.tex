@@ -1,29 +1,3 @@
-\input{preambolo_comune.tex}
-
-% --- Hyperlink ---
-\usepackage{hyperref}
-\hypersetup{
-	colorlinks=true,
-	linkcolor=white,
-	filecolor=magenta,
-	urlcolor=cyan,
-	pdftitle={Esercizi di SQL},
-	pdfauthor={Alessandro Amella},
-	pdfpagemode=FullScreen,
-}
-
-% --- Titolo ---
-\title{Esercizi di SQL
-  \large Appunti basati sulle dispense del Dott. Magistrale Flavio Bertini}
-\author{Alessandro Amella, Gemini e Claude}
-\date{\today}
-
-\begin{document}
-
-\maketitle
-\tableofcontents
-\newpage
-
 \section{Approccio alla Scrittura di Query SQL}
 
 Esistono due stili principali per affrontare la scrittura di query SQL:
@@ -41,9 +15,7 @@ Esistono due stili principali per affrontare la scrittura di query SQL:
         \item Si impara SQL direttamente e, attraverso la pratica, si sviluppa un'intuizione che permette poi di comprendere o formulare espressioni di algebra relazionale.
         \item Dato che conosci già SQL, probabilmente ti ritrovi più in questo. Tuttavia, avere una base di algebra relazionale può aiutare a scrivere query più complesse e corrette.
     \end{itemize}
-\end{itemize}
-
-\section{Come Risolvere gli Esercizi (Passi Preliminari - Step 0)}
+\end{itemize}\section{Come Risolvere gli Esercizi (Passi Preliminari - Step 0)}
 
 Prima ancora di leggere il testo dell'esercizio, è fondamentale analizzare lo schema del database:
 
@@ -82,9 +54,7 @@ Prima ancora di leggere il testo dell'esercizio, è fondamentale analizzare lo s
             \item \texttt{(Course, Year)} insieme potrebbero referenziare una PK composita in \texttt{EDITION} (se \texttt{(Course, Year)} fosse la PK di \texttt{EDITION}) oppure \texttt{Course} referenzia \texttt{COURSE(Code)} e \texttt{Year} è un attributo contestuale. Dallo schema \texttt{EDITION}, sembra che \texttt{Course} e \texttt{Year} siano parte della PK di \texttt{EDITION}, quindi \texttt{EXAM} si lega a una specifica edizione di un corso.
         \end{itemize}
     \end{itemize}
-\end{itemize}
-
-\section{Come Risolvere gli Esercizi (Costruzione della Query - Step 1)}
+\end{itemize}\section{Come Risolvere gli Esercizi (Costruzione della Query - Step 1)}
 Una volta compreso lo schema e il problema, si passa alla costruzione della query:
 
 \subsection{Quali relazioni (tabelle) sono coinvolte?}
@@ -124,9 +94,7 @@ WHERE S.Id = E.Student;
         \item \texttt{GROUP BY}: Raggruppa righe che hanno gli stessi valori in una o più colonne, per poter applicare funzioni di aggregazione (es. \texttt{COUNT}, \texttt{SUM}, \texttt{AVG}, \texttt{MIN}, \texttt{MAX}) a ciascun gruppo.
         \item \texttt{HAVING}: Filtra i gruppi creati da \texttt{GROUP BY} (simile a \texttt{WHERE}, ma \texttt{WHERE} filtra le singole righe \textit{prima} dell'aggregazione, \texttt{HAVING} filtra i gruppi \textit{dopo} l'aggregazione).
     \end{itemize}
-\end{itemize}
-
-\section{Ordine di Esecuzione Logica delle Clausole SQL}
+\end{itemize}\section{Ordine di Esecuzione Logica delle Clausole SQL}
 È importante capire l'ordine logico in cui le clausole SQL vengono processate, perché influenza cosa puoi fare in ciascuna clausola (ad esempio, non puoi usare un alias definito nel \texttt{SELECT} all'interno del \texttt{WHERE} della stessa query principale).
 
 \begin{enumerate}
@@ -149,9 +117,7 @@ SELECT COUNT(*) AS TotalStudents FROM STUDENT WHERE Age > 20;
     \item \texttt{WHERE Age > 20}: Poi filtra gli studenti con età maggiore di 20.
     \item \texttt{SELECT COUNT(*) AS TotalStudents}: Infine, conta le righe rimanenti e assegna l'alias.
 \end{itemize}
-Non potresti scrivere \texttt{WHERE TotalStudents > 5} (riferendosi all'alias) perché \texttt{WHERE} è processato prima di \texttt{SELECT}.
-
-\section{Considerazioni sui JOIN}
+Non potresti scrivere \texttt{WHERE TotalStudents > 5} (riferendosi all'alias) perché \texttt{WHERE} è processato prima di \texttt{SELECT}.\section{Considerazioni sui JOIN}
 \subsection{Diverse Soluzioni per lo Stesso Problema}
 \begin{itemize}
     \item \textbf{\texttt{INTERSECT}}: Restituisce le righe comuni a due \texttt{SELECT} (le due query devono avere lo stesso numero di colonne e tipi di dati compatibili). Utile per trovare ``elementi che appartengono a entrambi gli insiemi''.
@@ -170,9 +136,7 @@ FROM LECTURER L JOIN STUDENT S ON L.Surname = S.Surname;
 \end{itemize}
 
 \subsection{Non Esiste ``L'Unica Soluzione Corretta''}
-Spesso ci sono più modi per ottenere lo stesso risultato. L'importante è che la soluzione sia corretta, efficiente e leggibile.
-
-\section{Implementazione dei JOIN (Teoria dell'Ottimizzatore)}
+Spesso ci sono più modi per ottenere lo stesso risultato. L'importante è che la soluzione sia corretta, efficiente e leggibile.\section{Implementazione dei JOIN (Teoria dell'Ottimizzatore)}
 I JOIN sono operazioni potenzialmente costose. Il DBMS (Database Management System) ha un \textbf{ottimizzatore} che sceglie la tecnica di JOIN più efficiente basandosi su statistiche delle tabelle (dimensione, distribuzione dei dati, indici presenti). Alcune tecniche comuni:
 
 \begin{enumerate}
@@ -182,9 +146,9 @@ I JOIN sono operazioni potenzialmente costose. Il DBMS (Database Management Syst
         \item \textbf{Analogia}: Due cicli \texttt{for} annidati.
         \begin{minted}{text}
 FOR EACH row_R IN Table_R DO
-  FOR EACH row_S IN Table_S DO
-    IF row_R.join_attr = row_S.join_attr THEN
-      output (row_R, row_S)
+FOR EACH row_S IN Table_S DO
+  IF row_R.join_attr = row_S.join_attr THEN
+    output (row_R, row_S)
         \end{minted}
         \item \textbf{Costo}: Può essere molto alto (\texttt{O(N*M)}) se non ci sono indici. L'ordine delle tabelle (quale è esterna e quale interna) e la dimensione del buffer influenzano le prestazioni.
     \end{itemize}
@@ -194,7 +158,7 @@ FOR EACH row_R IN Table_R DO
         \item \textbf{Come funziona}: Richiede un \textbf{indice} sull'attributo di join di una delle due tabelle (solitamente la tabella interna). Per ogni riga della tabella esterna, usa l'indice per cercare rapidamente le corrispondenze nella tabella interna, invece di scansionarla completamente.
         \begin{minted}{text}
 FOR EACH row_R IN Table_R DO
-  USE_INDEX_ON_S_TO_FIND (row_R.join_attr)
+USE_INDEX_ON_S_TO_FIND (row_R.join_attr)
         \end{minted}
         \item \textbf{Efficienza}: Molto più efficiente del Nested-loop semplice se l'indice è selettivo.
     \end{itemize}
@@ -219,9 +183,7 @@ FOR EACH row_R IN Table_R DO
         \item \textbf{Quando è utile}: Solitamente il più efficiente per equi-join su tabelle grandi quando c'è abbastanza memoria per la tabella hash.
     \end{itemize}
 \end{enumerate}
-L'ottimizzatore sceglie tra queste (e altre) strategie basandosi su un modello di costo.
-
-\section{Concetti Avanzati dalle Esercitazioni}
+L'ottimizzatore sceglie tra queste (e altre) strategie basandosi su un modello di costo.\section{Concetti Avanzati dalle Esercitazioni}
 
 \subsection{Ambiguità e Interpretazione}
 A volte la richiesta può essere ambigua (es. ``corsi''). Bisogna capire a quale tabella/entità si riferisce il problema (es. \texttt{COURSE} o \texttt{EDITION}). Il contesto (es. la presenza di \texttt{Year} in \texttt{EXAM}) aiuta a disambiguare.
@@ -236,9 +198,9 @@ Puoi usare il risultato di una \texttt{SELECT} come se fosse una tabella nella c
 \begin{minted}{sql}
 SELECT A.Name
 FROM REGION AS A,
-     (SELECT Region, COUNT(*) AS CitizenCount -- Tabella derivata C
-      FROM RESIDENCE
-      GROUP BY Region) AS C
+(SELECT Region, COUNT(*) AS CitizenCount -- Tabella derivata C
+ FROM RESIDENCE
+ GROUP BY Region) AS C
 WHERE A.Name = C.Region AND A.Population > C.CitizenCount;
 \end{minted}
 Si può anche creare una \texttt{VIEW} per rendere la query principale più pulita se la subquery è complessa o usata spesso.
@@ -259,8 +221,8 @@ SELECT Name FROM STUDENT WHERE Age > (SELECT AVG(Age) FROM STUDENT);
 SELECT F.Director, F.Title
 FROM FILM AS F
 WHERE 6 > (SELECT COUNT(*)
-           FROM RECITAL AS R
-           WHERE F.Code = R.Film); -- F.Code è dalla query esterna
+FROM RECITAL AS R
+WHERE F.Code = R.Film); -- F.Code è dalla query esterna
     \end{minted}
     Questo è potente ma può essere meno performante di altre soluzioni se non ottimizzato bene.
 \end{itemize}
@@ -273,8 +235,8 @@ Usati con subquery correlate per verificare l'esistenza (o non esistenza) di rig
 SELECT F.Title
 FROM FILM AS F
 WHERE NOT EXISTS (SELECT *
-                  FROM SCREENING AS S JOIN ROOM AS RM ON S.Room = RM.Code
-                  WHERE RM.City = 'Berlin' AND F.Code = S.Film);
+FROM SCREENING AS S JOIN ROOM AS RM ON S.Room = RM.Code
+WHERE RM.City = 'Berlin' AND F.Code = S.Film);
 \end{minted}
 \texttt{NOT EXISTS} è spesso un modo efficiente per esprimere ``anti-join'' (trovare elementi in A che non hanno corrispondenza in B).
 
@@ -291,9 +253,9 @@ Usati con operatori di comparazione (\texttt{=}, \texttt{<}, \texttt{>}, etc.) e
 SELECT M.Name
 FROM MUSEUM AS M
 WHERE M.City = 'London' AND
-      'Tiziano' = ALL (SELECT W.NameA
-                       FROM WORK AS W
-                       WHERE M.Name = W.NameM);
+'Tiziano' = ALL (SELECT W.NameA
+                 FROM WORK AS W
+                 WHERE M.Name = W.NameM);
     \end{minted}
     Questo implica che se il museo ha opere, tutte devono essere di Tiziano. Se il museo non ha opere, la subquery è vuota e \texttt{ALL} restituisce \texttt{TRUE} (il museo verrebbe listato). Questa è una sfumatura importante di \texttt{ALL} con set vuoti. Per esprimere ``solo opere di Tiziano e deve avere almeno un'opera di Tiziano'', la logica si complica (spesso richiede un \texttt{EXISTS} aggiuntivo o una doppia negazione con \texttt{NOT EXISTS}).
 
@@ -307,8 +269,8 @@ Un modo è trovare il minimo guadagno per quel film e verificare che sia \texttt
 SELECT F.Title
 FROM FILM AS F
 WHERE 500 <= (SELECT MIN(S.Profits)
-              FROM SCREENING AS S
-              WHERE F.Code = S.Film);
+FROM SCREENING AS S
+WHERE F.Code = S.Film);
 \end{minted}
 Se un film non ha proiezioni, la subquery \texttt{MIN(S.Profits)} restituirà \texttt{NULL}. La comparazione \texttt{500 <= NULL} è \texttt{UNKNOWN}, quindi il film non verrà restituito (corretto).
 Un altro modo classico per esprimere ``per tutti gli X, P(X) è vero'' è usare la doppia negazione: ``non esiste un X per cui P(X) è falso''. Questo si traduce bene con \texttt{NOT EXISTS}.
@@ -316,4 +278,3 @@ Un altro modo classico per esprimere ``per tutti gli X, P(X) è vero'' è usare 
 \vspace{1cm}
 Questi appunti dovrebbero coprire i concetti teorici chiave presentati nelle slide, con un focus sulla comprensione e applicazione pratica. Ricorda che la pratica è fondamentale per padroneggiare SQL e la progettazione di query efficienti!
 
-\end{document}

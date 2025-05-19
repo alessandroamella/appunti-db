@@ -1,619 +1,591 @@
-\input{preambolo_comune.tex}
+\section{Introduzione alla Progettazione Concettuale}
+L'obiettivo della progettazione concettuale è creare un modello dei dati che sia \textbf{indipendente} da qualsiasi specifico Database Management System (DBMS) o tecnologia. È la fase in cui tradiamo i requisiti del mondo reale in una struttura formale.
 
-% --- Hyperlink ---
-\usepackage{hyperref}
-\hypersetup{
-	colorlinks=true,
-	linkcolor=white,
-	filecolor=magenta,
-	urlcolor=cyan,
-	pdftitle={Modellazione Concettuale dei Dati},
-	pdfauthor={Alessandro Amella},
-	pdfpagemode=FullScreen,
-}
+\section{Il Processo di Progettazione di un Database}
+Il design di un database si articola in diverse fasi:
+\begin{enumerate}
+	\item \textbf{Raccolta dei Requisiti del DB (\texttt{DB requirements})}: Cosa deve fare il database? Quali dati deve memorizzare?
+	\item \textbf{Progettazione Concettuale (\texttt{Conceptual Design})}:
+	\begin{itemize}
+		\item È la fase di \textbf{ANALISI} ("\texttt{WHAT?}").
+		\item Si traduce i requisiti in un modello concettuale (es. Diagramma Entità-Relazione o E-R).
+		\item L'output è lo \textbf{Schema Concettuale (\texttt{Conceptual Schema})}. Questo schema è una descrizione astratta della struttura del database, focalizzata sulle entità, gli attributi e le relazioni tra di esse, senza preoccuparsi di come verranno implementate.
+	\end{itemize}
+	\item \textbf{Progettazione Logica (\texttt{Logical Design})}:
+	\begin{itemize}
+		\item È la fase di \textbf{PROGETTAZIONE} ("\texttt{HOW?}").
+		\item Si traduce lo schema concettuale in un modello logico, specifico per un tipo di DBMS (es. relazionale, NoSQL).
+		\item L'output è lo \textbf{Schema Logico (\texttt{Logical Schema})} (es. tabelle SQL con chiavi primarie/esterne, tipi di dato).
+	\end{itemize}
+	\item \textbf{Progettazione Fisica (\texttt{Physical Design})}:
+	\begin{itemize}
+		\item Si specificano i dettagli di implementazione fisica (es. indici, partizionamento).
+		\item L'output è lo \textbf{Schema Fisico (\texttt{Physical Schema})}.
+	\end{itemize}
+\end{enumerate}
+\textbf{Noi ci concentriamo sulla Progettazione Concettuale.}
 
+\section{Attività della Progettazione Concettuale e Modellazione dei Dati}
+Queste attività sono interconnesse e spesso iterative:
+\begin{itemize}
+	\item \textbf{Elicitazione dei Requisiti (\texttt{Requirements' elicitation})}: Raccogliere le informazioni.
+	\item \textbf{Analisi dei Requisiti (\texttt{Requirements' analysis})}: Capire e chiarire le informazioni.
+	\item \textbf{Costruzione dello Schema Concettuale (\texttt{Building the conceptual schema})}: Disegnare il modello E-R.
+	\item \textbf{Costruzione del Glossario (\texttt{Building the glossary})}: Definire i termini chiave.
+\end{itemize}
 
-% --- Titolo ---
-\title{Appunti sulla Progettazione Concettuale di Basi di Dati\\
-  \large Appunti basati sulle dispense del Prof. Danilo Montesi}
-\author{Alessandro Amella, Gemini e Claude}
-\date{\today}
+\section{Raccolta dei Requisiti}
+\subsection{Fonti dei Requisiti}
+\begin{itemize}
+	\item \textbf{Utenti e Clienti}:
+	\begin{itemize}
+		\item Interviste.
+		\item Documentazione specifica (\textit{ad hoc}).
+	\end{itemize}
+	\item \textbf{Documentazione Esistente}:
+	\begin{itemize}
+		\item Leggi e regolamenti di settore.
+		\item Regolamenti interni, processi aziendali.
+		\item Soluzioni preesistenti.
+	\end{itemize}
+	\item \textbf{Moduli (\texttt{Forms})}: I moduli cartacei o digitali esistenti sono una miniera d'oro di informazioni sui dati.
+\end{itemize}
 
-\begin{document}
-	
-	\maketitle
-	\tableofcontents
-	\newpage
-	
-	\section{Introduzione alla Progettazione Concettuale}
-	L'obiettivo della progettazione concettuale è creare un modello dei dati che sia \textbf{indipendente} da qualsiasi specifico Database Management System (DBMS) o tecnologia. È la fase in cui tradiamo i requisiti del mondo reale in una struttura formale.
-	
-	\section{Il Processo di Progettazione di un Database}
-	Il design di un database si articola in diverse fasi:
-	\begin{enumerate}
-		\item \textbf{Raccolta dei Requisiti del DB (\texttt{DB requirements})}: Cosa deve fare il database? Quali dati deve memorizzare?
-		\item \textbf{Progettazione Concettuale (\texttt{Conceptual Design})}:
-		\begin{itemize}
-			\item È la fase di \textbf{ANALISI} ("\texttt{WHAT?}").
-			\item Si traduce i requisiti in un modello concettuale (es. Diagramma Entità-Relazione o E-R).
-			\item L'output è lo \textbf{Schema Concettuale (\texttt{Conceptual Schema})}. Questo schema è una descrizione astratta della struttura del database, focalizzata sulle entità, gli attributi e le relazioni tra di esse, senza preoccuparsi di come verranno implementate.
-		\end{itemize}
-		\item \textbf{Progettazione Logica (\texttt{Logical Design})}:
-		\begin{itemize}
-			\item È la fase di \textbf{PROGETTAZIONE} ("\texttt{HOW?}").
-			\item Si traduce lo schema concettuale in un modello logico, specifico per un tipo di DBMS (es. relazionale, NoSQL).
-			\item L'output è lo \textbf{Schema Logico (\texttt{Logical Schema})} (es. tabelle SQL con chiavi primarie/esterne, tipi di dato).
-		\end{itemize}
-		\item \textbf{Progettazione Fisica (\texttt{Physical Design})}:
-		\begin{itemize}
-			\item Si specificano i dettagli di implementazione fisica (es. indici, partizionamento).
-			\item L'output è lo \textbf{Schema Fisico (\texttt{Physical Schema})}.
-		\end{itemize}
-	\end{enumerate}
-	\textbf{Noi ci concentriamo sulla Progettazione Concettuale.}
-	
-	\section{Attività della Progettazione Concettuale e Modellazione dei Dati}
-	Queste attività sono interconnesse e spesso iterative:
+\subsection{Acquisizione e Analisi}
+\begin{itemize}
+	\item È un'attività \textbf{difficile e non standardizzata}.
+	\item Spesso si parte da requisiti iniziali che necessitano di \textbf{raffinamento} attraverso ulteriori acquisizioni.
+\end{itemize}
+
+\subsection{Acquisizione tramite Interviste}
+\begin{itemize}
+	\item \textbf{Diverse tipologie di utenti forniscono informazioni diverse}.
+	\item I manager di alto livello hanno una visione più ampia ma meno dettagliata.
+	\item Le interviste portano a raffinamenti successivi.
+\end{itemize}
+
+\subsection{Interagire con gli Utenti: Consigli}
+\begin{itemize}
+	\item \textbf{Controlli di comprensione e coerenza frequenti}: "Quindi, se ho capito bene, ogni studente può iscriversi a più corsi, e ogni corso può avere più studenti?"
+	\item \textbf{Esempi di casi d'uso (\texttt{Use cases})}: Molto utili, specialmente casi generici e casi limite. "Cosa succede se uno studente si iscrive e poi si ritira? E se un corso non ha iscritti?"
+	\item \textbf{Chiedere definizioni e classificazioni}: "Cosa intende esattamente per 'studente attivo'?"
+	\item \textbf{Chiedere di evidenziare aspetti essenziali vs. periferici}: "È fondamentale tracciare lo storico degli indirizzi dello studente, o basta l'indirizzo attuale?"
+\end{itemize}
+
+\section{Documentazione Descrittiva e Gestione dei Termini}
+\subsection{Regole per la Documentazione Descrittiva}
+\begin{itemize}
+	\item \textbf{Scegliere il giusto livello di astrazione}.
+	\item \textbf{Struttura delle frasi standard}: Semplifica l'analisi.
+	\item \textbf{Dividere frasi troppo lunghe/complesse}.
+	\item \textbf{Distinguere frasi sui "dati" da frasi sulle "funzioni"}:
 	\begin{itemize}
-		\item \textbf{Elicitazione dei Requisiti (\texttt{Requirements' elicitation})}: Raccogliere le informazioni.
-		\item \textbf{Analisi dei Requisiti (\texttt{Requirements' analysis})}: Capire e chiarire le informazioni.
-		\item \textbf{Costruzione dello Schema Concettuale (\texttt{Building the conceptual schema})}: Disegnare il modello E-R.
-		\item \textbf{Costruzione del Glossario (\texttt{Building the glossary})}: Definire i termini chiave.
+		\item Dati: "Uno studente \textit{ha} un nome, un cognome e una matricola."
+		\item Funzioni: "Il sistema \textit{deve permettere} di iscrivere uno studente a un corso."
 	\end{itemize}
-	
-	\section{Raccolta dei Requisiti}
-	\subsection{Fonti dei Requisiti}
+\end{itemize}
+
+\subsection{Regole Generali per Termini e Concetti}
+\begin{itemize}
+	\item \textbf{Costruire un glossario dei termini}: Cruciale per evitare ambiguità.
 	\begin{itemize}
-		\item \textbf{Utenti e Clienti}:
-		\begin{itemize}
-			\item Interviste.
-			\item Documentazione specifica (\textit{ad hoc}).
-		\end{itemize}
-		\item \textbf{Documentazione Esistente}:
-		\begin{itemize}
-			\item Leggi e regolamenti di settore.
-			\item Regolamenti interni, processi aziendali.
-			\item Soluzioni preesistenti.
-		\end{itemize}
-		\item \textbf{Moduli (\texttt{Forms})}: I moduli cartacei o digitali esistenti sono una miniera d'oro di informazioni sui dati.
+		\item \textit{Esempio Pratico}: Se nel tuo team Node.js uno chiama un campo \texttt{customerId} e un altro \texttt{client\_id}, il glossario chiarisce che \texttt{Customer} e \texttt{Client} sono sinonimi e si userà \texttt{customerId}.
 	\end{itemize}
-	
-	\subsection{Acquisizione e Analisi}
+	\item \textbf{Omonimi e sinonimi devono essere unificati}: Un solo termine per un concetto.
+	\item \textbf{Chiarire esplicitamente le relazioni tra i termini}.
+	\item \textbf{Ordinare le frasi per concetti}: Raggruppare requisiti simili.
+\end{itemize}
+
+\section{Esempi di Requisiti}
+\subsection{Esempio Database Bibliografico}
+\begin{itemize}
+	\item Automatizzare riferimenti bibliografici.
+	\item ID di 7 caratteri (iniziali autori, anno, carattere disambiguazione).
+	\item Riferimenti possono essere \textit{monografie} (editore, data, luogo) o \textit{articoli di rivista} (nome rivista, volume, numero, pagine, anno).
+	\item Per entrambi: nomi degli autori.
+\end{itemize}
+
+\subsection{Esempio Azienda di Formazione}
+Questo esempio sarà usato più avanti per la progettazione.
+\begin{itemize}
+	\item Gestire corsi, lezioni, insegnanti.
+	\item \textbf{Studenti ($\sim$5000)}: ID, codice fiscale, cognome, età, sesso, luogo nascita, nome datori di lavoro (passati e presenti con date), indirizzo, telefono, corsi frequentati ($\sim$200) con voto finale.
+	\item \textbf{Workshop/Corsi}: Tracciare workshop frequentati, dove e quando si tengono le lezioni. I corsi hanno codice, titolo, edizioni (con data inizio/fine, numero partecipanti).
+	\item \textbf{Studenti Freelance}: Area di interesse, titolo onorifico.
+	\item \textbf{Insegnanti ($\sim$300)}: Cognome, età, luogo nascita, nome corso insegnato, set corsi insegnati (passati/futuri), storico telefonate. Possono essere dipendenti interni o collaboratori esterni.
+\end{itemize}
+
+\section{Il Glossario}
+Il glossario è fondamentale. Ecco un esempio basato sull'azienda di formazione:
+
+\begin{longtable}{|p{0.2\textwidth}|p{0.4\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|}
+	\hline
+	\textbf{Termine} & \textbf{Descrizione} & \textbf{Sinonimo} & \textbf{Correlato a} \\
+	\hline
+	\endfirsthead
+	\hline
+	\textbf{Termine} & \textbf{Descrizione} & \textbf{Sinonimo} & \textbf{Correlato a} \\
+	\hline
+	\endhead
+	\hline
+	\endfoot
+	\hline
+	\endlastfoot
+	Partecipante & Chi prende parte ai corsi & Studente & Corso, Società \\
+	\hline
+	Docente & L'insegnante dei corsi. Potrebbe essere un dipendente interno. & Insegnante & Corso \\
+	\hline
+	Corso & Corso interno. Può avere diverse edizioni. & Workshop & Docente \\
+	\hline
+	Azienda & Luogo di lavoro attuale (o passato) del partecipante. & Luogo & Partecipante \\
+\end{longtable}
+
+\textit{Esempio Pratico}: Nel tuo schema Prisma o MongoDB:
+\begin{itemize}
+	\item \texttt{Participant} potrebbe diventare \texttt{model Student \{\}} o una collection \texttt{students}.
+	\item Il glossario ti aiuta a decidere se \texttt{Lecturer} e \texttt{Teacher} sono la stessa cosa e come chiamare l'entità/collection (\texttt{model Teacher \{\}}).
+	\item \texttt{Course} e \texttt{Workshop} sono sinonimi per la stessa entità/collection.
+\end{itemize}
+
+\section{Strutturare i Requisiti}
+Dopo la raccolta, i requisiti vanno organizzati in gruppi omogenei di frasi. L'esempio dell'azienda di formazione viene strutturato:
+\begin{itemize}
+	\item \textbf{Frasi generali}: "L'azienda richiede un DB per corsi, lezioni, insegnanti."
+	\item \textbf{Frasi sui partecipanti}: Dettagli sugli studenti (ID, CF, nome, età, datori lavoro, corsi frequentati, ecc.).
+	\item \textbf{Frasi specifiche sui partecipanti}: Dettagli per freelance (area interesse) o dipendenti di organizzazioni (livello gerarchico).
+	\item \textbf{Frasi sul datore di lavoro}: Dettagli sui datori di lavoro dei partecipanti (nome, indirizzo, telefono).
+	\item \textbf{Frasi sui corsi}: Dettagli sui corsi (codice, titolo, edizioni, date, n° partecipanti, aule, orari).
+	\item \textbf{Frasi sui docenti}: Dettagli sugli insegnanti (cognome, età, corsi insegnati, tipo contratto, ecc.).
+\end{itemize}
+Questa strutturazione aiuta a identificare le future entità e le loro proprietà.
+
+\section{Dai Requisiti agli Schemi Concettuali (E-R)}
+Come tradurre i termini identificati nei costrutti del modello Entità-Relazione (E-R)?
+\begin{itemize}
+	\item \textbf{Entità (\texttt{Entity})}:
 	\begin{itemize}
-		\item È un'attività \textbf{difficile e non standardizzata}.
-		\item Spesso si parte da requisiti iniziali che necessitano di \textbf{raffinamento} attraverso ulteriori acquisizioni.
+		\item Se il termine ha \textbf{proprietà rilevanti} e descrive \textbf{oggetti autonomi}.
+		\item \textit{Esempio}: \texttt{Studente}, \texttt{Corso}, \texttt{Docente}.
+		\item \textit{Prisma/SQL}: Diventeranno tabelle (\texttt{model Student \{\}}, \texttt{CREATE TABLE Student (...)}).
+		\item \textit{MongoDB}: Diventeranno collections (\texttt{db.students}).
 	\end{itemize}
-	
-	\subsection{Acquisizione tramite Interviste}
+	\item \textbf{Attributo (\texttt{Attribute})}:
 	\begin{itemize}
-		\item \textbf{Diverse tipologie di utenti forniscono informazioni diverse}.
-		\item I manager di alto livello hanno una visione più ampia ma meno dettagliata.
-		\item Le interviste portano a raffinamenti successivi.
+		\item Se è un termine \textbf{semplice senza ulteriori specificazioni} (proprietà di un'entità).
+		\item \textit{Esempio}: \texttt{Nome} dello Studente, \texttt{Titolo} del Corso.
+		\item \textit{Prisma/SQL}: Diventeranno colonne nelle tabelle (\texttt{name: String}, \texttt{title: String}).
+		\item \textit{MongoDB}: Diventeranno campi nei documenti (\texttt{\{ name: "Mario", title: "Database 101" \}}).
 	\end{itemize}
-	
-	\subsection{Interagire con gli Utenti: Consigli}
+	\item \textbf{Relazione (\texttt{Relationship})}:
 	\begin{itemize}
-		\item \textbf{Controlli di comprensione e coerenza frequenti}: "Quindi, se ho capito bene, ogni studente può iscriversi a più corsi, e ogni corso può avere più studenti?"
-		\item \textbf{Esempi di casi d'uso (\texttt{Use cases})}: Molto utili, specialmente casi generici e casi limite. "Cosa succede se uno studente si iscrive e poi si ritira? E se un corso non ha iscritti?"
-		\item \textbf{Chiedere definizioni e classificazioni}: "Cosa intende esattamente per 'studente attivo'?"
-		\item \textbf{Chiedere di evidenziare aspetti essenziali vs. periferici}: "È fondamentale tracciare lo storico degli indirizzi dello studente, o basta l'indirizzo attuale?"
-	\end{itemize}
-	
-	\section{Documentazione Descrittiva e Gestione dei Termini}
-	\subsection{Regole per la Documentazione Descrittiva}
-	\begin{itemize}
-		\item \textbf{Scegliere il giusto livello di astrazione}.
-		\item \textbf{Struttura delle frasi standard}: Semplifica l'analisi.
-		\item \textbf{Dividere frasi troppo lunghe/complesse}.
-		\item \textbf{Distinguere frasi sui "dati" da frasi sulle "funzioni"}:
-		\begin{itemize}
-			\item Dati: "Uno studente \textit{ha} un nome, un cognome e una matricola."
-			\item Funzioni: "Il sistema \textit{deve permettere} di iscrivere uno studente a un corso."
-		\end{itemize}
-	\end{itemize}
-	
-	\subsection{Regole Generali per Termini e Concetti}
-	\begin{itemize}
-		\item \textbf{Costruire un glossario dei termini}: Cruciale per evitare ambiguità.
-		\begin{itemize}
-			\item \textit{Esempio Pratico}: Se nel tuo team Node.js uno chiama un campo \texttt{customerId} e un altro \texttt{client\_id}, il glossario chiarisce che \texttt{Customer} e \texttt{Client} sono sinonimi e si userà \texttt{customerId}.
-		\end{itemize}
-		\item \textbf{Omonimi e sinonimi devono essere unificati}: Un solo termine per un concetto.
-		\item \textbf{Chiarire esplicitamente le relazioni tra i termini}.
-		\item \textbf{Ordinare le frasi per concetti}: Raggruppare requisiti simili.
-	\end{itemize}
-	
-	\section{Esempi di Requisiti}
-	\subsection{Esempio Database Bibliografico}
-	\begin{itemize}
-		\item Automatizzare riferimenti bibliografici.
-		\item ID di 7 caratteri (iniziali autori, anno, carattere disambiguazione).
-		\item Riferimenti possono essere \textit{monografie} (editore, data, luogo) o \textit{articoli di rivista} (nome rivista, volume, numero, pagine, anno).
-		\item Per entrambi: nomi degli autori.
-	\end{itemize}
-	
-	\subsection{Esempio Azienda di Formazione}
-	Questo esempio sarà usato più avanti per la progettazione.
-	\begin{itemize}
-		\item Gestire corsi, lezioni, insegnanti.
-		\item \textbf{Studenti ($\sim$5000)}: ID, codice fiscale, cognome, età, sesso, luogo nascita, nome datori di lavoro (passati e presenti con date), indirizzo, telefono, corsi frequentati ($\sim$200) con voto finale.
-		\item \textbf{Workshop/Corsi}: Tracciare workshop frequentati, dove e quando si tengono le lezioni. I corsi hanno codice, titolo, edizioni (con data inizio/fine, numero partecipanti).
-		\item \textbf{Studenti Freelance}: Area di interesse, titolo onorifico.
-		\item \textbf{Insegnanti ($\sim$300)}: Cognome, età, luogo nascita, nome corso insegnato, set corsi insegnati (passati/futuri), storico telefonate. Possono essere dipendenti interni o collaboratori esterni.
-	\end{itemize}
-	
-	\section{Il Glossario}
-	Il glossario è fondamentale. Ecco un esempio basato sull'azienda di formazione:
-	
-	\begin{longtable}{|p{0.2\textwidth}|p{0.4\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|}
-		\hline
-		\textbf{Termine} & \textbf{Descrizione} & \textbf{Sinonimo} & \textbf{Correlato a} \\
-		\hline
-		\endfirsthead
-		\hline
-		\textbf{Termine} & \textbf{Descrizione} & \textbf{Sinonimo} & \textbf{Correlato a} \\
-		\hline
-		\endhead
-		\hline
-		\endfoot
-		\hline
-		\endlastfoot
-		Partecipante & Chi prende parte ai corsi & Studente & Corso, Società \\
-		\hline
-		Docente & L'insegnante dei corsi. Potrebbe essere un dipendente interno. & Insegnante & Corso \\
-		\hline
-		Corso & Corso interno. Può avere diverse edizioni. & Workshop & Docente \\
-		\hline
-		Azienda & Luogo di lavoro attuale (o passato) del partecipante. & Luogo & Partecipante \\
-	\end{longtable}
-	
-	\textit{Esempio Pratico}: Nel tuo schema Prisma o MongoDB:
-	\begin{itemize}
-		\item \texttt{Participant} potrebbe diventare \texttt{model Student \{\}} o una collection \texttt{students}.
-		\item Il glossario ti aiuta a decidere se \texttt{Lecturer} e \texttt{Teacher} sono la stessa cosa e come chiamare l'entità/collection (\texttt{model Teacher \{\}}).
-		\item \texttt{Course} e \texttt{Workshop} sono sinonimi per la stessa entità/collection.
-	\end{itemize}
-	
-	\section{Strutturare i Requisiti}
-	Dopo la raccolta, i requisiti vanno organizzati in gruppi omogenei di frasi. L'esempio dell'azienda di formazione viene strutturato:
-	\begin{itemize}
-		\item \textbf{Frasi generali}: "L'azienda richiede un DB per corsi, lezioni, insegnanti."
-		\item \textbf{Frasi sui partecipanti}: Dettagli sugli studenti (ID, CF, nome, età, datori lavoro, corsi frequentati, ecc.).
-		\item \textbf{Frasi specifiche sui partecipanti}: Dettagli per freelance (area interesse) o dipendenti di organizzazioni (livello gerarchico).
-		\item \textbf{Frasi sul datore di lavoro}: Dettagli sui datori di lavoro dei partecipanti (nome, indirizzo, telefono).
-		\item \textbf{Frasi sui corsi}: Dettagli sui corsi (codice, titolo, edizioni, date, n° partecipanti, aule, orari).
-		\item \textbf{Frasi sui docenti}: Dettagli sugli insegnanti (cognome, età, corsi insegnati, tipo contratto, ecc.).
-	\end{itemize}
-	Questa strutturazione aiuta a identificare le future entità e le loro proprietà.
-	
-	\section{Dai Requisiti agli Schemi Concettuali (E-R)}
-	Come tradurre i termini identificati nei costrutti del modello Entità-Relazione (E-R)?
-	\begin{itemize}
-		\item \textbf{Entità (\texttt{Entity})}:
-		\begin{itemize}
-			\item Se il termine ha \textbf{proprietà rilevanti} e descrive \textbf{oggetti autonomi}.
-			\item \textit{Esempio}: \texttt{Studente}, \texttt{Corso}, \texttt{Docente}.
-			\item \textit{Prisma/SQL}: Diventeranno tabelle (\texttt{model Student \{\}}, \texttt{CREATE TABLE Student (...)}).
-			\item \textit{MongoDB}: Diventeranno collections (\texttt{db.students}).
-		\end{itemize}
-		\item \textbf{Attributo (\texttt{Attribute})}:
-		\begin{itemize}
-			\item Se è un termine \textbf{semplice senza ulteriori specificazioni} (proprietà di un'entità).
-			\item \textit{Esempio}: \texttt{Nome} dello Studente, \texttt{Titolo} del Corso.
-			\item \textit{Prisma/SQL}: Diventeranno colonne nelle tabelle (\texttt{name: String}, \texttt{title: String}).
-			\item \textit{MongoDB}: Diventeranno campi nei documenti (\texttt{\{ name: "Mario", title: "Database 101" \}}).
-		\end{itemize}
-		\item \textbf{Relazione (\texttt{Relationship})}:
-		\begin{itemize}
-			\item Quando un termine \textbf{collega altri termini} (entità).
-			\item \textit{Esempio}: "Studente \textit{si iscrive a} Corso".
-			\item \textit{Prisma/SQL}: Spesso implementate con chiavi esterne e tabelle di join.
-			\begin{minted}{graphql}
+		\item Quando un termine \textbf{collega altri termini} (entità).
+		\item \textit{Esempio}: "Studente \textit{si iscrive a} Corso".
+		\item \textit{Prisma/SQL}: Spesso implementate con chiavi esterne e tabelle di join.
+		\begin{minted}{graphql}
 model Student {
-	id          Int      @id @default(autoincrement())
-	// ... altri attributi
-	enrollments Enrollment[]
+id          Int      @id @default(autoincrement())
+// ... altri attributi
+enrollments Enrollment[]
 }
 model Course {
-	id          Int      @id @default(autoincrement())
-	// ... altri attributi
-	enrollments Enrollment[]
+id          Int      @id @default(autoincrement())
+// ... altri attributi
+enrollments Enrollment[]
 }
 model Enrollment { // Tabella di join
-	studentId Int
-	courseId  Int
-	student   Student @relation(fields: [studentId], references: [id])
-	course    Course  @relation(fields: [courseId], references: [id])
-	enrollmentDate DateTime
-	@@id([studentId, courseId])
+studentId Int
+courseId  Int
+student   Student @relation(fields: [studentId], references: [id])
+course    Course  @relation(fields: [courseId], references: [id])
+enrollmentDate DateTime
+@@id([studentId, courseId])
 }
-			\end{minted}
-			\item \textit{MongoDB}: Spesso implementate con DBRefs, array di ID, o embedding (se la relazione è 1-a-pochi e i dati sono strettamente legati).
-		\end{itemize}
-		\item \textbf{Generalizzazione (\texttt{Generalization / ISA Relationship})}:
-		\begin{itemize}
-			\item Quando un termine è un \textbf{caso più generale di un altro}.
-			\item \textit{Esempio}: \texttt{Persona} è una generalizzazione di \texttt{Studente} e \texttt{Docente}. Sia studenti che docenti sono persone e condividono attributi comuni (nome, cognome, CF) ma hanno anche attributi specifici.
-			\item \textit{Prisma/SQL}: Ci sono varie strategie:
-			\begin{enumerate}
-				\item Tabella unica con un campo "tipo" (es. \texttt{Person} con \texttt{personType: "Student" | "Teacher"}).
-				\item Tabelle separate per le specializzazioni che referenziano una tabella base comune.
-				\item Tabelle separate che duplicano gli attributi comuni (meno ideale per la consistenza).
-			\end{enumerate}
-			\item \textit{MongoDB}: Spesso si usa un campo \texttt{type} in una singola collection \texttt{people}, oppure collections separate se le differenze sono marcate.
-		\end{itemize}
+		\end{minted}
+		\item \textit{MongoDB}: Spesso implementate con DBRefs, array di ID, o embedding (se la relazione è 1-a-pochi e i dati sono strettamente legati).
 	\end{itemize}
-	
-	\section{Design Pattern E-R Comuni}
-	Sono "best practices" per risolvere problemi comuni di modellazione.
-	
-	\subsection{Reificazione di Attributi in Entità}
+	\item \textbf{Generalizzazione (\texttt{Generalization / ISA Relationship})}:
 	\begin{itemize}
-		\item \textbf{Problema}: Un attributo di un'entità ha esso stesso delle proprietà o partecipa ad altre relazioni.
-		\item \textbf{Esempio}: Inizialmente \texttt{Company} è un attributo (es. \texttt{companyName}) di \texttt{Employee}.
-		\begin{itemize}
-			\item Se \texttt{Company} deve avere un suo indirizzo, partita IVA, o essere collegata ad altri \texttt{Employee} o a \texttt{Projects}, allora \texttt{Company} va "reificata" (resa concreta) come un'entità separata.
-			\item Si crea l'entità \texttt{Company} e una relazione \texttt{Job} (o \texttt{WorksFor}) tra \texttt{Employee} e \texttt{Company}.
-		\end{itemize}
-		\item \textbf{Cardinalità}: Un \texttt{Employee} (\texttt{1,1}) lavora per una \texttt{Company}. Una \texttt{Company} (\texttt{1,N}) può avere molti \texttt{Employee}.
-		\begin{itemize}
-			\item (\texttt{1,1}): Esattamente uno.
-			\item (\texttt{1,N}): Da uno a molti.
-			\item (\texttt{0,1}): Zero o uno.
-			\item (\texttt{0,N}): Da zero a molti.
-		\end{itemize}
-		\item \textit{Esempio Pratico}:
-		\begin{itemize}
-			\item \textit{Prima}: \texttt{model Employee \{ id Int @id; name String; companyName String; \}}
-			\item \textit{Dopo}:
-			\begin{minted}{graphql}
+		\item Quando un termine è un \textbf{caso più generale di un altro}.
+		\item \textit{Esempio}: \texttt{Persona} è una generalizzazione di \texttt{Studente} e \texttt{Docente}. Sia studenti che docenti sono persone e condividono attributi comuni (nome, cognome, CF) ma hanno anche attributi specifici.
+		\item \textit{Prisma/SQL}: Ci sono varie strategie:
+		\begin{enumerate}
+			\item Tabella unica con un campo "tipo" (es. \texttt{Person} con \texttt{personType: "Student" | "Teacher"}).
+			\item Tabelle separate per le specializzazioni che referenziano una tabella base comune.
+			\item Tabelle separate che duplicano gli attributi comuni (meno ideale per la consistenza).
+		\end{enumerate}
+		\item \textit{MongoDB}: Spesso si usa un campo \texttt{type} in una singola collection \texttt{people}, oppure collections separate se le differenze sono marcate.
+	\end{itemize}
+\end{itemize}
+
+\section{Design Pattern E-R Comuni}
+Sono "best practices" per risolvere problemi comuni di modellazione.
+
+\subsection{Reificazione di Attributi in Entità}
+\begin{itemize}
+	\item \textbf{Problema}: Un attributo di un'entità ha esso stesso delle proprietà o partecipa ad altre relazioni.
+	\item \textbf{Esempio}: Inizialmente \texttt{Company} è un attributo (es. \texttt{companyName}) di \texttt{Employee}.
+	\begin{itemize}
+		\item Se \texttt{Company} deve avere un suo indirizzo, partita IVA, o essere collegata ad altri \texttt{Employee} o a \texttt{Projects}, allora \texttt{Company} va "reificata" (resa concreta) come un'entità separata.
+		\item Si crea l'entità \texttt{Company} e una relazione \texttt{Job} (o \texttt{WorksFor}) tra \texttt{Employee} e \texttt{Company}.
+	\end{itemize}
+	\item \textbf{Cardinalità}: Un \texttt{Employee} (\texttt{1,1}) lavora per una \texttt{Company}. Una \texttt{Company} (\texttt{1,N}) può avere molti \texttt{Employee}.
+	\begin{itemize}
+		\item (\texttt{1,1}): Esattamente uno.
+		\item (\texttt{1,N}): Da uno a molti.
+		\item (\texttt{0,1}): Zero o uno.
+		\item (\texttt{0,N}): Da zero a molti.
+	\end{itemize}
+	\item \textit{Esempio Pratico}:
+	\begin{itemize}
+		\item \textit{Prima}: \texttt{model Employee \{ id Int @id; name String; companyName String; \}}
+		\item \textit{Dopo}:
+		\begin{minted}{graphql}
 model Employee {
-	id        Int     @id
-	name      String
-	companyId Int
-	company   Company @relation(fields: [companyId], references: [id])
+id        Int     @id
+name      String
+companyId Int
+company   Company @relation(fields: [companyId], references: [id])
 }
 model Company {
-	id        Int     @id
-	name      String
-	address   String? // Company ha i suoi attributi
-	employees Employee[]
-}
-			\end{minted}
-		\end{itemize}
-	\end{itemize}
-	
-	\subsection{Relazioni "Part-of" (Composizione e Aggregazione)}
-	\begin{itemize}
-		\item Relazioni (\texttt{1,N}) che rappresentano "parte di".
-		\item \textbf{Composizione (\texttt{Composition})}: Forte dipendenza. La parte non può esistere senza il tutto.
-		\begin{itemize}
-			\item Esempio: \texttt{Cinema} (1) è composto da \texttt{Hall} (N). Ogni \texttt{Hall} (\texttt{1,1}) appartiene a un solo \texttt{Cinema}. Se il cinema viene distrutto, le sale non esistono più.
-		\end{itemize}
-		\item \textbf{Aggregazione (\texttt{Aggregation})}: Debole dipendenza. La parte può esistere indipendentemente dal tutto.
-		\begin{itemize}
-			\item Esempio: \texttt{Team} (1) è composto da \texttt{Expert} (N). Un \texttt{Expert} (\texttt{0,1}) può appartenere a un \texttt{Team} (o a nessuno). Se il team si scioglie, gli esperti esistono ancora.
-		\end{itemize}
-	\end{itemize}
-	
-	\subsection{"Instance-of"}
-	\begin{itemize}
-		\item \textbf{Problema}: Distinguere una rappresentazione astratta/modello da una sua istanza concreta.
-		\item \textbf{Esempi}:
-		\begin{itemize}
-			\item \texttt{Flight} (astratto: rotta, orario generico) vs. \texttt{ScheduledFlight} (istanza: volo specifico di un giorno con data, aereo assegnato).
-			\item \texttt{Tournament} (astratto: nome del torneo) vs. \texttt{Edition} (istanza: edizione 2024 del torneo, con date specifiche).
-		\end{itemize}
-		\item \textit{Esempio Pratico}:
-		\begin{itemize}
-			\item \texttt{ProductTemplate} (nome, descrizione generica) vs \texttt{ProductInstance} (SKU specifico, colore, taglia, data di produzione).
-			\item \texttt{CourseDefinition} (codice, nome, crediti) vs \texttt{CourseOffering} (anno accademico, semestre, docente, aula).
-		\end{itemize}
-	\end{itemize}
-	
-	\subsection{Reificazione di Relazioni Binarie}
-	\begin{itemize}
-		\item \textbf{Problema}: Una relazione tra due entità ha essa stessa degli attributi o partecipa ad altre relazioni.
-		\item \textbf{Esempio}: Studente - Esame - Lezione.
-		\begin{itemize}
-			\item Inizialmente, \texttt{Exam} potrebbe essere una relazione tra \texttt{Student} e \texttt{Lecture}.
-			\item Se l'esame ha attributi come \texttt{Grade} (voto) e \texttt{Date}, allora \texttt{Exam} viene reificata come entità.
-			\item Si creano due relazioni binarie: \texttt{Student-takes-Exam (S-E)} e \texttt{Exam-is\_for-Lecture (E-L)}.
-		\end{itemize}
-		\item \textit{Esempio Pratico (Prisma, vedi sopra per \texttt{Enrollment})}: Se la relazione "studente si iscrive a corso" ha una data di iscrizione, un voto, ecc., la tabella di join \texttt{Enrollment} diventa un'entità reificata.
-	\end{itemize}
-	
-	\subsection{Reificazione di Relazioni Ricorsive}
-	\begin{itemize}
-		\item \textbf{Problema}: Una relazione tra istanze della stessa entità ha attributi.
-		\item \textbf{Esempio}: \texttt{Team} gioca una \texttt{Match} contro un altro \texttt{Team}.
-		\begin{itemize}
-			\item Una relazione \texttt{PlaysAgainst} tra \texttt{Team} e \texttt{Team}.
-			\item Se la partita (\texttt{Match}) ha attributi come \texttt{Date}, \texttt{Score}, allora \texttt{Match} viene reificata come entità.
-			\item Si creano due relazioni: \texttt{Team\_Home-plays-Match} e \texttt{Team\_Visiting-plays-Match}.
-		\end{itemize}
-		\item \textit{Esempio Pratico}: Un \texttt{Employee} può essere \texttt{manager} di altri \texttt{Employee}. Se questa relazione di management ha una \texttt{startDate} o un \texttt{roleDescription}, si potrebbe reificare in un'entità \texttt{ManagementRelationship}.
-	\end{itemize}
-	
-	\subsection{Reificazione di Attributi di Relazioni}
-	\begin{itemize}
-		\item \textbf{Problema}: Un attributo di una relazione molti-a-molti ha esso stesso delle proprietà.
-		\item \textbf{Esempio}: \texttt{Player} (musicista) - \texttt{Plays} (suona) - \texttt{Orchestra}. La relazione \texttt{Plays} ha un attributo \texttt{Instrument}.
-		\begin{itemize}
-			\item Se \texttt{Instrument} (es. "Violino Stradivari Modello X") deve avere attributi propri (es. \texttt{Trademark}, \texttt{Type}, anno di fabbricazione) o essere suonato da più musicisti in diverse orchestre, allora \texttt{Instrument} va reificato.
-			\item Si crea l'entità \texttt{Instrument} e la relazione \texttt{Plays} diventa ternaria (o si reifica \texttt{Plays} in un'entità che collega \texttt{Player}, \texttt{Orchestra}, \texttt{Instrument}).
-		\end{itemize}
-	\end{itemize}
-	
-	\subsection{Caso Specifico (Generalizzazione/ISA)}
-	\begin{itemize}
-		\item \textbf{Problema}: Una sottocategoria di un'entità ha caratteristiche o relazioni aggiuntive.
-		\item \textbf{Esempio}: \texttt{Manager} è un caso specifico di \texttt{Employee}.
-		\begin{itemize}
-			\item Tutti i \texttt{Manager} sono \texttt{Employee}, ma solo i \texttt{Manager} gestiscono (\texttt{Manage}) dei \texttt{Project}.
-			\item Non tutti gli \texttt{Employee} gestiscono progetti.
-		\end{itemize}
-		\item Si usa una freccia di generalizzazione (concettualmente) da \texttt{Manager} a \texttt{Employee}.
-	\end{itemize}
-	
-	\subsection{Storicizzazione di un Concetto}
-	\begin{itemize}
-		\item \textbf{Problema}: Necessità di tracciare i cambiamenti di un concetto nel tempo.
-		\item \textbf{Esempi}:
-		\begin{itemize}
-			\item \texttt{Anagraphic} (dati anagrafici) può avere una versione \texttt{Historic} e una \texttt{Current}. Si usano attributi come \texttt{StartDate}, \texttt{ExpiryDate}.
-			\item \texttt{Software} può avere una versione \texttt{Legacy} e una \texttt{Updated}.
-			\item \textbf{Impiego (\texttt{Employment})}: Si può modellare \texttt{CurrentEmployment} e \texttt{PastEmployment}.
-			\begin{itemize}
-				\item \textit{Opzione 1}: Due relazioni separate (\texttt{CurrentEmployment}, \texttt{PastEmployment}) tra \texttt{Employee} e \texttt{Company}.
-				\item \textit{Opzione 2}: Reificare \texttt{Employment} come entità con \texttt{BeginDate}, \texttt{EndDate} e poi generalizzarla in \texttt{CurrentEmployment} e \texttt{PastEmployment} (o usare un attributo di stato).
-			\end{itemize}
-		\end{itemize}
-		\item \textit{Esempio Pratico}: Per tracciare lo storico degli indirizzi di un cliente:
-		\begin{minted}{graphql}
-model Customer {
-	id             Int       @id
-	// ...
-	addressHistory Address[]
-}
-model Address {
-	id         Int       @id
-	street     String
-	city       String
-	customerId Int
-	customer   Customer  @relation(fields: [customerId], references: [id])
-	startDate  DateTime
-	endDate    DateTime? // Null se è l'indirizzo corrente
+id        Int     @id
+name      String
+address   String? // Company ha i suoi attributi
+employees Employee[]
 }
 		\end{minted}
 	\end{itemize}
-	
-	\subsection{Estensione di un Concetto (Generalizzazione/ISA)}
+\end{itemize}
+
+\subsection{Relazioni "Part-of" (Composizione e Aggregazione)}
+\begin{itemize}
+	\item Relazioni (\texttt{1,N}) che rappresentano "parte di".
+	\item \textbf{Composizione (\texttt{Composition})}: Forte dipendenza. La parte non può esistere senza il tutto.
 	\begin{itemize}
-		\item \textbf{Problema}: Un concetto esistente viene esteso con nuove informazioni per casi specifici.
-		\item \textbf{Esempio}: \texttt{Project} è un concetto generale. Un \texttt{AcceptedProject} (progetto accettato) richiede informazioni aggiuntive come \texttt{Founding} (finanziamento) e \texttt{StartDate}, che non sono necessarie per progetti in attesa o rifiutati.
-		\item Si usa una generalizzazione (concettualmente) da \texttt{AcceptedProject} a \texttt{Project}.
+		\item Esempio: \texttt{Cinema} (1) è composto da \texttt{Hall} (N). Ogni \texttt{Hall} (\texttt{1,1}) appartiene a un solo \texttt{Cinema}. Se il cinema viene distrutto, le sale non esistono più.
 	\end{itemize}
-	
-	\subsection{Relazioni Ternarie e Loro Reificazione}
+	\item \textbf{Aggregazione (\texttt{Aggregation})}: Debole dipendenza. La parte può esistere indipendentemente dal tutto.
 	\begin{itemize}
-		\item \textbf{Relazione Ternaria}: Coinvolge tre entità.
-		\begin{itemize}
-			\item Esempio: \texttt{Employee} lavora su un \texttt{Task} in un \texttt{Office}. La relazione \texttt{Work} collega queste tre.
-			\item Le cardinalità indicano che un impiegato può lavorare su più task in più uffici, un ufficio può ospitare più impiegati su più task, e un task può essere svolto da più impiegati in più uffici.
-		\end{itemize}
-		\item \textbf{Reificazione di Relazione Ternaria (1)}:
-		\begin{itemize}
-			\item La relazione ternaria \texttt{Work} viene trasformata in un'entità \texttt{Work}.
-			\item L'entità \texttt{Work} è collegata a \texttt{Employee}, \texttt{Office}, e \texttt{Task} tramite tre relazioni binarie (E-W, O-W, T-W).
-			\item Questo è utile se l'evento "Work" ha attributi propri (es. \texttt{duration}, \texttt{status}).
-		\end{itemize}
-		\item \textbf{Reificazione di Relazione Ternaria (2) - Semplificata}:
-		\begin{itemize}
-			\item Se ci sono vincoli specifici (es. "un task può essere eseguito da un solo operatore e in un solo ufficio"), il modello può essere semplificato.
-			\item Nell'esempio delle slide, \texttt{Task} diventa centrale, con una relazione (\texttt{1,1}) verso \texttt{Employee} (tramite O-S, probabilmente "Operator-for-Service") e (\texttt{1,1}) verso \texttt{Office} (tramite S-I, probabilmente "Service-at-Location").
-			\item \textit{Nota}: Le etichette delle relazioni (O-S, S-I) sono un po' criptiche, ma il concetto è la semplificazione basata su vincoli.
-		\end{itemize}
+		\item Esempio: \texttt{Team} (1) è composto da \texttt{Expert} (N). Un \texttt{Expert} (\texttt{0,1}) può appartenere a un \texttt{Team} (o a nessuno). Se il team si scioglie, gli esperti esistono ancora.
 	\end{itemize}
-	
-	\section{Strategie di Progettazione dello Schema E-R}
-	Come si affronta la creazione dello schema E-R?
-	
-	\subsection{Strategia Top-Down}
-	\begin{enumerate}
-		\item Si parte dai concetti più generali (entità principali).
-		\item Si raffinano progressivamente aggiungendo dettagli:
-		\begin{itemize}
-			\item Identificare attributi.
-			\item Identificare relazioni.
-			\item Scomporre entità complesse.
-			\item Introdurre generalizzazioni/specializzazioni.
-		\end{itemize}
-	\end{enumerate}
-	\textit{Esempi}:
+\end{itemize}
+
+\subsection{"Instance-of"}
+\begin{itemize}
+	\item \textbf{Problema}: Distinguere una rappresentazione astratta/modello da una sua istanza concreta.
+	\item \textbf{Esempi}:
 	\begin{itemize}
-		\item \texttt{Exam} (iniziale) $\rightarrow$ \texttt{Student} - \texttt{Exam} (relazione) - \texttt{Lecture}.
-		\item \texttt{Employee} (iniziale) $\rightarrow$ \texttt{Employee} con attributi \texttt{Surname}, \texttt{Age}, \texttt{Wage}.
-		\item \texttt{People} (iniziale) $\rightarrow$ Generalizzazione in \texttt{Man} e \texttt{Woman}.
+		\item \texttt{Flight} (astratto: rotta, orario generico) vs. \texttt{ScheduledFlight} (istanza: volo specifico di un giorno con data, aereo assegnato).
+		\item \texttt{Tournament} (astratto: nome del torneo) vs. \texttt{Edition} (istanza: edizione 2024 del torneo, con date specifiche).
 	\end{itemize}
-	
-	\subsection{Strategia Bottom-Up}
-	\begin{enumerate}
-		\item Si parte dai dettagli: attributi e concetti specifici.
-		\item Si raggruppano per formare entità e relazioni.
-		\item Si integrano i vari "pezzi" di schema per formare lo schema completo.
-	\end{enumerate}
-	\textit{Esempi}:
+	\item \textit{Esempio Pratico}:
 	\begin{itemize}
-		\item Requisito su \texttt{Employee} $\rightarrow$ Entità \texttt{Employee}.
-		\item Concetti \texttt{Student}, \texttt{Exam}, \texttt{Lecture} $\rightarrow$ Schema \texttt{Student-Exam-Lecture}.
-		\item Entità \texttt{Man}, \texttt{Woman} $\rightarrow$ Generalizzazione \texttt{People}.
+		\item \texttt{ProductTemplate} (nome, descrizione generica) vs \texttt{ProductInstance} (SKU specifico, colore, taglia, data di produzione).
+		\item \texttt{CourseDefinition} (codice, nome, crediti) vs \texttt{CourseOffering} (anno accademico, semestre, docente, aula).
 	\end{itemize}
-	
-	\subsection{Strategia Inside-Out}
-	\begin{enumerate}
-		\item Si identifica un concetto centrale e ben compreso.
-		\item Si espande lo schema "verso l'esterno", aggiungendo concetti (entità, attributi, relazioni) direttamente collegati a quelli già identificati.
-	\end{enumerate}
-	\textit{Esempio (dalle slide)}:
-	\begin{enumerate}
-		\item Inizio: \texttt{Employee}.
-		\item Aggiungo attributi a \texttt{Employee}: \texttt{Surname}, \texttt{Code}.
-		\item Aggiungo \texttt{Dept} (Dipartimento) e le relazioni \texttt{Supervision} (Employee supervisiona Dept) e \texttt{Belonging} (Employee appartiene a Dept, con attributo \texttt{Date}).
-		\item Aggiungo \texttt{Project} e la relazione \texttt{Enrollment} (Employee partecipa a Project).
-		\item Aggiungo \texttt{Office} e la relazione \texttt{Composition} (Dept è composto da Office, con attributo \texttt{Addr} complesso).
-	\end{enumerate}
-	
-	\section{Regola Pratica e Metodologia}
-	\subsection{Regola Pratica: Usare uno Stile Misto!}
-	\begin{enumerate}
-		\item \textbf{Crea uno "schizzo" (\texttt{sketch})}: Identifica le entità più rilevanti.
-		\item \textbf{Decomponi lo schema}: Dividi il problema se complesso.
-		\item \textbf{Raffina (top-down), integra (bottom-up), espandi (inside-out)}.
-	\end{enumerate}
-	
-	\subsection{Sketching dello Schema E-R}
+\end{itemize}
+
+\subsection{Reificazione di Relazioni Binarie}
+\begin{itemize}
+	\item \textbf{Problema}: Una relazione tra due entità ha essa stessa degli attributi o partecipa ad altre relazioni.
+	\item \textbf{Esempio}: Studente - Esame - Lezione.
 	\begin{itemize}
-		\item Parti dalle entità più rilevanti (più citate o esplicitamente indicate come tali).
-		\item Crea un primo schema E-R di base.
+		\item Inizialmente, \texttt{Exam} potrebbe essere una relazione tra \texttt{Student} e \texttt{Lecture}.
+		\item Se l'esame ha attributi come \texttt{Grade} (voto) e \texttt{Date}, allora \texttt{Exam} viene reificata come entità.
+		\item Si creano due relazioni binarie: \texttt{Student-takes-Exam (S-E)} e \texttt{Exam-is\_for-Lecture (E-L)}.
 	\end{itemize}
-	
-	\subsection{Metodologia "Best Practice"}
-	\begin{enumerate}
-		\item \textbf{Analisi dei Requisiti}:
-		\begin{itemize}
-			\item Analizza, risolvi ambiguità.
-			\item Crea un glossario.
-			\item Raggruppa requisiti simili.
-		\end{itemize}
-		\item \textbf{Caso Base (\texttt{Base case})}:
-		\begin{itemize}
-			\item Definisci uno schema "abbozzato" con i concetti più rilevanti.
-		\end{itemize}
-		\item \textbf{Caso Iterativo (\texttt{Iterative case})} (ripeti finché non va bene):
-		\begin{itemize}
-			\item Raffina i concetti base usando i requisiti.
-			\item Aggiungi concetti per descrivere requisiti non ancora coperti.
-		\end{itemize}
-		\item \textbf{Analisi di Qualità (\texttt{Quality analysis})} (ripeti durante tutto il processo):
-		\begin{itemize}
-			\item Controlla la qualità dello schema e modificalo.
-		\end{itemize}
-	\end{enumerate}
-	
-	\section{Qualità dello Schema E-R}
-	Misure di qualità per uno schema E-R:
+	\item \textit{Esempio Pratico (Prisma, vedi sopra per \texttt{Enrollment})}: Se la relazione "studente si iscrive a corso" ha una data di iscrizione, un voto, ecc., la tabella di join \texttt{Enrollment} diventa un'entità reificata.
+\end{itemize}
+
+\subsection{Reificazione di Relazioni Ricorsive}
+\begin{itemize}
+	\item \textbf{Problema}: Una relazione tra istanze della stessa entità ha attributi.
+	\item \textbf{Esempio}: \texttt{Team} gioca una \texttt{Match} contro un altro \texttt{Team}.
 	\begin{itemize}
-		\item \textbf{Correttezza (\texttt{Correctness})}: Lo schema rappresenta accuratamente i requisiti? Usa i costrutti E-R in modo appropriato?
-		\item \textbf{Completezza (\texttt{Completeness})}: Tutti i requisiti sono stati rappresentati nello schema? Tutti i dati necessari sono modellati?
-		\item \textbf{Chiarezza (\texttt{Clarity})}: Lo schema è facile da capire? È ambiguo?
-		\item \textbf{Minimalità (\texttt{Minimality})}: Ci sono elementi ridondanti (entità, attributi, relazioni non necessarie)? Si potrebbe rappresentare la stessa informazione in modo più semplice?
+		\item Una relazione \texttt{PlaysAgainst} tra \texttt{Team} e \texttt{Team}.
+		\item Se la partita (\texttt{Match}) ha attributi come \texttt{Date}, \texttt{Score}, allora \texttt{Match} viene reificata come entità.
+		\item Si creano due relazioni: \texttt{Team\_Home-plays-Match} e \texttt{Team\_Visiting-plays-Match}.
 	\end{itemize}
-	
-	\section{Best Practice e Integrazione di Schemi}
-	Per sistemi complessi, si può decomporre il problema:
-	
-	\subsection{Approccio 1}
-	\begin{enumerate}
-		\item Analisi dei Requisiti.
-		\item Caso Base (schema "scheletro" generale).
-		\item \textbf{Decomposizione}: Suddividi i requisiti complessi secondo lo schema scheletro.
-		\item Caso Iterativo per ogni \textbf{sotto-schema}.
-		\item \textbf{Integrazione}: Unisci i sotto-schemi in uno schema totale, usando lo schema scheletro come riferimento.
-		\item Analisi di Qualità.
-	\end{enumerate}
-	
-	\subsection{Approccio 2}
-	\begin{enumerate}
-		\item Analisi dei Requisiti.
-		\item \textbf{Decomposizione}: Identifica aree di interesse e partiziona i requisiti (o acquisiscili separatamente per area).
-		\item \textbf{Per ogni area}:
-		\begin{itemize}
-			\item Caso Base.
-			\item Caso Iterativo.
-		\end{itemize}
-		\item \textbf{Integrazione}: Unisci gli schemi delle varie aree.
-		\item Analisi di Qualità.
-	\end{enumerate}
-	
-	\section{Esempio Finale: Azienda di Formazione}
-	Questo è un'applicazione pratica della metodologia all'esempio dell'azienda di formazione.
-	
-	\subsection{Affermazione Generale}
-	"Azienda di formazione richiede DB per corsi, lezioni, insegnanti."
-	
-	\subsection{Schema Abbozzato (\texttt{Sketched Schema})}
+	\item \textit{Esempio Pratico}: Un \texttt{Employee} può essere \texttt{manager} di altri \texttt{Employee}. Se questa relazione di management ha una \texttt{startDate} o un \texttt{roleDescription}, si potrebbe reificare in un'entità \texttt{ManagementRelationship}.
+\end{itemize}
+
+\subsection{Reificazione di Attributi di Relazioni}
+\begin{itemize}
+	\item \textbf{Problema}: Un attributo di una relazione molti-a-molti ha esso stesso delle proprietà.
+	\item \textbf{Esempio}: \texttt{Player} (musicista) - \texttt{Plays} (suona) - \texttt{Orchestra}. La relazione \texttt{Plays} ha un attributo \texttt{Instrument}.
 	\begin{itemize}
-		\item Entità: \texttt{Participant}, \texttt{Lecture} (Lezione/Corso), \texttt{Lecturer} (Docente).
-		\item Relazioni: \texttt{Presence} (Participant - Lecture), \texttt{Teaching} (Lecturer - Lecture).
+		\item Se \texttt{Instrument} (es. "Violino Stradivari Modello X") deve avere attributi propri (es. \texttt{Trademark}, \texttt{Type}, anno di fabbricazione) o essere suonato da più musicisti in diverse orchestre, allora \texttt{Instrument} va reificato.
+		\item Si crea l'entità \texttt{Instrument} e la relazione \texttt{Plays} diventa ternaria (o si reifica \texttt{Plays} in un'entità che collega \texttt{Player}, \texttt{Orchestra}, \texttt{Instrument}).
 	\end{itemize}
-	
-	\subsection{Raffinamento: Partecipanti e Datori di Lavoro}
+\end{itemize}
+
+\subsection{Caso Specifico (Generalizzazione/ISA)}
+\begin{itemize}
+	\item \textbf{Problema}: Una sottocategoria di un'entità ha caratteristiche o relazioni aggiuntive.
+	\item \textbf{Esempio}: \texttt{Manager} è un caso specifico di \texttt{Employee}.
 	\begin{itemize}
-		\item Requisiti: ID, CF, dati anagrafici, datori di lavoro (passati/presenti), corsi frequentati. Freelance vs. Dipendenti.
-		\item \textbf{Schema Parziale (1)} (basato sulla slide 70):
+		\item Tutti i \texttt{Manager} sono \texttt{Employee}, ma solo i \texttt{Manager} gestiscono (\texttt{Manage}) dei \texttt{Project}.
+		\item Non tutti gli \texttt{Employee} gestiscono progetti.
+	\end{itemize}
+	\item Si usa una freccia di generalizzazione (concettualmente) da \texttt{Manager} a \texttt{Employee}.
+\end{itemize}
+
+\subsection{Storicizzazione di un Concetto}
+\begin{itemize}
+	\item \textbf{Problema}: Necessità di tracciare i cambiamenti di un concetto nel tempo.
+	\item \textbf{Esempi}:
+	\begin{itemize}
+		\item \texttt{Anagraphic} (dati anagrafici) può avere una versione \texttt{Historic} e una \texttt{Current}. Si usano attributi come \texttt{StartDate}, \texttt{ExpiryDate}.
+		\item \texttt{Software} può avere una versione \texttt{Legacy} e una \texttt{Updated}.
+		\item \textbf{Impiego (\texttt{Employment})}: Si può modellare \texttt{CurrentEmployment} e \texttt{PastEmployment}.
 		\begin{itemize}
-			\item Entità \texttt{Participant} con attributi (\texttt{Tax}, \texttt{Code}, ...).
-			\item Generalizzazione: \texttt{Participant} è generalizzazione di \texttt{Employee} (con attributi \texttt{Level}, \texttt{Position}) e \texttt{Freelance} (con \texttt{Title}, \texttt{Area}).
-			\item Entità \texttt{Employer} (Datore di lavoro) con attributi (\texttt{Name}, ...).
-			\item Relazioni: \texttt{CurrEmpl} (tra \texttt{Participant} e \texttt{Employer} per impiego attuale, \texttt{1-a-N}), \texttt{PastEmpl} (tra \texttt{Participant} e \texttt{Employer} per impieghi passati, \texttt{N-a-N}, reificata).
+			\item \textit{Opzione 1}: Due relazioni separate (\texttt{CurrentEmployment}, \texttt{PastEmployment}) tra \texttt{Employee} e \texttt{Company}.
+			\item \textit{Opzione 2}: Reificare \texttt{Employment} come entità con \texttt{BeginDate}, \texttt{EndDate} e poi generalizzarla in \texttt{CurrentEmployment} e \texttt{PastEmployment} (o usare un attributo di stato).
 		\end{itemize}
 	\end{itemize}
-	
-	\subsection{Raffinamento: Corsi}
+	\item \textit{Esempio Pratico}: Per tracciare lo storico degli indirizzi di un cliente:
+	\begin{minted}{graphql}
+model Customer {
+id             Int       @id
+// ...
+addressHistory Address[]
+}
+model Address {
+id         Int       @id
+street     String
+city       String
+customerId Int
+customer   Customer  @relation(fields: [customerId], references: [id])
+startDate  DateTime
+endDate    DateTime? // Null se è l'indirizzo corrente
+}
+	\end{minted}
+\end{itemize}
+
+\subsection{Estensione di un Concetto (Generalizzazione/ISA)}
+\begin{itemize}
+	\item \textbf{Problema}: Un concetto esistente viene esteso con nuove informazioni per casi specifici.
+	\item \textbf{Esempio}: \texttt{Project} è un concetto generale. Un \texttt{AcceptedProject} (progetto accettato) richiede informazioni aggiuntive come \texttt{Founding} (finanziamento) e \texttt{StartDate}, che non sono necessarie per progetti in attesa o rifiutati.
+	\item Si usa una generalizzazione (concettualmente) da \texttt{AcceptedProject} a \texttt{Project}.
+\end{itemize}
+
+\subsection{Relazioni Ternarie e Loro Reificazione}
+\begin{itemize}
+	\item \textbf{Relazione Ternaria}: Coinvolge tre entità.
 	\begin{itemize}
-		\item Requisiti: Corsi ($\sim$200) con codice, titolo, edizioni (con data inizio/fine, n° partecipanti), lezioni (giorno, aula, orario).
-		\item \textbf{Schema Parziale (2)} (basato sulla slide 72):
+		\item Esempio: \texttt{Employee} lavora su un \texttt{Task} in un \texttt{Office}. La relazione \texttt{Work} collega queste tre.
+		\item Le cardinalità indicano che un impiegato può lavorare su più task in più uffici, un ufficio può ospitare più impiegati su più task, e un task può essere svolto da più impiegati in più uffici.
+	\end{itemize}
+	\item \textbf{Reificazione di Relazione Ternaria (1)}:
+	\begin{itemize}
+		\item La relazione ternaria \texttt{Work} viene trasformata in un'entità \texttt{Work}.
+		\item L'entità \texttt{Work} è collegata a \texttt{Employee}, \texttt{Office}, e \texttt{Task} tramite tre relazioni binarie (E-W, O-W, T-W).
+		\item Questo è utile se l'evento "Work" ha attributi propri (es. \texttt{duration}, \texttt{status}).
+	\end{itemize}
+	\item \textbf{Reificazione di Relazione Ternaria (2) - Semplificata}:
+	\begin{itemize}
+		\item Se ci sono vincoli specifici (es. "un task può essere eseguito da un solo operatore e in un solo ufficio"), il modello può essere semplificato.
+		\item Nell'esempio delle slide, \texttt{Task} diventa centrale, con una relazione (\texttt{1,1}) verso \texttt{Employee} (tramite O-S, probabilmente "Operator-for-Service") e (\texttt{1,1}) verso \texttt{Office} (tramite S-I, probabilmente "Service-at-Location").
+		\item \textit{Nota}: Le etichette delle relazioni (O-S, S-I) sono un po' criptiche, ma il concetto è la semplificazione basata su vincoli.
+	\end{itemize}
+\end{itemize}
+
+\section{Strategie di Progettazione dello Schema E-R}
+Come si affronta la creazione dello schema E-R?
+
+\subsection{Strategia Top-Down}
+\begin{enumerate}
+	\item Si parte dai concetti più generali (entità principali).
+	\item Si raffinano progressivamente aggiungendo dettagli:
+	\begin{itemize}
+		\item Identificare attributi.
+		\item Identificare relazioni.
+		\item Scomporre entità complesse.
+		\item Introdurre generalizzazioni/specializzazioni.
+	\end{itemize}
+\end{enumerate}
+\textit{Esempi}:
+\begin{itemize}
+	\item \texttt{Exam} (iniziale) $\rightarrow$ \texttt{Student} - \texttt{Exam} (relazione) - \texttt{Lecture}.
+	\item \texttt{Employee} (iniziale) $\rightarrow$ \texttt{Employee} con attributi \texttt{Surname}, \texttt{Age}, \texttt{Wage}.
+	\item \texttt{People} (iniziale) $\rightarrow$ Generalizzazione in \texttt{Man} e \texttt{Woman}.
+\end{itemize}
+
+\subsection{Strategia Bottom-Up}
+\begin{enumerate}
+	\item Si parte dai dettagli: attributi e concetti specifici.
+	\item Si raggruppano per formare entità e relazioni.
+	\item Si integrano i vari "pezzi" di schema per formare lo schema completo.
+\end{enumerate}
+\textit{Esempi}:
+\begin{itemize}
+	\item Requisito su \texttt{Employee} $\rightarrow$ Entità \texttt{Employee}.
+	\item Concetti \texttt{Student}, \texttt{Exam}, \texttt{Lecture} $\rightarrow$ Schema \texttt{Student-Exam-Lecture}.
+	\item Entità \texttt{Man}, \texttt{Woman} $\rightarrow$ Generalizzazione \texttt{People}.
+\end{itemize}
+
+\subsection{Strategia Inside-Out}
+\begin{enumerate}
+	\item Si identifica un concetto centrale e ben compreso.
+	\item Si espande lo schema "verso l'esterno", aggiungendo concetti (entità, attributi, relazioni) direttamente collegati a quelli già identificati.
+\end{enumerate}
+\textit{Esempio (dalle slide)}:
+\begin{enumerate}
+	\item Inizio: \texttt{Employee}.
+	\item Aggiungo attributi a \texttt{Employee}: \texttt{Surname}, \texttt{Code}.
+	\item Aggiungo \texttt{Dept} (Dipartimento) e le relazioni \texttt{Supervision} (Employee supervisiona Dept) e \texttt{Belonging} (Employee appartiene a Dept, con attributo \texttt{Date}).
+	\item Aggiungo \texttt{Project} e la relazione \texttt{Enrollment} (Employee partecipa a Project).
+	\item Aggiungo \texttt{Office} e la relazione \texttt{Composition} (Dept è composto da Office, con attributo \texttt{Addr} complesso).
+\end{enumerate}
+
+\section{Regola Pratica e Metodologia}
+\subsection{Regola Pratica: Usare uno Stile Misto!}
+\begin{enumerate}
+	\item \textbf{Crea uno "schizzo" (\texttt{sketch})}: Identifica le entità più rilevanti.
+	\item \textbf{Decomponi lo schema}: Dividi il problema se complesso.
+	\item \textbf{Raffina (top-down), integra (bottom-up), espandi (inside-out)}.
+\end{enumerate}
+
+\subsection{Sketching dello Schema E-R}
+\begin{itemize}
+	\item Parti dalle entità più rilevanti (più citate o esplicitamente indicate come tali).
+	\item Crea un primo schema E-R di base.
+\end{itemize}
+
+\subsection{Metodologia "Best Practice"}
+\begin{enumerate}
+	\item \textbf{Analisi dei Requisiti}:
+	\begin{itemize}
+		\item Analizza, risolvi ambiguità.
+		\item Crea un glossario.
+		\item Raggruppa requisiti simili.
+	\end{itemize}
+	\item \textbf{Caso Base (\texttt{Base case})}:
+	\begin{itemize}
+		\item Definisci uno schema "abbozzato" con i concetti più rilevanti.
+	\end{itemize}
+	\item \textbf{Caso Iterativo (\texttt{Iterative case})} (ripeti finché non va bene):
+	\begin{itemize}
+		\item Raffina i concetti base usando i requisiti.
+		\item Aggiungi concetti per descrivere requisiti non ancora coperti.
+	\end{itemize}
+	\item \textbf{Analisi di Qualità (\texttt{Quality analysis})} (ripeti durante tutto il processo):
+	\begin{itemize}
+		\item Controlla la qualità dello schema e modificalo.
+	\end{itemize}
+\end{enumerate}
+
+\section{Qualità dello Schema E-R}
+Misure di qualità per uno schema E-R:
+\begin{itemize}
+	\item \textbf{Correttezza (\texttt{Correctness})}: Lo schema rappresenta accuratamente i requisiti? Usa i costrutti E-R in modo appropriato?
+	\item \textbf{Completezza (\texttt{Completeness})}: Tutti i requisiti sono stati rappresentati nello schema? Tutti i dati necessari sono modellati?
+	\item \textbf{Chiarezza (\texttt{Clarity})}: Lo schema è facile da capire? È ambiguo?
+	\item \textbf{Minimalità (\texttt{Minimality})}: Ci sono elementi ridondanti (entità, attributi, relazioni non necessarie)? Si potrebbe rappresentare la stessa informazione in modo più semplice?
+\end{itemize}
+
+\section{Best Practice e Integrazione di Schemi}
+Per sistemi complessi, si può decomporre il problema:
+
+\subsection{Approccio 1}
+\begin{enumerate}
+	\item Analisi dei Requisiti.
+	\item Caso Base (schema "scheletro" generale).
+	\item \textbf{Decomposizione}: Suddividi i requisiti complessi secondo lo schema scheletro.
+	\item Caso Iterativo per ogni \textbf{sotto-schema}.
+	\item \textbf{Integrazione}: Unisci i sotto-schemi in uno schema totale, usando lo schema scheletro come riferimento.
+	\item Analisi di Qualità.
+\end{enumerate}
+
+\subsection{Approccio 2}
+\begin{enumerate}
+	\item Analisi dei Requisiti.
+	\item \textbf{Decomposizione}: Identifica aree di interesse e partiziona i requisiti (o acquisiscili separatamente per area).
+	\item \textbf{Per ogni area}:
+	\begin{itemize}
+		\item Caso Base.
+		\item Caso Iterativo.
+	\end{itemize}
+	\item \textbf{Integrazione}: Unisci gli schemi delle varie aree.
+	\item Analisi di Qualità.
+\end{enumerate}
+
+\section{Esempio Finale: Azienda di Formazione}
+Questo è un'applicazione pratica della metodologia all'esempio dell'azienda di formazione.
+
+\subsection{Affermazione Generale}
+"Azienda di formazione richiede DB per corsi, lezioni, insegnanti."
+
+\subsection{Schema Abbozzato (\texttt{Sketched Schema})}
+\begin{itemize}
+	\item Entità: \texttt{Participant}, \texttt{Lecture} (Lezione/Corso), \texttt{Lecturer} (Docente).
+	\item Relazioni: \texttt{Presence} (Participant - Lecture), \texttt{Teaching} (Lecturer - Lecture).
+\end{itemize}
+
+\subsection{Raffinamento: Partecipanti e Datori di Lavoro}
+\begin{itemize}
+	\item Requisiti: ID, CF, dati anagrafici, datori di lavoro (passati/presenti), corsi frequentati. Freelance vs. Dipendenti.
+	\item \textbf{Schema Parziale (1)} (basato sulla slide 70):
+	\begin{itemize}
+		\item Entità \texttt{Participant} con attributi (\texttt{Tax}, \texttt{Code}, ...).
+		\item Generalizzazione: \texttt{Participant} è generalizzazione di \texttt{Employee} (con attributi \texttt{Level}, \texttt{Position}) e \texttt{Freelance} (con \texttt{Title}, \texttt{Area}).
+		\item Entità \texttt{Employer} (Datore di lavoro) con attributi (\texttt{Name}, ...).
+		\item Relazioni: \texttt{CurrEmpl} (tra \texttt{Participant} e \texttt{Employer} per impiego attuale, \texttt{1-a-N}), \texttt{PastEmpl} (tra \texttt{Participant} e \texttt{Employer} per impieghi passati, \texttt{N-a-N}, reificata).
+	\end{itemize}
+\end{itemize}
+
+\subsection{Raffinamento: Corsi}
+\begin{itemize}
+	\item Requisiti: Corsi ($\sim$200) con codice, titolo, edizioni (con data inizio/fine, n° partecipanti), lezioni (giorno, aula, orario).
+	\item \textbf{Schema Parziale (2)} (basato sulla slide 72):
+	\begin{itemize}
+		\item Pattern "Instance-of": \texttt{Lecture} (Corso generico) e \texttt{Edition} (Edizione specifica del corso).
 		\begin{itemize}
-			\item Pattern "Instance-of": \texttt{Lecture} (Corso generico) e \texttt{Edition} (Edizione specifica del corso).
-			\begin{itemize}
-				\item \texttt{Lecture} (Attributi: \texttt{Title}, \texttt{Code}).
-				\item \texttt{Edition} (Attributi: \texttt{Start}, \texttt{End}, \texttt{\#Part.} - numero partecipanti).
-				\item Relazione \texttt{KindOf} (\texttt{1,1}) tra \texttt{Edition} e \texttt{Lecture} (un'edizione è di un solo tipo di corso).
-			\end{itemize}
-			\item Pattern "Part-of": \texttt{Edition} è composta da \texttt{Lesson} (singola lezione).
-			\begin{itemize}
-				\item \texttt{Lesson} (Attributi: \texttt{Time}, \texttt{Room}, \texttt{Day}).
-				\item Relazione \texttt{MadeOf} (\texttt{1,N}) tra \texttt{Edition} e \texttt{Lesson}.
-			\end{itemize}
+			\item \texttt{Lecture} (Attributi: \texttt{Title}, \texttt{Code}).
+			\item \texttt{Edition} (Attributi: \texttt{Start}, \texttt{End}, \texttt{\#Part.} - numero partecipanti).
+			\item Relazione \texttt{KindOf} (\texttt{1,1}) tra \texttt{Edition} e \texttt{Lecture} (un'edizione è di un solo tipo di corso).
+		\end{itemize}
+		\item Pattern "Part-of": \texttt{Edition} è composta da \texttt{Lesson} (singola lezione).
+		\begin{itemize}
+			\item \texttt{Lesson} (Attributi: \texttt{Time}, \texttt{Room}, \texttt{Day}).
+			\item Relazione \texttt{MadeOf} (\texttt{1,N}) tra \texttt{Edition} e \texttt{Lesson}.
 		\end{itemize}
 	\end{itemize}
-	
-	\subsection{Raffinamento: Docenti}
+\end{itemize}
+
+\subsection{Raffinamento: Docenti}
+\begin{itemize}
+	\item Requisiti: Docenti ($\sim$300) con dati anagrafici, corsi insegnati (passati/futuri), storico telefonate. Dipendenti interni vs. Esterni.
+	\item \textbf{Schema Parziale (3)} (basato sulla slide 74):
 	\begin{itemize}
-		\item Requisiti: Docenti ($\sim$300) con dati anagrafici, corsi insegnati (passati/futuri), storico telefonate. Dipendenti interni vs. Esterni.
-		\item \textbf{Schema Parziale (3)} (basato sulla slide 74):
-		\begin{itemize}
-			\item Entità \texttt{Lecturer} con attributi (\texttt{Tax}, \texttt{Surname}, \texttt{Age}, \texttt{Place of Birth}, \texttt{Phone} (multi-valore, \texttt{1,N})).
-			\item Generalizzazione: \texttt{Lecturer} è generalizzazione di \texttt{Independent} (esterno) e \texttt{Home} (interno).
-		\end{itemize}
+		\item Entità \texttt{Lecturer} con attributi (\texttt{Tax}, \texttt{Surname}, \texttt{Age}, \texttt{Place of Birth}, \texttt{Phone} (multi-valore, \texttt{1,N})).
+		\item Generalizzazione: \texttt{Lecturer} è generalizzazione di \texttt{Independent} (esterno) e \texttt{Home} (interno).
 	\end{itemize}
-	
-	\subsection{Integrazione dello Schema}
-	Si parte dallo schema abbozzato e si integrano i raffinamenti.
+\end{itemize}
+
+\subsection{Integrazione dello Schema}
+Si parte dallo schema abbozzato e si integrano i raffinamenti.
+\begin{itemize}
+	\item \textbf{Schema Intermedio (1)} (basato sulla slide 76): Integrazione di \texttt{Participant} e \texttt{Lecture}.
 	\begin{itemize}
-		\item \textbf{Schema Intermedio (1)} (basato sulla slide 76): Integrazione di \texttt{Participant} e \texttt{Lecture}.
-		\begin{itemize}
-			\item Relazioni \texttt{PastPresence} (\texttt{0,N})-(\texttt{0,N}) e \texttt{CurrentPresence} (\texttt{0,1})-(\texttt{0,N}) tra \texttt{Participant} e \texttt{Lecture}. (Questo modella la frequenza ai corsi/lezioni).
-		\end{itemize}
-		\item \textbf{Schema Intermedio (2)} (basato sulla slide 77): Integrazione di \texttt{Lecturer}, \texttt{Lecture}, \texttt{Edition}.
-		\begin{itemize}
-			\item Relazioni \texttt{Past} (\texttt{0,1})-(\texttt{0,N}) e \texttt{Current} (\texttt{0,1})-(\texttt{0,N}) tra \texttt{Edition} e \texttt{Lecturer} (per insegnamento).
-			\item Relazione \texttt{Duty} (\texttt{1,N})-(\texttt{0,N}) tra \texttt{Lecturer} e \texttt{Lecture} (per indicare i corsi che un docente \textit{può} insegnare o \textit{ha insegnato} in generale, separato dalle specifiche edizioni).
-		\end{itemize}
+		\item Relazioni \texttt{PastPresence} (\texttt{0,N})-(\texttt{0,N}) e \texttt{CurrentPresence} (\texttt{0,1})-(\texttt{0,N}) tra \texttt{Participant} e \texttt{Lecture}. (Questo modella la frequenza ai corsi/lezioni).
 	\end{itemize}
-	
-	\subsection{Schema Finale (Solo Entità e Relazioni)}
-	La slide 78 mostra la struttura complessiva integrando tutti i pezzi, omettendo gli attributi per chiarezza.
-	Si vedono chiaramente:
+	\item \textbf{Schema Intermedio (2)} (basato sulla slide 77): Integrazione di \texttt{Lecturer}, \texttt{Lecture}, \texttt{Edition}.
 	\begin{itemize}
-		\item \texttt{Participant} generalizzato in \texttt{Employee} e \texttt{Freelance}.
-		\item \texttt{Employee} collegato a \texttt{Employer}.
-		\item \texttt{Lecturer} generalizzato in \texttt{Independ.} e \texttt{Home}.
-		\item Il nucleo \texttt{Lecture} $\rightarrow$ \texttt{Edition} $\rightarrow$ \texttt{Lesson}.
-		\item Le relazioni che collegano \texttt{Participant} a \texttt{Lecture}/\texttt{Edition} (frequenza).
-		\item Le relazioni che collegano \texttt{Lecturer} a \texttt{Lecture}/\texttt{Edition} (insegnamento).
+		\item Relazioni \texttt{Past} (\texttt{0,1})-(\texttt{0,N}) e \texttt{Current} (\texttt{0,1})-(\texttt{0,N}) tra \texttt{Edition} e \texttt{Lecturer} (per insegnamento).
+		\item Relazione \texttt{Duty} (\texttt{1,N})-(\texttt{0,N}) tra \texttt{Lecturer} e \texttt{Lecture} (per indicare i corsi che un docente \textit{può} insegnare o \textit{ha insegnato} in generale, separato dalle specifiche edizioni).
 	\end{itemize}
-	Questo processo iterativo di sketching, raffinamento e integrazione, guidato dai requisiti e supportato da un glossario e da pattern di progettazione, porta a uno schema concettuale robusto.
-	
-\end{document}
+\end{itemize}
+
+\subsection{Schema Finale (Solo Entità e Relazioni)}
+La slide 78 mostra la struttura complessiva integrando tutti i pezzi, omettendo gli attributi per chiarezza.
+Si vedono chiaramente:
+\begin{itemize}
+	\item \texttt{Participant} generalizzato in \texttt{Employee} e \texttt{Freelance}.
+	\item \texttt{Employee} collegato a \texttt{Employer}.
+	\item \texttt{Lecturer} generalizzato in \texttt{Independ.} e \texttt{Home}.
+	\item Il nucleo \texttt{Lecture} $\rightarrow$ \texttt{Edition} $\rightarrow$ \texttt{Lesson}.
+	\item Le relazioni che collegano \texttt{Participant} a \texttt{Lecture}/\texttt{Edition} (frequenza).
+	\item Le relazioni che collegano \texttt{Lecturer} a \texttt{Lecture}/\texttt{Edition} (insegnamento).
+\end{itemize}
+Questo processo iterativo di sketching, raffinamento e integrazione, guidato dai requisiti e supportato da un glossario e da pattern di progettazione, porta a uno schema concettuale robusto.
+

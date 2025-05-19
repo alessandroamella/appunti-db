@@ -1,29 +1,3 @@
-\input{preambolo_comune.tex}
-
-% --- Hyperlink ---
-\usepackage{hyperref}
-\hypersetup{
-	colorlinks=true,
-	linkcolor=white,
-	filecolor=magenta,
-	urlcolor=cyan,
-	pdftitle={Architettura, Transazioni, Concorrenza e Ripristino nei DBMS Relazionali},
-	pdfauthor={Alessandro Amella},
-	pdfpagemode=FullScreen,
-}
-
-% --- Titolo ---
-\title{Architettura, Transazioni, Concorrenza e Ripristino nei DBMS Relazionali\\
-  \large Appunti basati sulle dispense del Dott. Magistrale Flavio Bertini}
-\author{Alessandro Amella, Gemini e Claude}
-\date{\today}
-
-\begin{document}
-
-\maketitle
-\tableofcontents
-\newpage
-
 \section{Architettura di un DBMS}
 
 \subsection{Cos'è un DataBase Management System (DBMS)?}
@@ -133,9 +107,7 @@ SELECT A, B FROM R1, R2 WHERE C = D AND C = 'c';
         \item Restituisce il risultato finale.
     \end{itemize}
 \end{enumerate}
-Durante tutte le operazioni di modifica, il Transaction Manager è coinvolto per il logging e il controllo della concorrenza.
-
-\section{Transazioni e Controllo della Concorrenza}
+Durante tutte le operazioni di modifica, il Transaction Manager è coinvolto per il logging e il controllo della concorrenza.\section{Transazioni e Controllo della Concorrenza}
 
 \subsection{Transazioni}
 Le operazioni su un database raramente coinvolgono una singola istruzione SQL. Spesso, una singola "azione logica" richiede una serie di query.
@@ -205,18 +177,22 @@ SQL definisce diversi livelli di isolamento, che offrono un compromesso tra corr
     \item \textbf{SERIALIZABLE:} Previene Dirty Reads, Unrepeatable Reads, Phantoms. Massima consistenza.
 \end{itemize}
 
-\textbf{Tabella Riepilogativa (da slide 26):}
+\textbf{Tabella Riepilogativa:}
 \begin{center}
 \begin{tabular}{|l|c|c|c|c|}
 \hline
-\textbf{Level} & \textbf{Dirty read (Write-Read)} & \textbf{Lost update (Read-Write)} & \textbf{Unrepeatable read (Write-Write)} & \textbf{Phantom} \\ \hline
-READ UNCOMMITTED   & may occur & may occur         & may occur               & may occur \\ \hline
-READ COMMITTED     & don't occur& may occur         & may occur               & may occur \\ \hline
-REPEATABLE READS   & don't occur& don't occur       & don't occur             & may occur \\ \hline
-SERIALIZABLE       & don't occur& don't occur       & don't occur             & don't occur \\ \hline
+\textbf{Livello} & \textbf{Dirty read} & \textbf{Lost update} & \textbf{Unrepeatable read} & \textbf{Phantom} \\ 
+\hline
+READ UNCOMMITTED & può verificarsi & può verificarsi & può verificarsi & può verificarsi \\ 
+\hline
+READ COMMITTED & non si verifica & può verificarsi & può verificarsi & può verificarsi \\ 
+\hline
+REPEATABLE READS & non si verifica & non si verifica & non si verifica & può verificarsi \\ 
+\hline
+SERIALIZABLE & non si verifica & non si verifica & non si verifica & non si verifica \\ 
+\hline
 \end{tabular}
 \end{center}
-\textit{Nota: Le definizioni dei conflitti tra parentesi nella tabella sopra sono riportate come dalle slide. Potrebbero esserci delle interpretazioni diverse della terminologia standard dei conflitti "Lost Update" e "Unrepeatable Read" rispetto ai tipi di interazione Read/Write indicati.}
 
 \subsection{Approcci al Controllo della Concorrenza}
 \begin{itemize}
@@ -273,4 +249,3 @@ Il Logging and Recovery Manager deve assicurare Atomicità e Durabilità.
     \end{enumerate}
 \end{itemize}
 
-\end{document}

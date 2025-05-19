@@ -1,212 +1,186 @@
-\input{preambolo_comune.tex}
+\section{Introduzione ai Linguaggi per Database}
 
-% --- Hyperlink ---
-\usepackage{hyperref}
-\hypersetup{
-	colorlinks=true,
-	linkcolor=white,
-	filecolor=magenta,
-	urlcolor=cyan,
-	pdftitle={Algebra Relazionale e Calcolo Relazionale},
-	pdfauthor={Alessandro Amella},
-	pdfpagemode=FullScreen,
-}
+I linguaggi per database si dividono principalmente in due categorie:
+\begin{itemize}
+	\item \textbf{DDL (Data Definition Language):} Utilizzato per definire e modificare lo schema del database (es. creare tabelle, definire attributi e tipi).
+	\item \textbf{DML (Data Manipulation Language):} Utilizzato per operare sui dati. Si suddivide ulteriormente in:
+	\begin{itemize}
+		\item \textbf{Istruzioni di Query:} Per estrarre dati di interesse.
+		\item \textbf{Istruzioni di Aggiornamento:} Per inserire nuovi dati o modificare quelli esistenti.
+	\end{itemize}
+\end{itemize}
 
-% --- Titolo ---
-\title{Algebra Relazionale e Calcolo Relazionale\\
-  \large Appunti basati sulle dispense del Prof. Danilo Montesi}
-\author{Alessandro Amella, Gemini e Claude}
-\date{\today}
+I linguaggi di query possono essere:
+\begin{itemize}
+	\item \textbf{Dichiarativi:} Specificano \textbf{cosa} si vuole ottenere, le proprietà del risultato. L'utente non si preoccupa di come il database recupererà i dati. SQL è prevalentemente dichiarativo.
+	\item \textbf{Imperativi/Procedurali:} Specificano \textbf{come} il risultato deve essere ottenuto, descrivendo una sequenza di operazioni.
+\end{itemize}
 
-\begin{document}
-	
-	\maketitle
-	\tableofcontents
-	\newpage
-	
-	\section{Introduzione ai Linguaggi per Database}
-	
-	I linguaggi per database si dividono principalmente in due categorie:
-	\begin{itemize}
-		\item \textbf{DDL (Data Definition Language):} Utilizzato per definire e modificare lo schema del database (es. creare tabelle, definire attributi e tipi).
-		\item \textbf{DML (Data Manipulation Language):} Utilizzato per operare sui dati. Si suddivide ulteriormente in:
-		\begin{itemize}
-			\item \textbf{Istruzioni di Query:} Per estrarre dati di interesse.
-			\item \textbf{Istruzioni di Aggiornamento:} Per inserire nuovi dati o modificare quelli esistenti.
-		\end{itemize}
-	\end{itemize}
-	
-	I linguaggi di query possono essere:
-	\begin{itemize}
-		\item \textbf{Dichiarativi:} Specificano \textbf{cosa} si vuole ottenere, le proprietà del risultato. L'utente non si preoccupa di come il database recupererà i dati. SQL è prevalentemente dichiarativo.
-		\item \textbf{Imperativi/Procedurali:} Specificano \textbf{come} il risultato deve essere ottenuto, descrivendo una sequenza di operazioni.
-	\end{itemize}
-	
-	Panoramica dei linguaggi trattati:
-	\begin{itemize}
-		\item \textbf{Algebra Relazionale:} Procedurale (fondamento teorico).
-		\item \textbf{Calcolo Relazionale:} Dichiarativo (fondamento teorico).
-		\item \textbf{SQL (Structured Query Language):} Parzialmente dichiarativo (ampiamente implementato).
-		\item \textbf{QBE (Query by Example):} Dichiarativo (implementato in alcuni sistemi).
-	\end{itemize}
-	
-	\section{Algebra Relazionale}
-	
-	L'algebra relazionale è un linguaggio di query formale, procedurale, che definisce un insieme di operatori che agiscono su relazioni (tabelle) per produrre nuove relazioni come risultato. Gli operatori possono essere composti.
-	
-	\subsection{Operatori dell'Algebra Relazionale}
-	\begin{itemize}
-		\item Operatori insiemistici: \textbf{Unione ($\myunion$)}, \textbf{Intersezione ($\myintersection$)}, \textbf{Differenza ($\mydifference$)}.
-		\item \textbf{Ridenominazione ($\myrename{}$)}.
-		\item \textbf{Selezione ($\myselectop{}{}$)}.
-		\item \textbf{Proiezione ($\myproject{}{}$)}.
-		\item \textbf{Join ($\mynaturaljoin$)}: natural join, prodotto cartesiano ($\mycartesian$), theta-join ($\bowtie_{\theta}$).
-	\end{itemize}
-	
-	\subsection{Operatori Insiemistici}
-	Le relazioni sono insiemi di tuple. Questi operatori funzionano come le loro controparti nella teoria degli insiemi, ma richiedono che le relazioni coinvolte abbiano lo \textbf{stesso schema} (stessi nomi di attributi, nello stesso ordine e con tipi compatibili).
-	\begin{itemize}
-		\item \textbf{Unione ($\Rel{R1} \myunion \Rel{R2}$):} Restituisce una relazione contenente tutte le tuple che sono in $\Rel{R1}$, in $\Rel{R2}$, o in entrambe. Le tuple duplicate vengono eliminate.
-		\item \textbf{Intersezione ($\Rel{R1} \myintersection \Rel{R2}$):} Restituisce una relazione contenente solo le tuple che sono presenti sia in $\Rel{R1}$ sia in $\Rel{R2}$.
-		\item \textbf{Differenza ($\Rel{R1} \mydifference \Rel{R2}$):} Restituisce una relazione contenente le tuple che sono in $\Rel{R1}$ ma non in $\Rel{R2}$.
-	\end{itemize}
-	\textbf{Esempio pratico:} Se hai due tabelle, $\Rel{StudentiMagistrale}$ e $\Rel{StudentiDottorato}$, entrambe con colonne $\Attr{IDStudente}$ e $\Attr{Nome}$, puoi fare l'unione per ottenere una lista unica di tutti gli studenti post-laurea. Se le colonne avessero nomi diversi (es. $\Attr{Matricola}$ vs $\Attr{IDStudente}$), dovresti prima usare l'operatore di ridenominazione.
-	
-	\subsection{Ridenominazione ($\myrename{nuovo \leftarrow vecchio}{R}$)}
-	Operatore unario che cambia i nomi degli attributi o della relazione stessa, senza alterare i dati.
-	\begin{itemize}
-		\item $\myrename{\Attr{NuovoNomeAttr} \leftarrow \Attr{VecchioNomeAttr}}{(\Rel{R})}$: Rinomina l'attributo $\Attr{VecchioNomeAttr}$ in $\Attr{NuovoNomeAttr}$ nella relazione $\Rel{R}$.
-		\item $\myrename{\Rel{NuovoNomeRel}}{(\Rel{R})}$: Rinomina la relazione $\Rel{R}$ in $\Rel{NuovoNomeRel}$.
-		\item $\myrename{\Rel{NuovoNomeRel}(\Attr{A1}, \Attr{A2}, \dots)}{(\Rel{R})}$: Rinomina la relazione e i suoi attributi.
-	\end{itemize}
-	\textbf{Esempio pratico:} Se hai una tabella $\Rel{Impiegati}$ con una colonna $\Attr{stip}$ e vuoi renderla più chiara come $\Attr{StipendioAnnuale}$, useresti $\myrename{\Attr{StipendioAnnuale} \leftarrow \Attr{stip}}{(\Rel{Impiegati})}$.
-	
-	\subsection{Selezione ($\myselectop{predicato}{R}$)}
-	Operatore unario che restituisce un sottoinsieme delle tuple di una relazione $\Rel{R}$ che soddisfano un dato \textit{predicato} (condizione).
-	Lo schema del risultato è identico a quello di $\Rel{R}$.
-	\textbf{Esempio pratico (SQL):}
-	$\myselectop{\Attr{Eta} > 30 \mylandop \Attr{Dipartimento} = \text{'IT'}}{(\Rel{Impiegati})}$
-	è equivalente a:
-	\begin{minted}{sql}
+Panoramica dei linguaggi trattati:
+\begin{itemize}
+	\item \textbf{Algebra Relazionale:} Procedurale (fondamento teorico).
+	\item \textbf{Calcolo Relazionale:} Dichiarativo (fondamento teorico).
+	\item \textbf{SQL (Structured Query Language):} Parzialmente dichiarativo (ampiamente implementato).
+	\item \textbf{QBE (Query by Example):} Dichiarativo (implementato in alcuni sistemi).
+\end{itemize}
+
+\section{Algebra Relazionale}
+
+L'algebra relazionale è un linguaggio di query formale, procedurale, che definisce un insieme di operatori che agiscono su relazioni (tabelle) per produrre nuove relazioni come risultato. Gli operatori possono essere composti.
+
+\subsection{Operatori dell'Algebra Relazionale}
+\begin{itemize}
+	\item Operatori insiemistici: \textbf{Unione ($\myunion$)}, \textbf{Intersezione ($\myintersection$)}, \textbf{Differenza ($\mydifference$)}.
+	\item \textbf{Ridenominazione ($\myrename{}$)}.
+	\item \textbf{Selezione ($\myselectop{}{}$)}.
+	\item \textbf{Proiezione ($\myproject{}{}$)}.
+	\item \textbf{Join ($\mynaturaljoin$)}: natural join, prodotto cartesiano ($\mycartesian$), theta-join ($\bowtie_{\theta}$).
+\end{itemize}
+
+\subsection{Operatori Insiemistici}
+Le relazioni sono insiemi di tuple. Questi operatori funzionano come le loro controparti nella teoria degli insiemi, ma richiedono che le relazioni coinvolte abbiano lo \textbf{stesso schema} (stessi nomi di attributi, nello stesso ordine e con tipi compatibili).
+\begin{itemize}
+	\item \textbf{Unione ($\Rel{R1} \myunion \Rel{R2}$):} Restituisce una relazione contenente tutte le tuple che sono in $\Rel{R1}$, in $\Rel{R2}$, o in entrambe. Le tuple duplicate vengono eliminate.
+	\item \textbf{Intersezione ($\Rel{R1} \myintersection \Rel{R2}$):} Restituisce una relazione contenente solo le tuple che sono presenti sia in $\Rel{R1}$ sia in $\Rel{R2}$.
+	\item \textbf{Differenza ($\Rel{R1} \mydifference \Rel{R2}$):} Restituisce una relazione contenente le tuple che sono in $\Rel{R1}$ ma non in $\Rel{R2}$.
+\end{itemize}
+\textbf{Esempio pratico:} Se hai due tabelle, $\Rel{StudentiMagistrale}$ e $\Rel{StudentiDottorato}$, entrambe con colonne $\Attr{IDStudente}$ e $\Attr{Nome}$, puoi fare l'unione per ottenere una lista unica di tutti gli studenti post-laurea. Se le colonne avessero nomi diversi (es. $\Attr{Matricola}$ vs $\Attr{IDStudente}$), dovresti prima usare l'operatore di ridenominazione.
+
+\subsection{Ridenominazione ($\myrename{nuovo \leftarrow vecchio}{R}$)}
+Operatore unario che cambia i nomi degli attributi o della relazione stessa, senza alterare i dati.
+\begin{itemize}
+	\item $\myrename{\Attr{NuovoNomeAttr} \leftarrow \Attr{VecchioNomeAttr}}{(\Rel{R})}$: Rinomina l'attributo $\Attr{VecchioNomeAttr}$ in $\Attr{NuovoNomeAttr}$ nella relazione $\Rel{R}$.
+	\item $\myrename{\Rel{NuovoNomeRel}}{(\Rel{R})}$: Rinomina la relazione $\Rel{R}$ in $\Rel{NuovoNomeRel}$.
+	\item $\myrename{\Rel{NuovoNomeRel}(\Attr{A1}, \Attr{A2}, \dots)}{(\Rel{R})}$: Rinomina la relazione e i suoi attributi.
+\end{itemize}
+\textbf{Esempio pratico:} Se hai una tabella $\Rel{Impiegati}$ con una colonna $\Attr{stip}$ e vuoi renderla più chiara come $\Attr{StipendioAnnuale}$, useresti $\myrename{\Attr{StipendioAnnuale} \leftarrow \Attr{stip}}{(\Rel{Impiegati})}$.
+
+\subsection{Selezione ($\myselectop{predicato}{R}$)}
+Operatore unario che restituisce un sottoinsieme delle tuple di una relazione $\Rel{R}$ che soddisfano un dato \textit{predicato} (condizione).
+Lo schema del risultato è identico a quello di $\Rel{R}$.
+\textbf{Esempio pratico (SQL):}
+$\myselectop{\Attr{Eta} > 30 \mylandop \Attr{Dipartimento} = \text{'IT'}}{(\Rel{Impiegati})}$
+è equivalente a:
+\begin{minted}{sql}
 SELECT *
 FROM Impiegati
 WHERE Eta > 30 AND Dipartimento = 'IT';
-	\end{minted}
-	
-	\subsection{Proiezione ($\myproject{lista\_attributi}{R}$)}
-	Operatore unario che restituisce una nuova relazione contenente solo gli attributi specificati nella \textit{lista\_attributi} dalla relazione $\Rel{R}$.
-	Le tuple duplicate nel risultato vengono eliminate (poiché le relazioni sono insiemi).
-	\textbf{Esempio pratico (SQL):}
-	$\myproject{\Attr{Nome}, \Attr{Cognome}}{(\Rel{Impiegati})}$
-	è equivalente a:
-	\begin{minted}{sql}
+\end{minted}
+
+\subsection{Proiezione ($\myproject{lista\_attributi}{R}$)}
+Operatore unario che restituisce una nuova relazione contenente solo gli attributi specificati nella \textit{lista\_attributi} dalla relazione $\Rel{R}$.
+Le tuple duplicate nel risultato vengono eliminate (poiché le relazioni sono insiemi).
+\textbf{Esempio pratico (SQL):}
+$\myproject{\Attr{Nome}, \Attr{Cognome}}{(\Rel{Impiegati})}$
+è equivalente a:
+\begin{minted}{sql}
 SELECT DISTINCT Nome, Cognome
 FROM Impiegati;
-	\end{minted}
-	Nota l'uso di `DISTINCT` in SQL per replicare il comportamento insiemistico della proiezione.
-	
-	\subsection{Combinazione di Selezione e Proiezione}
-	Questi operatori sono spesso usati insieme per estrarre dati specifici.
-	\textbf{Esempio pratico (SQL):} Trovare nome e cognome degli impiegati nel dipartimento 'Vendite' con stipendio superiore a 50000.
-	Algebra: $\myproject{\Attr{Nome}, \Attr{Cognome}}{(\myselectop{\Attr{Dipartimento} = \text{'Vendite'} \mylandop \Attr{Stipendio} > 50000}{(\Rel{Impiegati})})}$
-	SQL:
-	\begin{minted}{sql}
+\end{minted}
+Nota l'uso di `DISTINCT` in SQL per replicare il comportamento insiemistico della proiezione.
+
+\subsection{Combinazione di Selezione e Proiezione}
+Questi operatori sono spesso usati insieme per estrarre dati specifici.
+\textbf{Esempio pratico (SQL):} Trovare nome e cognome degli impiegati nel dipartimento 'Vendite' con stipendio superiore a 50000.
+Algebra: $\myproject{\Attr{Nome}, \Attr{Cognome}}{(\myselectop{\Attr{Dipartimento} = \text{'Vendite'} \mylandop \Attr{Stipendio} > 50000}{(\Rel{Impiegati})})}$
+SQL:
+\begin{minted}{sql}
 SELECT DISTINCT Nome, Cognome
 FROM Impiegati
 WHERE Dipartimento = 'Vendite' AND Stipendio > 50000;
-	\end{minted}
+\end{minted}
+
+\subsection{Join}
+Il join è un operatore fondamentale per combinare informazioni da due o più relazioni.
+\begin{itemize}
+	\item \textbf{Prodotto Cartesiano ($\Rel{R1} \mycartesian \Rel{R2}$):}
+	Combina ogni tupla di $\Rel{R1}$ con ogni tupla di $\Rel{R2}$. Il numero di tuple risultanti è $|\Rel{R1}| \times |\Rel{R2}|$. Lo schema è la concatenazione degli schemi di $\Rel{R1}$ e $\Rel{R2}$.
+	In SQL, è spesso scritto come `FROM R1, R2` (sintassi più vecchia) o `FROM R1 CROSS JOIN R2`. Di solito è seguito da una selezione per filtrare le combinazioni significative.
 	
-	\subsection{Join}
-	Il join è un operatore fondamentale per combinare informazioni da due o più relazioni.
-	\begin{itemize}
-		\item \textbf{Prodotto Cartesiano ($\Rel{R1} \mycartesian \Rel{R2}$):}
-		Combina ogni tupla di $\Rel{R1}$ con ogni tupla di $\Rel{R2}$. Il numero di tuple risultanti è $|\Rel{R1}| \times |\Rel{R2}|$. Lo schema è la concatenazione degli schemi di $\Rel{R1}$ e $\Rel{R2}$.
-		In SQL, è spesso scritto come `FROM R1, R2` (sintassi più vecchia) o `FROM R1 CROSS JOIN R2`. Di solito è seguito da una selezione per filtrare le combinazioni significative.
-		
-		\item \textbf{Theta-Join ($\mythetajoin{\Rel{R1}}{condizione}{\Rel{R2}}$):}
-		È un prodotto cartesiano seguito da una selezione. La \textit{condizione} è un predicato che coinvolge attributi di $\Rel{R1}$ e $\Rel{R2}$.
-		Sintassi formale: $\myselectop{condizione}{(\Rel{R1} \mycartesian \Rel{R2})}$.
-		\textbf{Esempio pratico (SQL):}
-		$\mythetajoin{\Rel{Impiegati}}{\Attr{Impiegati.IDDip} = \Attr{Dipartimenti.ID}}{\Rel{Dipartimenti}}$
-		è equivalente a:
-		\begin{minted}{sql}
+	\item \textbf{Theta-Join ($\mythetajoin{\Rel{R1}}{condizione}{\Rel{R2}}$):}
+	È un prodotto cartesiano seguito da una selezione. La \textit{condizione} è un predicato che coinvolge attributi di $\Rel{R1}$ e $\Rel{R2}$.
+	Sintassi formale: $\myselectop{condizione}{(\Rel{R1} \mycartesian \Rel{R2})}$.
+	\textbf{Esempio pratico (SQL):}
+	$\mythetajoin{\Rel{Impiegati}}{\Attr{Impiegati.IDDip} = \Attr{Dipartimenti.ID}}{\Rel{Dipartimenti}}$
+	è equivalente a:
+	\begin{minted}{sql}
 SELECT *
 FROM Impiegati, Dipartimenti -- o Impiegati JOIN Dipartimenti
 WHERE Impiegati.IDDip = Dipartimenti.ID;
-		\end{minted}
-		
-		\item \textbf{Equi-Join:} Un Theta-Join in cui la condizione contiene solo confronti di uguaglianza ($=$). L'esempio precedente è un equi-join.
-		
-		\item \textbf{Natural Join ($\Rel{R1} \mynaturaljoin \Rel{R2}$):}
-		Un tipo speciale di equi-join. Le relazioni vengono combinate basandosi sull'uguaglianza dei valori degli attributi che hanno lo \textbf{stesso nome} in entrambe le relazioni. Gli attributi comuni appaiono una sola volta nel risultato.
-		\textbf{Esempio pratico (SQL):} Se $\Rel{Impiegati}$ e $\Rel{Assegnazioni}$ hanno entrambe una colonna $\Attr{IDProgetto}$.
-		$\Rel{Impiegati} \mynaturaljoin \Rel{Assegnazioni}$
-		è equivalente a:
-		\begin{minted}{sql}
+	\end{minted}
+	
+	\item \textbf{Equi-Join:} Un Theta-Join in cui la condizione contiene solo confronti di uguaglianza ($=$). L'esempio precedente è un equi-join.
+	
+	\item \textbf{Natural Join ($\Rel{R1} \mynaturaljoin \Rel{R2}$):}
+	Un tipo speciale di equi-join. Le relazioni vengono combinate basandosi sull'uguaglianza dei valori degli attributi che hanno lo \textbf{stesso nome} in entrambe le relazioni. Gli attributi comuni appaiono una sola volta nel risultato.
+	\textbf{Esempio pratico (SQL):} Se $\Rel{Impiegati}$ e $\Rel{Assegnazioni}$ hanno entrambe una colonna $\Attr{IDProgetto}$.
+	$\Rel{Impiegati} \mynaturaljoin \Rel{Assegnazioni}$
+	è equivalente a:
+	\begin{minted}{sql}
 SELECT *
 FROM Impiegati NATURAL JOIN Assegnazioni;
-		\end{minted}
-		\textit{Attenzione:} Il Natural Join può essere pericoloso se ci sono attributi con lo stesso nome ma significato diverso, o se si aggiungono/rimuovono colonne. È spesso preferibile usare join espliciti con clausola `ON`.
-	\end{itemize}
-	
-	\subsection{Outer Join (Join Esterni)}
-	I join visti finora (inner join) scartano le tuple che non trovano una corrispondenza nell'altra relazione. Gli outer join includono queste tuple, riempiendo con `NULL` gli attributi mancanti.
-	\begin{itemize}
-		\item \textbf{Left Outer Join ($\Rel{R1} \myleftouterjoin \Rel{R2}$):} Mantiene tutte le tuple di $\Rel{R1}$. Se una tupla di $\Rel{R1}$ non ha corrispondenze in $\Rel{R2}$, viene inclusa nel risultato con valori `NULL` per gli attributi di $\Rel{R2}$.
-		SQL: `R1 LEFT OUTER JOIN R2 ON condizione`
-		\item \textbf{Right Outer Join ($\Rel{R1} \myrightouterjoin \Rel{R2}$):} Mantiene tutte le tuple di $\Rel{R2}$. Simmetrico al left outer join.
-		SQL: `R1 RIGHT OUTER JOIN R2 ON condizione`
-		\item \textbf{Full Outer Join ($\Rel{R1} \myfullouterjoin \Rel{R2}$):} Mantiene tutte le tuple di entrambe le relazioni. Se non c'è corrispondenza, i campi dell'altra relazione sono `NULL`.
-		SQL: `R1 FULL OUTER JOIN R2 ON condizione`
-	\end{itemize}
-	\textbf{Esempio pratico:} Trovare tutti gli impiegati e, se assegnati a un dipartimento, il nome del dipartimento. Se un impiegato non ha dipartimento, vogliamo comunque vederlo.
-	$\Rel{Impiegati} \myleftouterjoin \Rel{Dipartimenti}$ (assumendo un join su $\Attr{IDDip}$)
-	SQL:
-	\begin{minted}{sql}
+	\end{minted}
+	\textit{Attenzione:} Il Natural Join può essere pericoloso se ci sono attributi con lo stesso nome ma significato diverso, o se si aggiungono/rimuovono colonne. È spesso preferibile usare join espliciti con clausola `ON`.
+\end{itemize}
+
+\subsection{Outer Join (Join Esterni)}
+I join visti finora (inner join) scartano le tuple che non trovano una corrispondenza nell'altra relazione. Gli outer join includono queste tuple, riempiendo con `NULL` gli attributi mancanti.
+\begin{itemize}
+	\item \textbf{Left Outer Join ($\Rel{R1} \myleftouterjoin \Rel{R2}$):} Mantiene tutte le tuple di $\Rel{R1}$. Se una tupla di $\Rel{R1}$ non ha corrispondenze in $\Rel{R2}$, viene inclusa nel risultato con valori `NULL` per gli attributi di $\Rel{R2}$.
+	SQL: `R1 LEFT OUTER JOIN R2 ON condizione`
+	\item \textbf{Right Outer Join ($\Rel{R1} \myrightouterjoin \Rel{R2}$):} Mantiene tutte le tuple di $\Rel{R2}$. Simmetrico al left outer join.
+	SQL: `R1 RIGHT OUTER JOIN R2 ON condizione`
+	\item \textbf{Full Outer Join ($\Rel{R1} \myfullouterjoin \Rel{R2}$):} Mantiene tutte le tuple di entrambe le relazioni. Se non c'è corrispondenza, i campi dell'altra relazione sono `NULL`.
+	SQL: `R1 FULL OUTER JOIN R2 ON condizione`
+\end{itemize}
+\textbf{Esempio pratico:} Trovare tutti gli impiegati e, se assegnati a un dipartimento, il nome del dipartimento. Se un impiegato non ha dipartimento, vogliamo comunque vederlo.
+$\Rel{Impiegati} \myleftouterjoin \Rel{Dipartimenti}$ (assumendo un join su $\Attr{IDDip}$)
+SQL:
+\begin{minted}{sql}
 SELECT Impiegati.Nome, Dipartimenti.NomeDip
 FROM Impiegati
 LEFT OUTER JOIN Dipartimenti ON Impiegati.IDDip = Dipartimenti.ID;
-	\end{minted}
-	
-	\subsection{Espressioni Equivalenti e Ottimizzazione}
-	Esistono diverse espressioni algebriche che producono lo stesso risultato. I DBMS (Database Management Systems) utilizzano regole di equivalenza per trasformare una query in una forma equivalente ma più efficiente da eseguire.
-	Ad esempio, "spingere" le selezioni il più presto possibile (`pushdown selection`) riduce la dimensione delle relazioni intermedie, velocizzando i join successivi.
-	\textbf{Esempio:}
-	$\myselectop{\Attr{Stipendio}>100K}{(\Rel{Impiegati} \mynaturaljoin \Rel{Dipartimenti})}$
-	potrebbe essere più efficiente se riscritta come:
-	$(\myselectop{\Attr{Stipendio}>100K}{\Rel{Impiegati}}) \mynaturaljoin \Rel{Dipartimenti}$
-	(se $\Attr{Stipendio}$ è solo in $\Rel{Impiegati}$). Il DBMS fa queste ottimizzazioni automaticamente.
-	
-	\subsection{Selezione con Valori NULL}
-	I valori `NULL` rappresentano l'assenza di un valore o un valore sconosciuto.
-	Nei predicati di selezione:
-	\begin{itemize}
-		\item Un confronto con `NULL` (es. $\Attr{Eta} > \text{NULL}$ o $\Attr{Stipendio} = \text{NULL}$) restituisce `UNKNOWN`.
-		\item L'operatore $\sigma$ seleziona solo le tuple per cui il predicato è `TRUE`.
-		\item Per testare esplicitamente i `NULL`, si usano i predicati $\Attr{Attributo} \text{ IS NULL}$ e $\Attr{Attributo} \text{ IS NOT NULL}$.
-	\end{itemize}
-	\textbf{Esempio pratico (SQL):} Trovare gli impiegati senza un numero di telefono assegnato.
-	$\myselectop{\Attr{Telefono} \text{ IS NULL}}{(\Rel{Impiegati})}$
-	SQL:
-	\begin{minted}{sql}
+\end{minted}
+
+\subsection{Espressioni Equivalenti e Ottimizzazione}
+Esistono diverse espressioni algebriche che producono lo stesso risultato. I DBMS (Database Management Systems) utilizzano regole di equivalenza per trasformare una query in una forma equivalente ma più efficiente da eseguire.
+Ad esempio, "spingere" le selezioni il più presto possibile (`pushdown selection`) riduce la dimensione delle relazioni intermedie, velocizzando i join successivi.
+\textbf{Esempio:}
+$\myselectop{\Attr{Stipendio}>100K}{(\Rel{Impiegati} \mynaturaljoin \Rel{Dipartimenti})}$
+potrebbe essere più efficiente se riscritta come:
+$(\myselectop{\Attr{Stipendio}>100K}{\Rel{Impiegati}}) \mynaturaljoin \Rel{Dipartimenti}$
+(se $\Attr{Stipendio}$ è solo in $\Rel{Impiegati}$). Il DBMS fa queste ottimizzazioni automaticamente.
+
+\subsection{Selezione con Valori NULL}
+I valori `NULL` rappresentano l'assenza di un valore o un valore sconosciuto.
+Nei predicati di selezione:
+\begin{itemize}
+	\item Un confronto con `NULL` (es. $\Attr{Eta} > \text{NULL}$ o $\Attr{Stipendio} = \text{NULL}$) restituisce `UNKNOWN`.
+	\item L'operatore $\sigma$ seleziona solo le tuple per cui il predicato è `TRUE`.
+	\item Per testare esplicitamente i `NULL`, si usano i predicati $\Attr{Attributo} \text{ IS NULL}$ e $\Attr{Attributo} \text{ IS NOT NULL}$.
+\end{itemize}
+\textbf{Esempio pratico (SQL):} Trovare gli impiegati senza un numero di telefono assegnato.
+$\myselectop{\Attr{Telefono} \text{ IS NULL}}{(\Rel{Impiegati})}$
+SQL:
+\begin{minted}{sql}
 SELECT * FROM Impiegati WHERE Telefono IS NULL;
-	\end{minted}
-	
-	\section{Views (Viste)}
-	Una vista è una tabella virtuale il cui contenuto è definito da una query sull'algebra relazionale (o SQL). Non memorizza dati propriamente, ma li deriva dalle tabelle base al momento della query sulla vista.
-	\begin{itemize}
-		\item \textbf{Tabelle Base:} Tabelle che contengono fisicamente i dati.
-		\item \textbf{Tabelle Derivate (Viste):} Definite da query.
-	\end{itemize}
-	Le viste sono utili per:
-	\begin{itemize}
-		\item \textbf{Schema Esterno:} Fornire diverse rappresentazioni dei dati a utenti diversi, semplificando la complessità e implementando la sicurezza (mostrando solo dati pertinenti).
-		\item \textbf{Strumento di Programmazione:} Semplificare query complesse riutilizzando sotto-espressioni comuni, o per mantenere la compatibilità con applicazioni esistenti quando lo schema delle tabelle base cambia.
-	\end{itemize}
-	\textbf{Esempio pratico (SQL):} Creare una vista che mostra solo gli impiegati del dipartimento IT.
-	Algebra: $\Rel{ImpiegatiIT} := \myselectop{\Attr{Dipartimento} = \text{'IT'}}{(\Rel{Impiegati})}$
-	SQL:
-	\begin{minted}{sql}
+\end{minted}
+
+\section{Views (Viste)}
+Una vista è una tabella virtuale il cui contenuto è definito da una query sull'algebra relazionale (o SQL). Non memorizza dati propriamente, ma li deriva dalle tabelle base al momento della query sulla vista.
+\begin{itemize}
+	\item \textbf{Tabelle Base:} Tabelle che contengono fisicamente i dati.
+	\item \textbf{Tabelle Derivate (Viste):} Definite da query.
+\end{itemize}
+Le viste sono utili per:
+\begin{itemize}
+	\item \textbf{Schema Esterno:} Fornire diverse rappresentazioni dei dati a utenti diversi, semplificando la complessità e implementando la sicurezza (mostrando solo dati pertinenti).
+	\item \textbf{Strumento di Programmazione:} Semplificare query complesse riutilizzando sotto-espressioni comuni, o per mantenere la compatibilità con applicazioni esistenti quando lo schema delle tabelle base cambia.
+\end{itemize}
+\textbf{Esempio pratico (SQL):} Creare una vista che mostra solo gli impiegati del dipartimento IT.
+Algebra: $\Rel{ImpiegatiIT} := \myselectop{\Attr{Dipartimento} = \text{'IT'}}{(\Rel{Impiegati})}$
+SQL:
+\begin{minted}{sql}
 CREATE VIEW ImpiegatiIT AS
 SELECT *
 FROM Impiegati
@@ -214,261 +188,261 @@ WHERE Dipartimento = 'IT';
 
 -- Successivamente si può interrogare la vista:
 SELECT Nome, Cognome FROM ImpiegatiIT WHERE Stipendio > 60000;
-	\end{minted}
-	Il DBMS traduce la query sulla vista in una query sulle tabelle base (es. $\myselectop{\Attr{Stipendio} > 60000}{(\myselectop{\Attr{Dipartimento} = \text{'IT'}}{(\Rel{Impiegati})})}$ ).
+\end{minted}
+Il DBMS traduce la query sulla vista in una query sulle tabelle base (es. $\myselectop{\Attr{Stipendio} > 60000}{(\myselectop{\Attr{Dipartimento} = \text{'IT'}}{(\Rel{Impiegati})})}$ ).
+
+\section{Esempi Completi di Algebra Relazionale}
+
+In questa sezione presentiamo esempi completi di espressioni in algebra relazionale, simili a quelli che potrebbero apparire negli esercizi d'esame. Utilizzeremo uno schema di database di esempio relativo a concerti ed eventi musicali.
+
+\subsection{Schema di Esempio}
+
+\begin{table}[htbp]
+	\centering
+	\begin{tabular}{|l|l|}
+		\hline
+		\multicolumn{2}{|c|}{\textbf{PERSONA}} \\
+		\hline
+		\textbf{IDPersona} & Chiave primaria \\
+		\textbf{Nome} & Nome della persona \\
+		\textbf{Cognome} & Cognome della persona \\
+		\textbf{DataNascita} & Data di nascita \\
+		\hline
+	\end{tabular}
+	\hspace{1cm}
+	\begin{tabular}{|l|l|}
+		\hline
+		\multicolumn{2}{|c|}{\textbf{CONCERTO}} \\
+		\hline
+		\textbf{IDConcerto} & Chiave primaria \\
+		\textbf{Titolo} & Titolo del concerto \\
+		\textbf{DataEvento} & Data del concerto \\
+		\textbf{Genere} & Genere musicale \\
+		\textbf{Citta} & Città dove si svolge \\
+		\hline
+	\end{tabular}
 	
-	\section{Esempi Completi di Algebra Relazionale}
+	\vspace{0.5cm}
 	
-	In questa sezione presentiamo esempi completi di espressioni in algebra relazionale, simili a quelli che potrebbero apparire negli esercizi d'esame. Utilizzeremo uno schema di database di esempio relativo a concerti ed eventi musicali.
+	\begin{tabular}{|l|l|}
+		\hline
+		\multicolumn{2}{|c|}{\textbf{BIGLIETTO}} \\
+		\hline
+		\textbf{IDBiglietto} & Chiave primaria \\
+		\textbf{IDConcerto} & Chiave esterna $\rightarrow$ CONCERTO \\
+		\textbf{IDPersona} & Chiave esterna $\rightarrow$ PERSONA \\
+		\textbf{Prezzo} & Prezzo del biglietto \\
+		\textbf{Settore} & Settore del posto \\
+		\hline
+	\end{tabular}
+	\hspace{1cm}
+	\begin{tabular}{|l|l|}
+		\hline
+		\multicolumn{2}{|c|}{\textbf{ARTISTA}} \\
+		\hline
+		\textbf{IDArtista} & Chiave primaria \\
+		\textbf{Nome} & Nome dell'artista/band \\
+		\textbf{Nazionalita} & Nazionalità dell'artista \\
+		\hline
+	\end{tabular}
 	
-	\subsection{Schema di Esempio}
+	\vspace{0.5cm}
 	
-	\begin{table}[htbp]
-		\centering
-		\begin{tabular}{|l|l|}
-			\hline
-			\multicolumn{2}{|c|}{\textbf{PERSONA}} \\
-			\hline
-			\textbf{IDPersona} & Chiave primaria \\
-			\textbf{Nome} & Nome della persona \\
-			\textbf{Cognome} & Cognome della persona \\
-			\textbf{DataNascita} & Data di nascita \\
-			\hline
-		\end{tabular}
-		\hspace{1cm}
-		\begin{tabular}{|l|l|}
-			\hline
-			\multicolumn{2}{|c|}{\textbf{CONCERTO}} \\
-			\hline
-			\textbf{IDConcerto} & Chiave primaria \\
-			\textbf{Titolo} & Titolo del concerto \\
-			\textbf{DataEvento} & Data del concerto \\
-			\textbf{Genere} & Genere musicale \\
-			\textbf{Citta} & Città dove si svolge \\
-			\hline
-		\end{tabular}
-		
-		\vspace{0.5cm}
-		
-		\begin{tabular}{|l|l|}
-			\hline
-			\multicolumn{2}{|c|}{\textbf{BIGLIETTO}} \\
-			\hline
-			\textbf{IDBiglietto} & Chiave primaria \\
-			\textbf{IDConcerto} & Chiave esterna $\rightarrow$ CONCERTO \\
-			\textbf{IDPersona} & Chiave esterna $\rightarrow$ PERSONA \\
-			\textbf{Prezzo} & Prezzo del biglietto \\
-			\textbf{Settore} & Settore del posto \\
-			\hline
-		\end{tabular}
-		\hspace{1cm}
-		\begin{tabular}{|l|l|}
-			\hline
-			\multicolumn{2}{|c|}{\textbf{ARTISTA}} \\
-			\hline
-			\textbf{IDArtista} & Chiave primaria \\
-			\textbf{Nome} & Nome dell'artista/band \\
-			\textbf{Nazionalita} & Nazionalità dell'artista \\
-			\hline
-		\end{tabular}
-		
-		\vspace{0.5cm}
-		
-		\begin{tabular}{|l|l|}
-			\hline
-			\multicolumn{2}{|c|}{\textbf{PARTECIPAZIONE}} \\
-			\hline
-			\textbf{IDArtista} & Chiave esterna $\rightarrow$ ARTISTA \\
-			\textbf{IDConcerto} & Chiave esterna $\rightarrow$ CONCERTO \\
-			\textbf{Cachet} & Compenso dell'artista \\
-			\hline
-		\end{tabular}
-		\caption{Schema del database dei concerti}
-	\end{table}
-	
-	\subsection{Esempi di Query in Algebra Relazionale}
-	
-	\subsubsection{Esempio 1: Persone che hanno acquistato biglietti per concerti pop a Berlino}
-	
-	\noindent Vogliamo trovare i nominativi (nome e cognome) delle persone che hanno acquistato biglietti per concerti pop tenutisi a Berlino.
-	
-	\begin{align*}
-		& \text{Step 1: Selezionare i concerti pop a Berlino} \\
-		& \text{ConcertiPopBerlino} \leftarrow \myselectop{\Attr{Genere} = \text{'Pop'} \mylandop \Attr{Citta} = \text{'Berlino'}}{(\Rel{CONCERTO})} \\
-		& \\
-		& \text{Step 2: Trovare i biglietti per questi concerti} \\
-		& \text{BigliettiPopBerlino} \leftarrow \Rel{BIGLIETTO} \mynaturaljoin \text{ConcertiPopBerlino} \\
-		& \\
-		& \text{Step 3: Trovare le persone che hanno acquistato questi biglietti} \\
-		& \text{PersonePopBerlino} \leftarrow \text{BigliettiPopBerlino} \mynaturaljoin \Rel{PERSONA} \\
-		& \\
-		& \text{Step 4: Proiettare solo nome e cognome} \\
-		& \text{Risultato} \leftarrow \myproject{\Attr{Nome}, \Attr{Cognome}}{(\text{PersonePopBerlino})}
-	\end{align*}
-	
-	\noindent Oppure, in un'unica espressione compatta:
-	
-	\begin{align*}
-		\text{Risultato} \leftarrow \myproject{\Attr{Nome}, \Attr{Cognome}}{( \Rel{PERSONA} \mynaturaljoin (\Rel{BIGLIETTO} \mynaturaljoin \myselectop{\Attr{Genere} = \text{'Pop'} \mylandop \Attr{Citta} = \text{'Berlino'}}{(\Rel{CONCERTO})} ))}
-	\end{align*}
-	
-	\subsubsection{Esempio 2: Città che non hanno mai ospitato un concerto rock}
-	
-	\noindent Vogliamo trovare i nomi delle città che non hanno mai ospitato un concerto rock. Per questo abbiamo bisogno di una tabella aggiuntiva $\Rel{CITTA}$ con tutte le città.
-	
-	\begin{align*}
-		& \text{Step 1: Trovare le città che hanno ospitato concerti rock} \\
-		& \text{CittaRock} \leftarrow \myproject{\Attr{Citta}}{(\myselectop{\Attr{Genere} = \text{'Rock'}}{(\Rel{CONCERTO})})} \\
-		& \\
-		& \text{Step 2: Trovare le città che non sono in CittaRock} \\
-		& \text{Risultato} \leftarrow \myproject{\Attr{Nome}}{(\Rel{CITTA})} \mydifference \text{CittaRock}
-	\end{align*}
-	
-	\noindent Alternativamente, assumendo che non abbiamo una tabella $\Rel{CITTA}$ separata, possiamo usare la differenza con l'insieme di tutte le città presenti nella tabella $\Rel{CONCERTO}$:
-	
-	\begin{align*}
-		\text{Risultato} \leftarrow \myproject{\Attr{Citta}}{(\Rel{CONCERTO})} \mydifference \myproject{\Attr{Citta}}{(\myselectop{\Attr{Genere} = \text{'Rock'}}{(\Rel{CONCERTO})})}
-	\end{align*}
-	
-	\subsubsection{Esempio 3: Artisti che hanno partecipato a tutti i concerti in Italia}
-	
-	\noindent Questo è un esempio di divisione relazionale (implementata con differenza e proiezione).
-	
-	\begin{align*}
-		& \text{Step 1: Trovare tutti i concerti in Italia} \\
-		& \text{ConcertiItalia} \leftarrow \myproject{\Attr{IDConcerto}}{(\myselectop{\Attr{Citta} \text{ in } \{\text{'Roma'}, \text{'Milano'}, \text{'Napoli'}, ...\}}{(\Rel{CONCERTO})})} \\
-		& \\
-		& \text{Step 2: Per ogni artista, trovare le coppie (artista, concerto) che NON esistono in PARTECIPAZIONE} \\
-		& \text{TutteCombinazioniPossibili} \leftarrow \myproject{\Attr{IDArtista}}{(\Rel{ARTISTA})} \mycartesian \text{ConcertiItalia} \\
-		& \text{CombinazioniMancanti} \leftarrow \text{TutteCombinazioniPossibili} \mydifference \myproject{\Attr{IDArtista}, \Attr{IDConcerto}}{(\Rel{PARTECIPAZIONE})} \\
-		& \\
-		& \text{Step 3: Trovare gli artisti che non hanno combinazioni mancanti (hanno partecipato a tutti i concerti)} \\
-		& \text{ArtistiConMancanze} \leftarrow \myproject{\Attr{IDArtista}}{(\text{CombinazioniMancanti})} \\
-		& \text{Risultato} \leftarrow \myproject{\Attr{IDArtista}, \Attr{Nome}}{(\Rel{ARTISTA})} \mydifference \myproject{\Attr{IDArtista}, \Attr{Nome}}{(\Rel{ARTISTA} \mynaturaljoin \text{ArtistiConMancanze})}
-	\end{align*}
-	
-	\subsubsection{Esempio 4: Persone che hanno acquistato biglietti per tutti gli artisti di nazionalità francese}
-	
-	\begin{align*}
-		& \text{Step 1: Trovare tutti gli artisti francesi} \\
-		& \text{ArtistiFrancesi} \leftarrow \myproject{\Attr{IDArtista}}{(\myselectop{\Attr{Nazionalita} = \text{'Francese'}}{(\Rel{ARTISTA})})} \\
-		& \\
-		& \text{Step 2: Trovare i concerti dove si esibiscono artisti francesi} \\
-		& \text{ConcertiFrancesi} \leftarrow \myproject{\Attr{IDConcerto}}{(\Rel{PARTECIPAZIONE} \mynaturaljoin \text{ArtistiFrancesi})} \\
-		& \\
-		& \text{Step 3: Trovare tutte le combinazioni possibili (persona, artista francese)} \\
-		& \text{TutteCombinazioniPossibili} \leftarrow \myproject{\Attr{IDPersona}}{(\Rel{PERSONA})} \mycartesian \text{ArtistiFrancesi} \\
-		& \\
-		& \text{Step 4: Trovare le persone che hanno visto ciascun artista francese} \\
-		& \text{PersoneArtistiFrancesi} \leftarrow \myproject{\Attr{IDPersona}, \Attr{IDArtista}}{(
-			\Rel{PERSONA} \mynaturaljoin \Rel{BIGLIETTO} \mynaturaljoin \Rel{CONCERTO} \mynaturaljoin \Rel{PARTECIPAZIONE} \mynaturaljoin \myselectop{\Attr{Nazionalita} = \text{'Francese'}}{(\Rel{ARTISTA})}
-		)} \\
-		& \\
-		& \text{Step 5: Trovare le combinazioni mancanti} \\
-		& \text{CombinazioniMancanti} \leftarrow \text{TutteCombinazioniPossibili} \mydifference \text{PersoneArtistiFrancesi} \\
-		& \\
-		& \text{Step 6: Trovare le persone senza combinazioni mancanti} \\
-		& \text{PersoneConMancanze} \leftarrow \myproject{\Attr{IDPersona}}{(\text{CombinazioniMancanti})} \\
-		& \text{Risultato} \leftarrow \myproject{\Attr{Nome}, \Attr{Cognome}}{(\Rel{PERSONA})} \mydifference \myproject{\Attr{Nome}, \Attr{Cognome}}{(\Rel{PERSONA} \mynaturaljoin \text{PersoneConMancanze})}
-	\end{align*}
-	
-	\subsubsection{Esempio 5: Concerti con prezzo medio dei biglietti superiore alla media generale}
-	
-	Nota: Questo esempio illustra un limite dell'algebra relazionale standard, che non supporta funzioni di aggregazione. In pratica, si userebbero estensioni dell'algebra relazionale o SQL.
-	
-	\begin{align*}
-		& \text{In SQL questa query sarebbe:} \\
-		& \text{SELECT C.IDConcerto, C.Titolo, AVG(B.Prezzo) as PrezzoMedio} \\
-		& \text{FROM CONCERTO C JOIN BIGLIETTO B ON C.IDConcerto = B.IDConcerto} \\
-		& \text{GROUP BY C.IDConcerto, C.Titolo} \\
-		& \text{HAVING AVG(B.Prezzo) > (SELECT AVG(Prezzo) FROM BIGLIETTO)}
-	\end{align*}
-	
-	\noindent Quest'ultimo esempio evidenzia perché SQL, con il suo supporto per aggregazioni e costrutti come GROUP BY e HAVING, è spesso più conveniente dell'algebra relazionale pura per query complesse.
-	
-	\section{Calcolo Relazionale}
-	Il calcolo relazionale è un linguaggio di query formale, \textbf{dichiarativo}, basato sulla logica dei predicati del primo ordine. Specifica \textit{cosa} si vuole ottenere, non \textit{come}.
-	Esistono due forme principali:
+	\begin{tabular}{|l|l|}
+		\hline
+		\multicolumn{2}{|c|}{\textbf{PARTECIPAZIONE}} \\
+		\hline
+		\textbf{IDArtista} & Chiave esterna $\rightarrow$ ARTISTA \\
+		\textbf{IDConcerto} & Chiave esterna $\rightarrow$ CONCERTO \\
+		\textbf{Cachet} & Compenso dell'artista \\
+		\hline
+	\end{tabular}
+	\caption{Schema del database dei concerti}
+\end{table}
+
+\subsection{Esempi di Query in Algebra Relazionale}
+
+\subsubsection{Esempio 1: Persone che hanno acquistato biglietti per concerti pop a Berlino}
+
+\noindent Vogliamo trovare i nominativi (nome e cognome) delle persone che hanno acquistato biglietti per concerti pop tenutisi a Berlino.
+
+\begin{align*}
+	& \text{Step 1: Selezionare i concerti pop a Berlino} \\
+	& \text{ConcertiPopBerlino} \leftarrow \myselectop{\Attr{Genere} = \text{'Pop'} \mylandop \Attr{Citta} = \text{'Berlino'}}{(\Rel{CONCERTO})} \\
+	& \\
+	& \text{Step 2: Trovare i biglietti per questi concerti} \\
+	& \text{BigliettiPopBerlino} \leftarrow \Rel{BIGLIETTO} \mynaturaljoin \text{ConcertiPopBerlino} \\
+	& \\
+	& \text{Step 3: Trovare le persone che hanno acquistato questi biglietti} \\
+	& \text{PersonePopBerlino} \leftarrow \text{BigliettiPopBerlino} \mynaturaljoin \Rel{PERSONA} \\
+	& \\
+	& \text{Step 4: Proiettare solo nome e cognome} \\
+	& \text{Risultato} \leftarrow \myproject{\Attr{Nome}, \Attr{Cognome}}{(\text{PersonePopBerlino})}
+\end{align*}
+
+\noindent Oppure, in un'unica espressione compatta:
+
+\begin{align*}
+	\text{Risultato} \leftarrow \myproject{\Attr{Nome}, \Attr{Cognome}}{( \Rel{PERSONA} \mynaturaljoin (\Rel{BIGLIETTO} \mynaturaljoin \myselectop{\Attr{Genere} = \text{'Pop'} \mylandop \Attr{Citta} = \text{'Berlino'}}{(\Rel{CONCERTO})} ))}
+\end{align*}
+
+\subsubsection{Esempio 2: Città che non hanno mai ospitato un concerto rock}
+
+\noindent Vogliamo trovare i nomi delle città che non hanno mai ospitato un concerto rock. Per questo abbiamo bisogno di una tabella aggiuntiva $\Rel{CITTA}$ con tutte le città.
+
+\begin{align*}
+	& \text{Step 1: Trovare le città che hanno ospitato concerti rock} \\
+	& \text{CittaRock} \leftarrow \myproject{\Attr{Citta}}{(\myselectop{\Attr{Genere} = \text{'Rock'}}{(\Rel{CONCERTO})})} \\
+	& \\
+	& \text{Step 2: Trovare le città che non sono in CittaRock} \\
+	& \text{Risultato} \leftarrow \myproject{\Attr{Nome}}{(\Rel{CITTA})} \mydifference \text{CittaRock}
+\end{align*}
+
+\noindent Alternativamente, assumendo che non abbiamo una tabella $\Rel{CITTA}$ separata, possiamo usare la differenza con l'insieme di tutte le città presenti nella tabella $\Rel{CONCERTO}$:
+
+\begin{align*}
+	\text{Risultato} \leftarrow \myproject{\Attr{Citta}}{(\Rel{CONCERTO})} \mydifference \myproject{\Attr{Citta}}{(\myselectop{\Attr{Genere} = \text{'Rock'}}{(\Rel{CONCERTO})})}
+\end{align*}
+
+\subsubsection{Esempio 3: Artisti che hanno partecipato a tutti i concerti in Italia}
+
+\noindent Questo è un esempio di divisione relazionale (implementata con differenza e proiezione).
+
+\begin{align*}
+	& \text{Step 1: Trovare tutti i concerti in Italia} \\
+	& \text{ConcertiItalia} \leftarrow \myproject{\Attr{IDConcerto}}{(\myselectop{\Attr{Citta} \text{ in } \{\text{'Roma'}, \text{'Milano'}, \text{'Napoli'}, ...\}}{(\Rel{CONCERTO})})} \\
+	& \\
+	& \text{Step 2: Per ogni artista, trovare le coppie (artista, concerto) che NON esistono in PARTECIPAZIONE} \\
+	& \text{TutteCombinazioniPossibili} \leftarrow \myproject{\Attr{IDArtista}}{(\Rel{ARTISTA})} \mycartesian \text{ConcertiItalia} \\
+	& \text{CombinazioniMancanti} \leftarrow \text{TutteCombinazioniPossibili} \mydifference \myproject{\Attr{IDArtista}, \Attr{IDConcerto}}{(\Rel{PARTECIPAZIONE})} \\
+	& \\
+	& \text{Step 3: Trovare gli artisti che non hanno combinazioni mancanti (hanno partecipato a tutti i concerti)} \\
+	& \text{ArtistiConMancanze} \leftarrow \myproject{\Attr{IDArtista}}{(\text{CombinazioniMancanti})} \\
+	& \text{Risultato} \leftarrow \myproject{\Attr{IDArtista}, \Attr{Nome}}{(\Rel{ARTISTA})} \mydifference \myproject{\Attr{IDArtista}, \Attr{Nome}}{(\Rel{ARTISTA} \mynaturaljoin \text{ArtistiConMancanze})}
+\end{align*}
+
+\subsubsection{Esempio 4: Persone che hanno acquistato biglietti per tutti gli artisti di nazionalità francese}
+
+\begin{align*}
+	& \text{Step 1: Trovare tutti gli artisti francesi} \\
+	& \text{ArtistiFrancesi} \leftarrow \myproject{\Attr{IDArtista}}{(\myselectop{\Attr{Nazionalita} = \text{'Francese'}}{(\Rel{ARTISTA})})} \\
+	& \\
+	& \text{Step 2: Trovare i concerti dove si esibiscono artisti francesi} \\
+	& \text{ConcertiFrancesi} \leftarrow \myproject{\Attr{IDConcerto}}{(\Rel{PARTECIPAZIONE} \mynaturaljoin \text{ArtistiFrancesi})} \\
+	& \\
+	& \text{Step 3: Trovare tutte le combinazioni possibili (persona, artista francese)} \\
+	& \text{TutteCombinazioniPossibili} \leftarrow \myproject{\Attr{IDPersona}}{(\Rel{PERSONA})} \mycartesian \text{ArtistiFrancesi} \\
+	& \\
+	& \text{Step 4: Trovare le persone che hanno visto ciascun artista francese} \\
+	& \text{PersoneArtistiFrancesi} \leftarrow \myproject{\Attr{IDPersona}, \Attr{IDArtista}}{(
+		\Rel{PERSONA} \mynaturaljoin \Rel{BIGLIETTO} \mynaturaljoin \Rel{CONCERTO} \mynaturaljoin \Rel{PARTECIPAZIONE} \mynaturaljoin \myselectop{\Attr{Nazionalita} = \text{'Francese'}}{(\Rel{ARTISTA})}
+	)} \\
+	& \\
+	& \text{Step 5: Trovare le combinazioni mancanti} \\
+	& \text{CombinazioniMancanti} \leftarrow \text{TutteCombinazioniPossibili} \mydifference \text{PersoneArtistiFrancesi} \\
+	& \\
+	& \text{Step 6: Trovare le persone senza combinazioni mancanti} \\
+	& \text{PersoneConMancanze} \leftarrow \myproject{\Attr{IDPersona}}{(\text{CombinazioniMancanti})} \\
+	& \text{Risultato} \leftarrow \myproject{\Attr{Nome}, \Attr{Cognome}}{(\Rel{PERSONA})} \mydifference \myproject{\Attr{Nome}, \Attr{Cognome}}{(\Rel{PERSONA} \mynaturaljoin \text{PersoneConMancanze})}
+\end{align*}
+
+\subsubsection{Esempio 5: Concerti con prezzo medio dei biglietti superiore alla media generale}
+
+Nota: Questo esempio illustra un limite dell'algebra relazionale standard, che non supporta funzioni di aggregazione. In pratica, si userebbero estensioni dell'algebra relazionale o SQL.
+
+\begin{align*}
+	& \text{In SQL questa query sarebbe:} \\
+	& \text{SELECT C.IDConcerto, C.Titolo, AVG(B.Prezzo) as PrezzoMedio} \\
+	& \text{FROM CONCERTO C JOIN BIGLIETTO B ON C.IDConcerto = B.IDConcerto} \\
+	& \text{GROUP BY C.IDConcerto, C.Titolo} \\
+	& \text{HAVING AVG(B.Prezzo) > (SELECT AVG(Prezzo) FROM BIGLIETTO)}
+\end{align*}
+
+\noindent Quest'ultimo esempio evidenzia perché SQL, con il suo supporto per aggregazioni e costrutti come GROUP BY e HAVING, è spesso più conveniente dell'algebra relazionale pura per query complesse.
+
+\section{Calcolo Relazionale}
+Il calcolo relazionale è un linguaggio di query formale, \textbf{dichiarativo}, basato sulla logica dei predicati del primo ordine. Specifica \textit{cosa} si vuole ottenere, non \textit{come}.
+Esistono due forme principali:
+\begin{itemize}
+	\item \textbf{Domain Relational Calculus (DRC):} Le variabili assumono valori dai domini degli attributi.
+	\item \textbf{Tuple Relational Calculus (TRC):} Le variabili rappresentano tuple di relazioni.
+\end{itemize}
+
+\subsection{Domain Relational Calculus (DRC)}
+Una query DRC ha la forma:
+$\{ \Attr{A}_1:x_1, \dots, \Attr{A}_k:x_k \mid \text{Formula}(x_1, \dots, x_k) \}$
+dove:
+\begin{itemize}
+	\item $\Attr{A}_1:x_1, \dots, \Attr{A}_k:x_k$ è la \textbf{target list}: specifica gli attributi del risultato e le variabili che ne conterranno i valori.
+	\item $x_1, \dots, x_k$ sono variabili che variano sui domini dei rispettivi attributi.
+	\item $\text{Formula}(x_1, \dots, x_k)$ è una formula della logica del primo ordine che usa:
 	\begin{itemize}
-		\item \textbf{Domain Relational Calculus (DRC):} Le variabili assumono valori dai domini degli attributi.
-		\item \textbf{Tuple Relational Calculus (TRC):} Le variabili rappresentano tuple di relazioni.
+		\item Predicati corrispondenti alle relazioni nel database (es. $\Rel{IMPIEGATO}(\Attr{Num}:m, \Attr{Nome}:n, \dots)$).
+		\item Operatori di confronto ($=, >, <, \dots$).
+		\item Operatori logici ($\mylandop$ AND, $\myvel$ OR, $\mynegop$ NOT).
+		\item Quantificatori ($\myforallop$ per tutti, $\myexistsop$ esiste).
 	\end{itemize}
-	
-	\subsection{Domain Relational Calculus (DRC)}
-	Una query DRC ha la forma:
-	$\{ \Attr{A}_1:x_1, \dots, \Attr{A}_k:x_k \mid \text{Formula}(x_1, \dots, x_k) \}$
-	dove:
-	\begin{itemize}
-		\item $\Attr{A}_1:x_1, \dots, \Attr{A}_k:x_k$ è la \textbf{target list}: specifica gli attributi del risultato e le variabili che ne conterranno i valori.
-		\item $x_1, \dots, x_k$ sono variabili che variano sui domini dei rispettivi attributi.
-		\item $\text{Formula}(x_1, \dots, x_k)$ è una formula della logica del primo ordine che usa:
-		\begin{itemize}
-			\item Predicati corrispondenti alle relazioni nel database (es. $\Rel{IMPIEGATO}(\Attr{Num}:m, \Attr{Nome}:n, \dots)$).
-			\item Operatori di confronto ($=, >, <, \dots$).
-			\item Operatori logici ($\mylandop$ AND, $\myvel$ OR, $\mynegop$ NOT).
-			\item Quantificatori ($\myforallop$ per tutti, $\myexistsop$ esiste).
-		\end{itemize}
-	\end{itemize}
-	Il risultato è l'insieme di tuple $(\Attr{A}_1:v_1, \dots, \Attr{A}_k:v_k)$ tali che, quando le variabili $x_i$ assumono i valori $v_i$, la Formula è vera.
-	
-	\textbf{Esempio DRC:} Trovare numero, nome, età e salario degli impiegati che guadagnano più di 40.
-	\begin{verbatim}
-		{ Numero:m, Nome:n, Eta:a, Salario:w |
-			IMPIEGATO(Numero:m, Nome:n, Eta:a, Salario:w)  w > 40 }
-	\end{verbatim}
-	Se vogliamo solo nome ed età:
-	\begin{verbatim}
-		{ Nome:n, Eta:a |
-			existsop w (IMPIEGATO(Numero:m, Nome:n, Eta:a, Salario:w)  w > 40) }
-	\end{verbatim}
-	(Il `Numero:m` nella seconda query è una variabile libera nella formula `IMPIEGATO`, ma non nella target list, quindi la sua esistenza è implicitamente richiesta. Le slide mostrano `EMPLOYEE(Number:m, Name:n, Age:a, Wage:w)` anche quando `m` non è nella target list; questo significa che deve esistere una tupla con qualche `m` che soddisfi il resto. Per essere più precisi, si quantificherebbero le variabili non nella target list).
-	
-	\subsection{Tuple Relational Calculus (TRC) with Range Declarations}
-	Una query TRC ha la forma:
-	$\{ \text{TargetList} \mid \text{RangeList} \mid \text{Formula} \}$
-	dove:
-	\begin{itemize}
-		\item $\text{TargetList}$: Specifica gli attributi da restituire, spesso nella forma $t.\Attr{A}$ (attributo $\Attr{A}$ della tupla $t$).
-		\item $\text{RangeList}$: Dichiara le variabili di tupla e le relazioni a cui appartengono (es. $e(\Rel{IMPIEGATO})$, $s(\Rel{SUPERVISORE})$).
-		\item $\text{Formula}$: Una condizione sulle variabili di tupla dichiarate.
-	\end{itemize}
-	Le variabili variano sull'insieme delle tuple della relazione specificata.
-	
-	\textbf{Esempio TRC:} Trovare tutte le informazioni sugli impiegati che guadagnano più di 40.
-	\begin{verbatim}
-		{ e.* | e(IMPIEGATO) | e.Salario > 40 }
-	\end{verbatim}
-	Trovare nome ed età degli impiegati che guadagnano più di 40:
-	\begin{verbatim}
-		{ e.Nome, e.Eta | e(IMPIEGATO) | e.Salario > 40 }
-	\end{verbatim}
-	Il TRC è spesso considerato più vicino a come si pensa in SQL, poiché si ragiona in termini di "tuple che soddisfano certe condizioni".
-	
-	\subsection{Equivalenza tra Algebra e Calcolo}
-	Per le query "safe" (che non producono risultati infiniti e dipendono solo dai dati nel database), l'Algebra Relazionale, il Domain Relational Calculus (safe) e il Tuple Relational Calculus (safe) sono \textbf{espressivamente equivalenti}. Ciò significa che qualsiasi query esprimibile in uno di questi linguaggi può essere espressa anche negli altri. Questo è un risultato teorico importante (Teorema di Codd).
-	
-	\section{Limiti dell'Algebra e del Calcolo Relazionale Standard}
-	Nonostante la loro potenza, l'algebra e il calcolo relazionale standard hanno dei limiti:
-	\begin{itemize}
-		\item \textbf{No Calcoli Aritmetici/Nuovi Valori:} Non possono calcolare nuovi valori (es. stipendio + bonus) o eseguire aggregazioni (somma, media, conteggio). SQL estende queste capacità con funzioni aritmetiche e di aggregazione (`SUM()`, `AVG()`, `COUNT()`, `GROUP BY`).
-		\item \textbf{No Chiusura Transitiva (Recursion):} Non possono esprimere query ricorsive, come trovare tutti i superiori di un impiegato (il capo, il capo del capo, ecc.) o tutte le tratte aeree possibili tra due città (dirette e indirette). Questo richiederebbe un numero potenzialmente illimitato di join.
-	\end{itemize}
-	
-	\section{Datalog}
-	Datalog è un linguaggio di query e programmazione logica orientato ai database, che supera alcuni limiti di RA/RC, in particolare per le query ricorsive. È un sottoinsieme di Prolog.
-	Concetti chiave:
-	\begin{itemize}
-		\item \textbf{Predicati Estensionali (EDB - Extensional Database):} Corrispondono alle relazioni base del database (fatti).
-		\item \textbf{Predicati Intensionali (IDB - Intensional Database):} Corrispondono a viste o relazioni derivate, definite tramite \textbf{regole}.
-		\item \textbf{Regole:} Hanno la forma `testa :- corpo.` (o `testa <- corpo` nelle slide).
-		Significa: "la \textit{testa} è vera se il \textit{corpo} è vero".
-		La testa è un singolo predicato intensionale. Il corpo è una congiunzione (AND) di predicati (estensionali o intensionali) e condizioni.
-		\item \textbf{Query:} Indicate con un prefisso ? davanti a un predicato.
-	\end{itemize}
-	
-	\textbf{Esempio Datalog (non ricorsivo):} Trovare i capi degli impiegati che guadagnano più di 40.
-	Relazioni EDB: $\Rel{IMPIEGATO}(\Attr{Num}, \Attr{Nome}, \Attr{Eta}, \Attr{Salario})$, $\Rel{SUPERVISORE}(\Attr{Capo}, \Attr{Impiegato})$
-	\begin{minted}{prolog}
+\end{itemize}
+Il risultato è l'insieme di tuple $(\Attr{A}_1:v_1, \dots, \Attr{A}_k:v_k)$ tali che, quando le variabili $x_i$ assumono i valori $v_i$, la Formula è vera.
+
+\textbf{Esempio DRC:} Trovare numero, nome, età e salario degli impiegati che guadagnano più di 40.
+\begin{verbatim}
+	{ Numero:m, Nome:n, Eta:a, Salario:w |
+		IMPIEGATO(Numero:m, Nome:n, Eta:a, Salario:w)  w > 40 }
+\end{verbatim}
+Se vogliamo solo nome ed età:
+\begin{verbatim}
+	{ Nome:n, Eta:a |
+		existsop w (IMPIEGATO(Numero:m, Nome:n, Eta:a, Salario:w)  w > 40) }
+\end{verbatim}
+(Il `Numero:m` nella seconda query è una variabile libera nella formula `IMPIEGATO`, ma non nella target list, quindi la sua esistenza è implicitamente richiesta. Le slide mostrano `EMPLOYEE(Number:m, Name:n, Age:a, Wage:w)` anche quando `m` non è nella target list; questo significa che deve esistere una tupla con qualche `m` che soddisfi il resto. Per essere più precisi, si quantificherebbero le variabili non nella target list).
+
+\subsection{Tuple Relational Calculus (TRC) with Range Declarations}
+Una query TRC ha la forma:
+$\{ \text{TargetList} \mid \text{RangeList} \mid \text{Formula} \}$
+dove:
+\begin{itemize}
+	\item $\text{TargetList}$: Specifica gli attributi da restituire, spesso nella forma $t.\Attr{A}$ (attributo $\Attr{A}$ della tupla $t$).
+	\item $\text{RangeList}$: Dichiara le variabili di tupla e le relazioni a cui appartengono (es. $e(\Rel{IMPIEGATO})$, $s(\Rel{SUPERVISORE})$).
+	\item $\text{Formula}$: Una condizione sulle variabili di tupla dichiarate.
+\end{itemize}
+Le variabili variano sull'insieme delle tuple della relazione specificata.
+
+\textbf{Esempio TRC:} Trovare tutte le informazioni sugli impiegati che guadagnano più di 40.
+\begin{verbatim}
+	{ e.* | e(IMPIEGATO) | e.Salario > 40 }
+\end{verbatim}
+Trovare nome ed età degli impiegati che guadagnano più di 40:
+\begin{verbatim}
+	{ e.Nome, e.Eta | e(IMPIEGATO) | e.Salario > 40 }
+\end{verbatim}
+Il TRC è spesso considerato più vicino a come si pensa in SQL, poiché si ragiona in termini di "tuple che soddisfano certe condizioni".
+
+\subsection{Equivalenza tra Algebra e Calcolo}
+Per le query "safe" (che non producono risultati infiniti e dipendono solo dai dati nel database), l'Algebra Relazionale, il Domain Relational Calculus (safe) e il Tuple Relational Calculus (safe) sono \textbf{espressivamente equivalenti}. Ciò significa che qualsiasi query esprimibile in uno di questi linguaggi può essere espressa anche negli altri. Questo è un risultato teorico importante (Teorema di Codd).
+
+\section{Limiti dell'Algebra e del Calcolo Relazionale Standard}
+Nonostante la loro potenza, l'algebra e il calcolo relazionale standard hanno dei limiti:
+\begin{itemize}
+	\item \textbf{No Calcoli Aritmetici/Nuovi Valori:} Non possono calcolare nuovi valori (es. stipendio + bonus) o eseguire aggregazioni (somma, media, conteggio). SQL estende queste capacità con funzioni aritmetiche e di aggregazione (`SUM()`, `AVG()`, `COUNT()`, `GROUP BY`).
+	\item \textbf{No Chiusura Transitiva (Recursion):} Non possono esprimere query ricorsive, come trovare tutti i superiori di un impiegato (il capo, il capo del capo, ecc.) o tutte le tratte aeree possibili tra due città (dirette e indirette). Questo richiederebbe un numero potenzialmente illimitato di join.
+\end{itemize}
+
+\section{Datalog}
+Datalog è un linguaggio di query e programmazione logica orientato ai database, che supera alcuni limiti di RA/RC, in particolare per le query ricorsive. È un sottoinsieme di Prolog.
+Concetti chiave:
+\begin{itemize}
+	\item \textbf{Predicati Estensionali (EDB - Extensional Database):} Corrispondono alle relazioni base del database (fatti).
+	\item \textbf{Predicati Intensionali (IDB - Intensional Database):} Corrispondono a viste o relazioni derivate, definite tramite \textbf{regole}.
+	\item \textbf{Regole:} Hanno la forma `testa :- corpo.` (o `testa <- corpo` nelle slide).
+	Significa: "la \textit{testa} è vera se il \textit{corpo} è vero".
+	La testa è un singolo predicato intensionale. Il corpo è una congiunzione (AND) di predicati (estensionali o intensionali) e condizioni.
+	\item \textbf{Query:} Indicate con un prefisso ? davanti a un predicato.
+\end{itemize}
+
+\textbf{Esempio Datalog (non ricorsivo):} Trovare i capi degli impiegati che guadagnano più di 40.
+Relazioni EDB: $\Rel{IMPIEGATO}(\Attr{Num}, \Attr{Nome}, \Attr{Eta}, \Attr{Salario})$, $\Rel{SUPERVISORE}(\Attr{Capo}, \Attr{Impiegato})$
+\begin{minted}{prolog}
 % Predicato intensionale: IMPIEGATO_RICCO
 IMPIEGATO_RICCO(Num, Nome, Eta, Salario) :- IMPIEGATO(Num, Nome, Eta, Salario), Salario > 40.
 
@@ -478,11 +452,11 @@ SUPERVISORE(NumCapo, NumImp).
 
 % Query
 ? CAPO_DI_IMPIEGATO_RICCO(X).
-	\end{minted}
-	
-	\textbf{Esempio Datalog (Ricorsione - Chiusura Transitiva):} Trovare tutti i superiori (diretti e indiretti) di un impiegato.
-	Relazione EDB: $\Rel{CAPO\_DIRETTO}(\Attr{Superiore}, \Attr{Subordinato})$
-	\begin{minted}{prolog}
+\end{minted}
+
+\textbf{Esempio Datalog (Ricorsione - Chiusura Transitiva):} Trovare tutti i superiori (diretti e indiretti) di un impiegato.
+Relazione EDB: $\Rel{CAPO\_DIRETTO}(\Attr{Superiore}, \Attr{Subordinato})$
+\begin{minted}{prolog}
 % Caso base: un capo diretto e' un superiore
 SUPERIORE(X, Y) :- CAPO_DIRETTO(X, Y).
 
@@ -491,17 +465,16 @@ SUPERIORE(X, Y) :- CAPO_DIRETTO(X, Z), SUPERIORE(Z, Y).
 
 % Query: trovare tutti i superiori di 'Rossi' (assumendo che 'Rossi' sia un ID)
 ? SUPERIORE(Capo, 'Rossi').
-	\end{minted}
-	Datalog, grazie alla sua capacità di esprimere la ricorsione, è più potente dell'algebra e del calcolo relazionale standard. Le estensioni ricorsive di SQL (come `WITH RECURSIVE`) sono ispirate a Datalog.
-	
-	\section{Conclusioni}
-	L'Algebra Relazionale e il Calcolo Relazionale forniscono le fondamenta teoriche per i linguaggi di query dei database relazionali come SQL.
-	\begin{itemize}
-		\item L'\textbf{Algebra Relazionale} è procedurale e definisce come costruire il risultato passo dopo passo. È cruciale per l'implementazione interna e l'ottimizzazione delle query nei DBMS.
-		\item Il \textbf{Calcolo Relazionale} è dichiarativo, permettendo di specificare le proprietà del risultato desiderato senza dettagliarne il processo di ottenimento.
-		\item Entrambi (nelle loro forme "safe") hanno lo stesso potere espressivo ma non possono gestire calcoli complessi o ricorsione.
-		\item \textbf{Datalog} estende questi concetti introducendo la ricorsione, aumentando il potere espressivo.
-	\end{itemize}
-	Comprendere questi modelli teorici aiuta a capire meglio il funzionamento e le potenzialità di SQL e dei sistemi di gestione di database moderni.
-	
-\end{document}
+\end{minted}
+Datalog, grazie alla sua capacità di esprimere la ricorsione, è più potente dell'algebra e del calcolo relazionale standard. Le estensioni ricorsive di SQL (come `WITH RECURSIVE`) sono ispirate a Datalog.
+
+\section{Conclusioni}
+L'Algebra Relazionale e il Calcolo Relazionale forniscono le fondamenta teoriche per i linguaggi di query dei database relazionali come SQL.
+\begin{itemize}
+	\item L'\textbf{Algebra Relazionale} è procedurale e definisce come costruire il risultato passo dopo passo. È cruciale per l'implementazione interna e l'ottimizzazione delle query nei DBMS.
+	\item Il \textbf{Calcolo Relazionale} è dichiarativo, permettendo di specificare le proprietà del risultato desiderato senza dettagliarne il processo di ottenimento.
+	\item Entrambi (nelle loro forme "safe") hanno lo stesso potere espressivo ma non possono gestire calcoli complessi o ricorsione.
+	\item \textbf{Datalog} estende questi concetti introducendo la ricorsione, aumentando il potere espressivo.
+\end{itemize}
+Comprendere questi modelli teorici aiuta a capire meglio il funzionamento e le potenzialità di SQL e dei sistemi di gestione di database moderni.
+

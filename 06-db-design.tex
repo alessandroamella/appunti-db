@@ -1,763 +1,736 @@
-\input{preambolo_comune.tex}
+\section{Perché la Modellazione Concettuale?}
 
-% --- Hyperlink ---
-\usepackage{hyperref}
-\hypersetup{
-	colorlinks=true,
-	linkcolor=white,
-	filecolor=magenta,
-	urlcolor=cyan,
-	pdftitle={Modellazione Concettuale dei Dati},
-	pdfauthor={Alessandro Amella},
-	pdfpagemode=FullScreen,
-}
+Partire direttamente a definire tabelle SQL (modello logico) è difficile e rischioso. I problemi principali sono:
+\begin{itemize}
+	\item Ci si perde nei dettagli troppo presto.
+	\item Il modello relazionale (tabelle, colonne, tipi) è troppo \textit{rigido} per le fasi iniziali di brainstorming e analisi dei requisiti.
+\end{itemize}
 
-% --- Titolo ---
-\title{Appunti sulla Modellazione Concettuale dei Dati\\
-  \large Appunti basati sulle dispense del Prof. Danilo Montesi}
-\author{Alessandro Amella, Gemini e Claude}
-\date{\today}
+La soluzione è il \textbf{Modello Concettuale} (ad esempio, il diagramma Entità-Relazione - ERD):
+\begin{itemize}
+	\item Permette di ragionare sulla \textit{realtà di interesse} in modo \textbf{indipendente dall'implementazione} specifica (quale DBMS useremo, come saranno le tabelle, ecc.).
+	\item Aiuta a definire le \textbf{classi di oggetti} (entità) e le loro \textbf{relazioni}.
+	\item Fornisce una \textbf{rappresentazione visuale} chiara, utile per la documentazione e la comunicazione con gli stakeholder (anche non tecnici).
+\end{itemize}
 
-\begin{document}
+\paragraph{Esempio Pratico:} Immagina di dover creare un sistema per una biblioteca. Invece di pensare subito a \texttt{CREATE TABLE Libri (...)}, con il modello concettuale pensi: ``Ok, ho bisogno di \texttt{Libri}, \texttt{Utenti}, e una relazione che dice \textit{Un Utente prende in prestito un Libro}''. Questo è più astratto e flessibile.
+
+\section{Il Ciclo di Vita del Design del Database}
+
+Il design del database è una fase cruciale nello sviluppo di Sistemi Informativi (SI). Le fasi principali del design sono:
+
+\subsection{Design Concettuale}
+\begin{itemize}
+	\item \textbf{Input:} Requisiti del database (cosa deve fare il sistema?).
+	\item \textbf{Output:} \textbf{Schema Concettuale} (es. un diagramma Entità-Relazione - ERD).
+	\item \textbf{Focus:} Il ``COSA?'' – quali informazioni ci servono e come sono collegate, ad alto livello.
+	\item \textit{Esempio Pratico:} ``Abbiamo Entità \texttt{Studente} e \texttt{Corso}. Uno \texttt{Studente} si \texttt{IscriveA} un \texttt{Corso}.''
+\end{itemize}
+
 	
-	\maketitle
-	\tableofcontents
-	\newpage
+\subsection{Design Logico}
+\begin{itemize}
+	\item \textbf{Input:} Schema Concettuale.
+	\item \textbf{Output:} \textbf{Schema Logico} (es. definizione di tabelle per un DB relazionale, o collezioni per un DB NoSQL come MongoDB).
+	\item \textbf{Focus:} Il ``COME?'' – come traduciamo il modello concettuale in un modello supportato da un tipo di DBMS (es. relazionale, a documenti, a grafo). È indipendente dal DBMS specifico, ma non dal \textit{tipo} di DBMS.
+	\item \textit{Esempio Pratico:}\\
+	\begin{center}
+		\begin{tikzpicture}[
+			entity/.style={rectangle, draw=white, fill=black!90, text=gray!10, minimum width=3cm, minimum height=1.2cm, font=\bfseries},
+			relationship/.style={diamond, draw=white, fill=black!90, text=gray!10, aspect=2, minimum width=2.8cm, minimum height=1.2cm, font=\bfseries},
+			line/.style={draw=white, thick},
+			node distance=0.5cm and 1.5cm
+			]
+			
+			% Top row
+			\node[entity] (studente) {Studente};
+			\node[relationship, right=of studente] (esame) {Esame};
+			\node[entity, right=of esame] (lezione) {Lezione};
+			
+			\draw[line] (studente) -- (esame);
+			\draw[line] (esame) -- (lezione);
+			
+			% Bottom row
+			\node[entity, below=of studente] (impiegato) {Impiegato};
+			\node[relationship, right=of impiegato] (residenza) {Residenza};
+			\node[entity, right=of residenza] (città) {Città};
+			
+			\draw[line] (impiegato) -- (residenza);
+			\draw[line] (residenza) -- (città);
+			
+		\end{tikzpicture}
+	\end{center}
 	
-	\section{Perché la Modellazione Concettuale?}
 	
-	Partire direttamente a definire tabelle SQL (modello logico) è difficile e rischioso. I problemi principali sono:
-	\begin{itemize}
-		\item Ci si perde nei dettagli troppo presto.
-		\item Il modello relazionale (tabelle, colonne, tipi) è troppo \textit{rigido} per le fasi iniziali di brainstorming e analisi dei requisiti.
-	\end{itemize}
-	
-	La soluzione è il \textbf{Modello Concettuale} (ad esempio, il diagramma Entità-Relazione - ERD):
-	\begin{itemize}
-		\item Permette di ragionare sulla \textit{realtà di interesse} in modo \textbf{indipendente dall'implementazione} specifica (quale DBMS useremo, come saranno le tabelle, ecc.).
-		\item Aiuta a definire le \textbf{classi di oggetti} (entità) e le loro \textbf{relazioni}.
-		\item Fornisce una \textbf{rappresentazione visuale} chiara, utile per la documentazione e la comunicazione con gli stakeholder (anche non tecnici).
-	\end{itemize}
-	
-	\paragraph{Esempio Pratico:} Immagina di dover creare un sistema per una biblioteca. Invece di pensare subito a \texttt{CREATE TABLE Libri (...)}, con il modello concettuale pensi: ``Ok, ho bisogno di \texttt{Libri}, \texttt{Utenti}, e una relazione che dice \textit{Un Utente prende in prestito un Libro}''. Questo è più astratto e flessibile.
-	
-	\section{Il Ciclo di Vita del Design del Database}
-	
-	Il design del database è una fase cruciale nello sviluppo di Sistemi Informativi (SI). Le fasi principali del design sono:
-	
-	\subsection{Design Concettuale}
-	\begin{itemize}
-		\item \textbf{Input:} Requisiti del database (cosa deve fare il sistema?).
-		\item \textbf{Output:} \textbf{Schema Concettuale} (es. un diagramma Entità-Relazione - ERD).
-		\item \textbf{Focus:} Il ``COSA?'' – quali informazioni ci servono e come sono collegate, ad alto livello.
-		\item \textit{Esempio Pratico:} ``Abbiamo Entità \texttt{Studente} e \texttt{Corso}. Uno \texttt{Studente} si \texttt{IscriveA} un \texttt{Corso}.''
-	\end{itemize}
-	
-		
-	\subsection{Design Logico}
-	\begin{itemize}
-		\item \textbf{Input:} Schema Concettuale.
-		\item \textbf{Output:} \textbf{Schema Logico} (es. definizione di tabelle per un DB relazionale, o collezioni per un DB NoSQL come MongoDB).
-		\item \textbf{Focus:} Il ``COME?'' – come traduciamo il modello concettuale in un modello supportato da un tipo di DBMS (es. relazionale, a documenti, a grafo). È indipendente dal DBMS specifico, ma non dal \textit{tipo} di DBMS.
-		\item \textit{Esempio Pratico:}\\
-		\begin{center}
-			\begin{tikzpicture}[
-				entity/.style={rectangle, draw=white, fill=black!90, text=gray!10, minimum width=3cm, minimum height=1.2cm, font=\bfseries},
-				relationship/.style={diamond, draw=white, fill=black!90, text=gray!10, aspect=2, minimum width=2.8cm, minimum height=1.2cm, font=\bfseries},
-				line/.style={draw=white, thick},
-				node distance=0.5cm and 1.5cm
-				]
-				
-				% Top row
-				\node[entity] (studente) {Studente};
-				\node[relationship, right=of studente] (esame) {Esame};
-				\node[entity, right=of esame] (lezione) {Lezione};
-				
-				\draw[line] (studente) -- (esame);
-				\draw[line] (esame) -- (lezione);
-				
-				% Bottom row
-				\node[entity, below=of studente] (impiegato) {Impiegato};
-				\node[relationship, right=of impiegato] (residenza) {Residenza};
-				\node[entity, right=of residenza] (città) {Città};
-				
-				\draw[line] (impiegato) -- (residenza);
-				\draw[line] (residenza) -- (città);
-				
-			\end{tikzpicture}
-		\end{center}
-		
-		
-		\item Dallo schema concettuale sopra, con un po' d'immaginazione sulle releazioni, con SQL potrebbe essere:
-		\begin{minted}{sql}
+	\item Dallo schema concettuale sopra, con un po' d'immaginazione sulle releazioni, con SQL potrebbe essere:
+	\begin{minted}{sql}
 -- Table: Studente
 CREATE TABLE Studente (
-	id INT PRIMARY KEY,
-	nome VARCHAR(100)
+id INT PRIMARY KEY,
+nome VARCHAR(100)
 );
 
 -- Table: Lezione
 CREATE TABLE Lezione (
-	id INT PRIMARY KEY,
-	titolo VARCHAR(100)
+id INT PRIMARY KEY,
+titolo VARCHAR(100)
 );
 
 -- Join Table: Esame (between Studente and Lezione)
 CREATE TABLE Esame (
-	studente_id INT,
-	lezione_id INT,
-	data DATE,
-	voto INT,
-	PRIMARY KEY (studente_id, lezione_id),
-	FOREIGN KEY (studente_id) REFERENCES Studente(id),
-	FOREIGN KEY (lezione_id) REFERENCES Lezione(id)
+studente_id INT,
+lezione_id INT,
+data DATE,
+voto INT,
+PRIMARY KEY (studente_id, lezione_id),
+FOREIGN KEY (studente_id) REFERENCES Studente(id),
+FOREIGN KEY (lezione_id) REFERENCES Lezione(id)
 );
 
 -- Table: Impiegato
 CREATE TABLE Impiegato (
-	id INT PRIMARY KEY,
-	nome VARCHAR(100)
+id INT PRIMARY KEY,
+nome VARCHAR(100)
 );
 
 -- Table: Città
 CREATE TABLE Città (
-	id INT PRIMARY
+id INT PRIMARY
 )
-		\end{minted}
-	\end{itemize}
-	
-	\subsection{Design Fisico}
-	\begin{itemize}
-		\item \textbf{Input:} Schema Logico.
-		\item \textbf{Output:} \textbf{Schema Fisico} (definizioni specifiche per il DBMS scelto: indici, partizionamento, filegroup, ecc.).
-		\item \textbf{Focus:} Ottimizzazione delle performance e dello storage.
-		\item \textit{Esempio Pratico:} ``Sulla tabella \texttt{Studenti}, creiamo un indice sulla colonna \texttt{Cognome} per velocizzare le ricerche.''
-	\end{itemize}
-	
-	\section{Modelli di Dati: Costrutti, Schemi e Istanze}
-	\begin{itemize}
-		\item \textbf{Modello di Dati:} Una collezione di ``costrutti'' (come i tipi di dato in programmazione) per categorizzare i dati e descrivere le operazioni su di essi.
-		\begin{itemize}
-			\item Esempio: il modello relazionale usa il costrutto \texttt{relazione} (tabella) per insiemi uniformi di \texttt{tuple} (righe).
-		\end{itemize}
-		\item \textbf{Schema:} La struttura invariante nel tempo dei dati (aspetto \textit{intensionale}).
-		\begin{itemize}
-			\item SQL: \texttt{CREATE TABLE Users (id INT, name VARCHAR(255));}
-			\item Prisma: \texttt{model User \{ id Int @id; name String; \}}
-		\end{itemize}
-		\item \textbf{Istanza:} I valori attuali dei dati in un certo momento, che cambiano nel tempo (aspetto \textit{estensionale}).
-		\begin{itemize}
-			\item SQL: Le righe effettive nella tabella \texttt{Users}: \texttt{(1, 'Alice'), (2, 'Bob')}.
-			\item MongoDB: I documenti effettivi nella collezione \texttt{users}.
-		\end{itemize}
-	\end{itemize}
-	
-	\section{Il Modello Entità-Relazione (ER Model)}
-	È il modello concettuale più usato. Ecco i suoi costrutti principali:
-	
-	\subsection{Entità (Entity)}
-	\begin{itemize}
-		\item Rappresenta una classe di ``oggetti'' (cose, persone, luoghi) del mondo reale che hanno proprietà comuni e un'esistenza autonoma.
-		\item \textbf{Esempi:} \texttt{Studente}, \texttt{Prodotto}, \texttt{Dipartimento}.
-		\item \textbf{Rappresentazione Grafica:} Rettangolo.
-		\item \textbf{Convenzioni:} Nomi singolari, significativi.
-		\item \textit{Paragone Pratico:} Simile a una classe in OOP, un \texttt{model} in Prisma, o una collezione in MongoDB.
-	\end{itemize}
+	\end{minted}
+\end{itemize}
 
-	\begin{figure}[h]
-		\centering
-		\begin{tikzpicture}[
-			every node/.style={font=\small},
-			entity/.style={rectangle, draw=white, fill=black!80, text=white, minimum width=2cm, minimum height=1cm},
-			attribute/.style={ellipse, draw=white, fill=black!60, text=white, minimum width=1.5cm, minimum height=0.8cm},
-			key/.style={attribute, draw=white, ultra thick}
-		]
-			\node[entity] (studente) {Studente};
-			\node[attribute] (matricola) [above=1cm of studente] {Matricola};
-			\node[attribute] (nome) [above right=0.5cm and 1cm of studente] {Nome};
-			\node[attribute] (cognome) [right=1cm of studente] {Cognome};
-			\node[attribute] (data) [below right=0.5cm and 1cm of studente] {DataNascita};
-			
-			\draw[white] (studente) -- (matricola);
-			\draw[white] (studente) -- (nome);
-			\draw[white] (studente) -- (cognome);
-			\draw[white] (studente) -- (data);
-			
-			\draw[white, ultra thick] (studente) -- (matricola);
-		\end{tikzpicture}
-		\caption{Esempio di entità Studente con i suoi attributi. La linea spessa indica l'identificatore (Matricola).}
-	\end{figure}
-	
-	\subsection{Relazione (Relationship)}
-	\begin{itemize}
-		\item Un legame, un'associazione logica tra due o più tipi di entità.
-		\item \textbf{Esempi:} \texttt{Studente} \textit{Frequenta} \texttt{Corso}; \texttt{Impiegato} \textit{LavoraIn} \texttt{Dipartimento}.
-		\item \textbf{Rappresentazione Grafica:} Rombo.
-		\item \textbf{Convenzioni:} Nomi singolari (se possibile, nomi invece di verbi).
-		\item \textbf{Tipi:}
-		\begin{itemize}
-			\item \textbf{Binarie:} Coinvolgono due entità.
-			\item \textbf{N-arie:} Coinvolgono più di due entità (es. \texttt{Fornitore} \textit{Fornisce} \texttt{Prodotto} a un \texttt{Dipartimento}). Spesso si cerca di scomporle in binarie.
-			\item \textbf{Ricorsive:} Un'entità è in relazione con se stessa (es. \texttt{Impiegato} \textit{Supervisiona} \texttt{Impiegato}).
-			\begin{itemize}
-				\item \textit{Paragone Pratico (Ricorsiva):} In SQL, una tabella \texttt{Impiegati} con una colonna \texttt{ID\_Manager} che è una foreign key a \texttt{Impiegati.ID}.
-			\end{itemize}
-		\end{itemize}
-		\item \textbf{Ruoli:} Utili nelle relazioni ricorsive per chiarire il significato (es. \texttt{Presidente} -(Precedente/Successivo)-> \texttt{Successione}).
-	\end{itemize}
+\subsection{Design Fisico}
+\begin{itemize}
+	\item \textbf{Input:} Schema Logico.
+	\item \textbf{Output:} \textbf{Schema Fisico} (definizioni specifiche per il DBMS scelto: indici, partizionamento, filegroup, ecc.).
+	\item \textbf{Focus:} Ottimizzazione delle performance e dello storage.
+	\item \textit{Esempio Pratico:} ``Sulla tabella \texttt{Studenti}, creiamo un indice sulla colonna \texttt{Cognome} per velocizzare le ricerche.''
+\end{itemize}
 
-	\begin{figure}[h]
-		\centering
-		\begin{tikzpicture}[
-			every node/.style={font=\small},
-			entity/.style={rectangle, draw=white, fill=black!80, text=white, minimum width=2cm, minimum height=1cm},
-			relationship/.style={diamond, draw=white, fill=black!70, text=white, minimum width=1.5cm, minimum height=1cm}
-		]
-			\node[entity] (studente) {Studente};
-			\node[relationship] (frequenta) [right=2cm of studente] {Frequenta};
-			\node[entity] (corso) [right=2cm of frequenta] {Corso};
-			
-			\draw[white] (studente) -- node[above, text=white] {(0,N)} (frequenta);
-			\draw[white] (frequenta) -- node[above, text=white] {(0,N)} (corso);
-		\end{tikzpicture}
-		\caption{Esempio di relazione molti-a-molti tra Studente e Corso.}
-	\end{figure}
-	
-	\subsection{Promozione di Relazioni a Entità}
-	\textbf{Quando?}
+\section{Modelli di Dati: Costrutti, Schemi e Istanze}
+\begin{itemize}
+	\item \textbf{Modello di Dati:} Una collezione di ``costrutti'' (come i tipi di dato in programmazione) per categorizzare i dati e descrivere le operazioni su di essi.
 	\begin{itemize}
-		\item Se una relazione ha attributi propri (es. la relazione \texttt{Iscrizione} tra \texttt{Studente} e \texttt{Corso} ha attributi come \texttt{DataIscrizione} e \texttt{VotoEsame}).
-		\item Se uno studente può sostenere lo \textit{stesso} esame più volte (es. per migliorare il voto). La semplice relazione \texttt{Studente-Esame-Corso} non cattura i tentativi multipli.
+		\item Esempio: il modello relazionale usa il costrutto \texttt{relazione} (tabella) per insiemi uniformi di \texttt{tuple} (righe).
 	\end{itemize}
-	\textbf{Come?} La relazione diventa un'entità ``associativa''.
+	\item \textbf{Schema:} La struttura invariante nel tempo dei dati (aspetto \textit{intensionale}).
 	\begin{itemize}
-		\item \textit{Esempio Pratico:} La relazione \texttt{Studente}-\texttt{Iscrizione}-\texttt{Corso} diventa: Entità \texttt{Studente} --- Relazione \texttt{HaSostenuto} --- Entità \texttt{IstanzaEsame} --- Relazione \texttt{Riguarda} --- Entità \texttt{Corso}. L'entità \texttt{IstanzaEsame} avrà attributi come \texttt{Data}, \texttt{Voto}.
-		\item \textit{SQL:} Questo si traduce in una ``join table'' o ``tabella associativa'':
-		\begin{minted}{sql}
-CREATE TABLE EsamiSostenuti (
-	ID_Studente INT,
-	ID_Corso INT,
-	Data DATE,
-	Voto INT,
-	PRIMARY KEY (ID_Studente, ID_Corso, Data) -- Data inclusa per tentativi multipli
-);
-		\end{minted}
+		\item SQL: \texttt{CREATE TABLE Users (id INT, name VARCHAR(255));}
+		\item Prisma: \texttt{model User \{ id Int @id; name String; \}}
 	\end{itemize}
+	\item \textbf{Istanza:} I valori attuali dei dati in un certo momento, che cambiano nel tempo (aspetto \textit{estensionale}).
+	\begin{itemize}
+		\item SQL: Le righe effettive nella tabella \texttt{Users}: \texttt{(1, 'Alice'), (2, 'Bob')}.
+		\item MongoDB: I documenti effettivi nella collezione \texttt{users}.
+	\end{itemize}
+\end{itemize}
 
-	\begin{figure}[h]
-		\centering
-		\begin{tikzpicture}[
-			every node/.style={font=\small},
-			entity/.style={rectangle, draw=white, fill=black!80, text=white, minimum width=2cm, minimum height=1cm},
-			relationship/.style={diamond, draw=white, fill=black!70, text=white, minimum width=1.5cm, minimum height=1cm},
-			% Nuova definizione per l'entità debole con doppio bordo visibile su sfondo nero
-			weak/.style={
-				rectangle,
-				draw=white,
-				fill=black!60, 
-				text=white, 
-				minimum width=2cm, 
-				minimum height=1cm,
-				path picture={
-					\draw[white] 
-					([shift={(0.05cm,0.05cm)}]path picture bounding box.south west) 
-					rectangle 
-					([shift={(-0.05cm,-0.05cm)}]path picture bounding box.north east);
-				}
-			}
-		]
-			\node[entity] (studente) {Studente};
-			\node[weak] (esame) [right=2cm of studente] {IstanzaEsame};
-			\node[entity] (corso) [right=2cm of esame] {Corso};
-			
-			\draw[white] (studente) -- node[above, text=white] {(0,N)} (esame);
-			\draw[white] (esame) -- node[above, text=white] {(1,1)} (corso);
-			
-			\node[draw=white, fill=black!50, text=white, ellipse, minimum width=1cm, minimum height=0.5cm] (data) [above=0.5cm of esame] {Data};
-			\node[draw=white, fill=black!50, text=white, ellipse, minimum width=1cm, minimum height=0.5cm] (voto) [below=0.5cm of esame] {Voto};
-			
-			\draw[white] (esame) -- (data);
-			\draw[white] (esame) -- (voto);
-		\end{tikzpicture}
-		\caption{Esempio di promozione della relazione Esame a entità debole (doppio bordo) con attributi propri.}
-	\end{figure}
-	
-	\subsection{Attributi (Attribute)}
-	\begin{itemize}
-		\item Una proprietà o caratteristica di un'entità o di una relazione.
-		\item Collega ogni istanza dell'entità/relazione a un valore da un ``dominio'' (insieme di valori possibili).
-		\item \textbf{Esempi:} \texttt{Nome} dell'entità \texttt{Studente}; \texttt{Data} della relazione \texttt{Esame}.
-		\item \textbf{Rappresentazione Grafica:} Ovale.
-		\item \textbf{Tipi:}
-		\begin{itemize}
-			\item \textbf{Semplici:} Atomici (es. \texttt{Età}).
-			\item \textbf{Composti:} Possono essere scomposti in sotto-attributi (es. \texttt{Indirizzo} composto da \texttt{Via}, \texttt{NumeroCivico}, \texttt{Città}).
-			\begin{itemize}
-				\item \textit{Paragone Pratico (Composto):} In MongoDB è naturale: \texttt{address: \{ street: "...", city: "..." \}}. In SQL, spesso si ``appiattiscono'' in colonne separate (\texttt{Via}, \texttt{NumeroCivico}, \texttt{Citta}) o, se complesso, si mette in una tabella separata.
-			\end{itemize}
-		\end{itemize}
-	\end{itemize}
-	
-	\subsection{Cardinalità (Cardinality)}
-	Specifica il numero minimo e massimo di istanze di un'entità che possono partecipare a una relazione, o il numero di valori che un attributo può assumere.
-	\begin{itemize}
-		\item \textbf{Notazione comune:} \texttt{(min, max)}
-		\begin{itemize}
-			\item \texttt{min = 0}: partecipazione opzionale.
-			\item \texttt{min = 1} (o più): partecipazione obbligatoria.
-			\item \texttt{max = 1}: al massimo una.
-			\item \texttt{max = N} (o \texttt{*}): molte.
-		\end{itemize}
-	\end{itemize}
-	
-	\subsubsection{Cardinalità delle Relazioni}
-	\begin{itemize}
-		\item \textbf{Esempio:} \texttt{Impiegato (1,1)} --- \texttt{LavoraPer} --- \texttt{(0,N) Dipartimento}
-		\begin{itemize}
-			\item Un \texttt{Impiegato} deve lavorare per \textbf{esattamente un} \texttt{Dipartimento}.
-			\item Un \texttt{Dipartimento} può avere \textbf{da zero a molti} \texttt{Impiegati}.
-		\end{itemize}
-		\item \textbf{Tipi comuni (basati su max):}
-		\begin{itemize}
-			\item \textbf{Uno-a-Uno (1:1):} Es. \texttt{Persona (0,1)} --- \texttt{Possiede} --- \texttt{(0,1) Pacemaker}.
-			\item \textbf{Uno-a-Molti (1:N):} Es. \texttt{Cliente (1,1)} --- \texttt{Effettua} --- \texttt{(0,N) Ordine}.
-			\item \textbf{Molti-a-Molti (M:N):} Es. \texttt{Studente (0,N)} --- \texttt{Frequenta} --- \texttt{(0,N) Corso}.
-			\begin{itemize}
-				\item \textit{Paragone Pratico (M:N):} In SQL, le relazioni M:N si implementano sempre con una tabella associativa intermedia. Prisma gestisce questo in modo più astratto.
-			\end{itemize}
-		\end{itemize}
-	\end{itemize}
+\section{Il Modello Entità-Relazione (ER Model)}
+È il modello concettuale più usato. Ecco i suoi costrutti principali:
 
-	\begin{figure}[h]
-		\centering
-		\begin{tikzpicture}[
-			every node/.style={font=\small},
-			entity/.style={rectangle, draw=white, fill=black!80, text=white, minimum width=2cm, minimum height=1cm},
-			relationship/.style={diamond, draw=white, fill=black!70, text=white, minimum width=1.5cm, minimum height=1cm}
-		]
-			% 1:1 relationship
-			\node[entity] (persona) {Persona};
-			\node[relationship] (possiede) [right=2cm of persona] {Possiede};
-			\node[entity] (pacemaker) [right=2cm of possiede] {Pacemaker};
-			
-			\draw[white] (persona) -- node[above, text=white] {(0,1)} (possiede);
-			\draw[white] (possiede) -- node[above, text=white] {(0,1)} (pacemaker);
-			
-			% 1:N relationship
-			\node[entity] (cliente) [below=2cm of persona] {Cliente};
-			\node[relationship] (effettua) [right=2cm of cliente] {Effettua};
-			\node[entity] (ordine) [right=2cm of effettua] {Ordine};
-			
-			\draw[white] (cliente) -- node[above, text=white] {(1,1)} (effettua);
-			\draw[white] (effettua) -- node[above, text=white] {(0,N)} (ordine);
-		\end{tikzpicture}
-		\caption{Esempi di relazioni uno-a-uno (Persona-Pacemaker) e uno-a-molti (Cliente-Ordine).}
-	\end{figure}
-	
-	\subsubsection{Cardinalità degli Attributi}
-	\begin{itemize}
-		\item \texttt{(0,1)}: Attributo opzionale (può essere \texttt{NULL}). Es. \texttt{NumeroTelefonoSecondario}.
-		\item \texttt{(1,1)}: Attributo obbligatorio, singolo valore (default). Es. \texttt{CodiceFiscale}.
-		\item \texttt{(0,N)} o \texttt{(1,N)}: Attributo multivalore (un'entità può avere più valori per quell'attributo). Es. \texttt{NumeriTelefono} (una persona può avere più numeri).
-		\begin{itemize}
-			\item \textit{Paragone Pratico (Multivalore):} In SQL, si usa una tabella separata: \texttt{Persona(ID\_Persona)}, \texttt{NumeriTelefono(ID\_Persona\_FK, Numero)}. In MongoDB, si usa un array: \texttt{telefoni: ["123", "456"]}.
-		\end{itemize}
-	\end{itemize}
+\subsection{Entità (Entity)}
+\begin{itemize}
+	\item Rappresenta una classe di ``oggetti'' (cose, persone, luoghi) del mondo reale che hanno proprietà comuni e un'esistenza autonoma.
+	\item \textbf{Esempi:} \texttt{Studente}, \texttt{Prodotto}, \texttt{Dipartimento}.
+	\item \textbf{Rappresentazione Grafica:} Rettangolo.
+	\item \textbf{Convenzioni:} Nomi singolari, significativi.
+	\item \textit{Paragone Pratico:} Simile a una classe in OOP, un \texttt{model} in Prisma, o una collezione in MongoDB.
+\end{itemize}
 
-	\begin{figure}[h]
-		\centering
-		\begin{tikzpicture}[
-			every node/.style={font=\small},
-			entity/.style={rectangle, draw=white, fill=black!80, text=white, minimum width=2cm, minimum height=1cm},
-			attribute/.style={ellipse, draw=white, fill=black!60, text=white, minimum width=1.5cm, minimum height=0.8cm},
-			multivalue/.style={
-				ellipse,
-				draw=white,
-				fill=black!50,
-				text=white,
-				minimum width=1.5cm,
-				minimum height=0.8cm,
-				path picture={
-					\draw[white] 
-					(path picture bounding box.center) 
-					ellipse 
-					({0.5*\pgfkeysvalueof{/pgf/minimum width}-0.05cm} and {0.5*\pgfkeysvalueof{/pgf/minimum height}-0.05cm});
-				}
-			}
-		]
+\begin{figure}[h]
+	\centering
+	\begin{tikzpicture}[
+		every node/.style={font=\small},
+		entity/.style={rectangle, draw=white, fill=black!80, text=white, minimum width=2cm, minimum height=1cm},
+		attribute/.style={ellipse, draw=white, fill=black!60, text=white, minimum width=1.5cm, minimum height=0.8cm},
+		key/.style={attribute, draw=white, ultra thick}
+	]
+		\node[entity] (studente) {Studente};
+		\node[attribute] (matricola) [above=1cm of studente] {Matricola};
+		\node[attribute] (nome) [above right=0.5cm and 1cm of studente] {Nome};
+		\node[attribute] (cognome) [right=1cm of studente] {Cognome};
+		\node[attribute] (data) [below right=0.5cm and 1cm of studente] {DataNascita};
 		
-			\node[entity] (persona) {Persona};
-			
-			% Single value attributes
-			\node[attribute] (cf) [above=1cm of persona] {CF};
-			\node[attribute] (nome) [above right=0.5cm and 1cm of persona] {Nome};
-			
-			% Optional attribute
-			\node[attribute] (tel2) [right=1cm of persona] {Tel2};
-			
-			% Multivalue attribute
-			\node[multivalue] (tel) [below right=0.5cm and 1cm of persona] {Telefoni};
-			
-			\draw[white] (persona) -- (cf);
-			\draw[white] (persona) -- (nome);
-			\draw[white] (persona) -- (tel2);
-			\draw[white] (persona) -- (tel);
-			
-			% Cardinality labels
-			\node[text=white] at ($(cf)!0.5!(persona)$) [left] {(1,1)};
-			\node[text=white] at ($(tel2)!0.5!(persona)$) [right] {(0,1)};
-			\node[text=white] at ($(tel)!0.5!(persona)$) [right] {(0,N)};
-		\end{tikzpicture}
-		\caption{Esempi di attributi con diverse cardinalità: obbligatorio (CF), opzionale (Tel2), e multivalore (Telefoni).}
-	\end{figure}
-	
-	\subsection{Identificatori (Chiavi - Keys)}
-	\begin{itemize}
-		\item Un attributo o un insieme di attributi che identificano univocamente ogni istanza di un'entità.
-		\item \textbf{Rappresentazione Grafica:} Attributo sottolineato.
-		\item \textbf{Tipi:}
-		\begin{itemize}
-			\item \textbf{Identificatore Interno:} Formato da attributi della stessa entità.
-			\begin{itemize}
-				\item Es. \texttt{codiceFiscale} per l'entità \texttt{Persona}.
-				\item \textit{Paragone Pratico:} \texttt{PRIMARY KEY} in SQL; \texttt{\_id} in MongoDB; \texttt{@id} in Prisma.
-			\end{itemize}
-			\item \textbf{Identificatore Esterno:} Formato da attributi dell'entità più l'identificatore di un'entità esterna a cui è collegata tramite una relazione con cardinalità \texttt{(1,1)} dal lato dell'entità da identificare. Usato per ``entità deboli'' che non possono esistere o essere identificate senza l'entità ``forte''.
-			\begin{itemize}
-				\item Es. \texttt{lineId} (attributo di \texttt{OrderItem}) + \texttt{orderId} (dall'entità \texttt{Order}) identifica univocamente un \texttt{OrderItem}. \texttt{OrderItem} è un'entità debole rispetto a \texttt{Order}.
-			\end{itemize}
-		\end{itemize}
-		\item Ogni entità deve avere almeno un identificatore.
-		\item Le relazioni di solito non hanno identificatori (se ne hanno bisogno, si promuovono a entità).
-	\end{itemize}
+		\draw[white] (studente) -- (matricola);
+		\draw[white] (studente) -- (nome);
+		\draw[white] (studente) -- (cognome);
+		\draw[white] (studente) -- (data);
+		
+		\draw[white, ultra thick] (studente) -- (matricola);
+	\end{tikzpicture}
+	\caption{Esempio di entità Studente con i suoi attributi. La linea spessa indica l'identificatore (Matricola).}
+\end{figure}
 
-	\begin{figure}[h]
-		\centering
-		\begin{tikzpicture}[
-			every node/.style={font=\small},
-			entity/.style={rectangle, draw=white, fill=black!80, text=white, minimum width=2cm, minimum height=1cm},
-			weak/.style={
-				rectangle, 
-				draw=white, 
-				fill=black!60, 
-				text=white, 
-				minimum width=2cm, 
-				minimum height=1cm,
-				path picture={
-					\draw[white] 
-					([shift={(0.05cm,0.05cm)}]path picture bounding box.south west) 
-					rectangle 
-					([shift={(-0.05cm,-0.05cm)}]path picture bounding box.north east);
-				}
-			},
-			attribute/.style={ellipse, draw=white, fill=black!60, text=white, minimum width=1.5cm, minimum height=0.8cm},
-			key/.style={attribute, draw=white, ultra thick}
-		]
-			% Strong entity with internal key
-			\node[entity] (ordine) {Order};
-			\node[key] (id) [above=1cm of ordine] {orderId};
-			\draw[white, ultra thick] (ordine) -- (id);
-			
-			% Weak entity with external key
-			\node[weak] (riga) [right=3cm of ordine] {OrderItem};
-			\node[attribute] (num) [above=1cm of riga] {lineId};
-			\node[attribute] (qty) [right=1cm of riga] {quantity};
-			
-			\draw[white] (riga) -- (num);
-			\draw[white] (riga) -- (qty);
-			\draw[white] (ordine) -- node[above, text=white] {(1,1)} (riga);
-			
-			% Dashed line for identifying relationship
-			\draw[white, dashed] (id) -- (num);
-		\end{tikzpicture}
-		\caption{Esempio di entità forte (Order) con identificatore interno e entità debole (OrderItem) con identificatore esterno.}
-	\end{figure}
+\subsection{Relazione (Relationship)}
+\begin{itemize}
+	\item Un legame, un'associazione logica tra due o più tipi di entità.
+	\item \textbf{Esempi:} \texttt{Studente} \textit{Frequenta} \texttt{Corso}; \texttt{Impiegato} \textit{LavoraIn} \texttt{Dipartimento}.
+	\item \textbf{Rappresentazione Grafica:} Rombo.
+	\item \textbf{Convenzioni:} Nomi singolari (se possibile, nomi invece di verbi).
+	\item \textbf{Tipi:}
+	\begin{itemize}
+		\item \textbf{Binarie:} Coinvolgono due entità.
+		\item \textbf{N-arie:} Coinvolgono più di due entità (es. \texttt{Fornitore} \textit{Fornisce} \texttt{Prodotto} a un \texttt{Dipartimento}). Spesso si cerca di scomporle in binarie.
+		\item \textbf{Ricorsive:} Un'entità è in relazione con se stessa (es. \texttt{Impiegato} \textit{Supervisiona} \texttt{Impiegato}).
+		\begin{itemize}
+			\item \textit{Paragone Pratico (Ricorsiva):} In SQL, una tabella \texttt{Impiegati} con una colonna \texttt{ID\_Manager} che è una foreign key a \texttt{Impiegati.ID}.
+		\end{itemize}
+	\end{itemize}
+	\item \textbf{Ruoli:} Utili nelle relazioni ricorsive per chiarire il significato (es. \texttt{Presidente} -(Precedente/Successivo)-> \texttt{Successione}).
+\end{itemize}
+
+\begin{figure}[h]
+	\centering
+	\begin{tikzpicture}[
+		every node/.style={font=\small},
+		entity/.style={rectangle, draw=white, fill=black!80, text=white, minimum width=2cm, minimum height=1cm},
+		relationship/.style={diamond, draw=white, fill=black!70, text=white, minimum width=1.5cm, minimum height=1cm}
+	]
+		\node[entity] (studente) {Studente};
+		\node[relationship] (frequenta) [right=2cm of studente] {Frequenta};
+		\node[entity] (corso) [right=2cm of frequenta] {Corso};
+		
+		\draw[white] (studente) -- node[above, text=white] {(0,N)} (frequenta);
+		\draw[white] (frequenta) -- node[above, text=white] {(0,N)} (corso);
+	\end{tikzpicture}
+	\caption{Esempio di relazione molti-a-molti tra Studente e Corso.}
+\end{figure}
+
+\subsection{Promozione di Relazioni a Entità}
+\textbf{Quando?}
+\begin{itemize}
+	\item Se una relazione ha attributi propri (es. la relazione \texttt{Iscrizione} tra \texttt{Studente} e \texttt{Corso} ha attributi come \texttt{DataIscrizione} e \texttt{VotoEsame}).
+	\item Se uno studente può sostenere lo \textit{stesso} esame più volte (es. per migliorare il voto). La semplice relazione \texttt{Studente-Esame-Corso} non cattura i tentativi multipli.
+\end{itemize}
+\textbf{Come?} La relazione diventa un'entità ``associativa''.
+\begin{itemize}
+	\item \textit{Esempio Pratico:} La relazione \texttt{Studente}-\texttt{Iscrizione}-\texttt{Corso} diventa: Entità \texttt{Studente} --- Relazione \texttt{HaSostenuto} --- Entità \texttt{IstanzaEsame} --- Relazione \texttt{Riguarda} --- Entità \texttt{Corso}. L'entità \texttt{IstanzaEsame} avrà attributi come \texttt{Data}, \texttt{Voto}.
+	\item \textit{SQL:} Questo si traduce in una ``join table'' o ``tabella associativa'':
+	\begin{minted}{sql}
+CREATE TABLE EsamiSostenuti (
+ID_Studente INT,
+ID_Corso INT,
+Data DATE,
+Voto INT,
+PRIMARY KEY (ID_Studente, ID_Corso, Data) -- Data inclusa per tentativi multipli
+);
+	\end{minted}
+\end{itemize}
+
+\begin{figure}[h]
+	\centering
+	\begin{tikzpicture}[
+		every node/.style={font=\small},
+		entity/.style={rectangle, draw=white, fill=black!80, text=white, minimum width=2cm, minimum height=1cm},
+		relationship/.style={diamond, draw=white, fill=black!70, text=white, minimum width=1.5cm, minimum height=1cm},
+		% Nuova definizione per l'entità debole con doppio bordo visibile su sfondo nero
+		weak/.style={
+			rectangle,
+			draw=white,
+			fill=black!60, 
+			text=white, 
+			minimum width=2cm, 
+			minimum height=1cm,
+			path picture={
+				\draw[white] 
+				([shift={(0.05cm,0.05cm)}]path picture bounding box.south west) 
+				rectangle 
+				([shift={(-0.05cm,-0.05cm)}]path picture bounding box.north east);
+			}
+		}
+	]
+		\node[entity] (studente) {Studente};
+		\node[weak] (esame) [right=2cm of studente] {IstanzaEsame};
+		\node[entity] (corso) [right=2cm of esame] {Corso};
+		
+		\draw[white] (studente) -- node[above, text=white] {(0,N)} (esame);
+		\draw[white] (esame) -- node[above, text=white] {(1,1)} (corso);
+		
+		\node[draw=white, fill=black!50, text=white, ellipse, minimum width=1cm, minimum height=0.5cm] (data) [above=0.5cm of esame] {Data};
+		\node[draw=white, fill=black!50, text=white, ellipse, minimum width=1cm, minimum height=0.5cm] (voto) [below=0.5cm of esame] {Voto};
+		
+		\draw[white] (esame) -- (data);
+		\draw[white] (esame) -- (voto);
+	\end{tikzpicture}
+	\caption{Esempio di promozione della relazione Esame a entità debole (doppio bordo) con attributi propri.}
+\end{figure}
+
+\subsection{Attributi (Attribute)}
+\begin{itemize}
+	\item Una proprietà o caratteristica di un'entità o di una relazione.
+	\item Collega ogni istanza dell'entità/relazione a un valore da un ``dominio'' (insieme di valori possibili).
+	\item \textbf{Esempi:} \texttt{Nome} dell'entità \texttt{Studente}; \texttt{Data} della relazione \texttt{Esame}.
+	\item \textbf{Rappresentazione Grafica:} Ovale.
+	\item \textbf{Tipi:}
+	\begin{itemize}
+		\item \textbf{Semplici:} Atomici (es. \texttt{Età}).
+		\item \textbf{Composti:} Possono essere scomposti in sotto-attributi (es. \texttt{Indirizzo} composto da \texttt{Via}, \texttt{NumeroCivico}, \texttt{Città}).
+		\begin{itemize}
+			\item \textit{Paragone Pratico (Composto):} In MongoDB è naturale: \texttt{address: \{ street: "...", city: "..." \}}. In SQL, spesso si ``appiattiscono'' in colonne separate (\texttt{Via}, \texttt{NumeroCivico}, \texttt{Citta}) o, se complesso, si mette in una tabella separata.
+		\end{itemize}
+	\end{itemize}
+\end{itemize}
+
+\subsection{Cardinalità (Cardinality)}
+Specifica il numero minimo e massimo di istanze di un'entità che possono partecipare a una relazione, o il numero di valori che un attributo può assumere.
+\begin{itemize}
+	\item \textbf{Notazione comune:} \texttt{(min, max)}
+	\begin{itemize}
+		\item \texttt{min = 0}: partecipazione opzionale.
+		\item \texttt{min = 1} (o più): partecipazione obbligatoria.
+		\item \texttt{max = 1}: al massimo una.
+		\item \texttt{max = N} (o \texttt{*}): molte.
+	\end{itemize}
+\end{itemize}
+
+\subsubsection{Cardinalità delle Relazioni}
+\begin{itemize}
+	\item \textbf{Esempio:} \texttt{Impiegato (1,1)} --- \texttt{LavoraPer} --- \texttt{(0,N) Dipartimento}
+	\begin{itemize}
+		\item Un \texttt{Impiegato} deve lavorare per \textbf{esattamente un} \texttt{Dipartimento}.
+		\item Un \texttt{Dipartimento} può avere \textbf{da zero a molti} \texttt{Impiegati}.
+	\end{itemize}
+	\item \textbf{Tipi comuni (basati su max):}
+	\begin{itemize}
+		\item \textbf{Uno-a-Uno (1:1):} Es. \texttt{Persona (0,1)} --- \texttt{Possiede} --- \texttt{(0,1) Pacemaker}.
+		\item \textbf{Uno-a-Molti (1:N):} Es. \texttt{Cliente (1,1)} --- \texttt{Effettua} --- \texttt{(0,N) Ordine}.
+		\item \textbf{Molti-a-Molti (M:N):} Es. \texttt{Studente (0,N)} --- \texttt{Frequenta} --- \texttt{(0,N) Corso}.
+		\begin{itemize}
+			\item \textit{Paragone Pratico (M:N):} In SQL, le relazioni M:N si implementano sempre con una tabella associativa intermedia. Prisma gestisce questo in modo più astratto.
+		\end{itemize}
+	\end{itemize}
+\end{itemize}
+
+\begin{figure}[h]
+	\centering
+	\begin{tikzpicture}[
+		every node/.style={font=\small},
+		entity/.style={rectangle, draw=white, fill=black!80, text=white, minimum width=2cm, minimum height=1cm},
+		relationship/.style={diamond, draw=white, fill=black!70, text=white, minimum width=1.5cm, minimum height=1cm}
+	]
+		% 1:1 relationship
+		\node[entity] (persona) {Persona};
+		\node[relationship] (possiede) [right=2cm of persona] {Possiede};
+		\node[entity] (pacemaker) [right=2cm of possiede] {Pacemaker};
+		
+		\draw[white] (persona) -- node[above, text=white] {(0,1)} (possiede);
+		\draw[white] (possiede) -- node[above, text=white] {(0,1)} (pacemaker);
+		
+		% 1:N relationship
+		\node[entity] (cliente) [below=2cm of persona] {Cliente};
+		\node[relationship] (effettua) [right=2cm of cliente] {Effettua};
+		\node[entity] (ordine) [right=2cm of effettua] {Ordine};
+		
+		\draw[white] (cliente) -- node[above, text=white] {(1,1)} (effettua);
+		\draw[white] (effettua) -- node[above, text=white] {(0,N)} (ordine);
+	\end{tikzpicture}
+	\caption{Esempi di relazioni uno-a-uno (Persona-Pacemaker) e uno-a-molti (Cliente-Ordine).}
+\end{figure}
+
+\subsubsection{Cardinalità degli Attributi}
+\begin{itemize}
+	\item \texttt{(0,1)}: Attributo opzionale (può essere \texttt{NULL}). Es. \texttt{NumeroTelefonoSecondario}.
+	\item \texttt{(1,1)}: Attributo obbligatorio, singolo valore (default). Es. \texttt{CodiceFiscale}.
+	\item \texttt{(0,N)} o \texttt{(1,N)}: Attributo multivalore (un'entità può avere più valori per quell'attributo). Es. \texttt{NumeriTelefono} (una persona può avere più numeri).
+	\begin{itemize}
+		\item \textit{Paragone Pratico (Multivalore):} In SQL, si usa una tabella separata: \texttt{Persona(ID\_Persona)}, \texttt{NumeriTelefono(ID\_Persona\_FK, Numero)}. In MongoDB, si usa un array: \texttt{telefoni: ["123", "456"]}.
+	\end{itemize}
+\end{itemize}
+
+\begin{figure}[h]
+	\centering
+	\begin{tikzpicture}[
+		every node/.style={font=\small},
+		entity/.style={rectangle, draw=white, fill=black!80, text=white, minimum width=2cm, minimum height=1cm},
+		attribute/.style={ellipse, draw=white, fill=black!60, text=white, minimum width=1.5cm, minimum height=0.8cm},
+		multivalue/.style={
+			ellipse,
+			draw=white,
+			fill=black!50,
+			text=white,
+			minimum width=1.5cm,
+			minimum height=0.8cm,
+			path picture={
+				\draw[white] 
+				(path picture bounding box.center) 
+				ellipse 
+				({0.5*\pgfkeysvalueof{/pgf/minimum width}-0.05cm} and {0.5*\pgfkeysvalueof{/pgf/minimum height}-0.05cm});
+			}
+		}
+	]
 	
-	\begin{minted}{graphql}
+		\node[entity] (persona) {Persona};
+		
+		% Single value attributes
+		\node[attribute] (cf) [above=1cm of persona] {CF};
+		\node[attribute] (nome) [above right=0.5cm and 1cm of persona] {Nome};
+		
+		% Optional attribute
+		\node[attribute] (tel2) [right=1cm of persona] {Tel2};
+		
+		% Multivalue attribute
+		\node[multivalue] (tel) [below right=0.5cm and 1cm of persona] {Telefoni};
+		
+		\draw[white] (persona) -- (cf);
+		\draw[white] (persona) -- (nome);
+		\draw[white] (persona) -- (tel2);
+		\draw[white] (persona) -- (tel);
+		
+		% Cardinality labels
+		\node[text=white] at ($(cf)!0.5!(persona)$) [left] {(1,1)};
+		\node[text=white] at ($(tel2)!0.5!(persona)$) [right] {(0,1)};
+		\node[text=white] at ($(tel)!0.5!(persona)$) [right] {(0,N)};
+	\end{tikzpicture}
+	\caption{Esempi di attributi con diverse cardinalità: obbligatorio (CF), opzionale (Tel2), e multivalore (Telefoni).}
+\end{figure}
+
+\subsection{Identificatori (Chiavi - Keys)}
+\begin{itemize}
+	\item Un attributo o un insieme di attributi che identificano univocamente ogni istanza di un'entità.
+	\item \textbf{Rappresentazione Grafica:} Attributo sottolineato.
+	\item \textbf{Tipi:}
+	\begin{itemize}
+		\item \textbf{Identificatore Interno:} Formato da attributi della stessa entità.
+		\begin{itemize}
+			\item Es. \texttt{codiceFiscale} per l'entità \texttt{Persona}.
+			\item \textit{Paragone Pratico:} \texttt{PRIMARY KEY} in SQL; \texttt{\_id} in MongoDB; \texttt{@id} in Prisma.
+		\end{itemize}
+		\item \textbf{Identificatore Esterno:} Formato da attributi dell'entità più l'identificatore di un'entità esterna a cui è collegata tramite una relazione con cardinalità \texttt{(1,1)} dal lato dell'entità da identificare. Usato per ``entità deboli'' che non possono esistere o essere identificate senza l'entità ``forte''.
+		\begin{itemize}
+			\item Es. \texttt{lineId} (attributo di \texttt{OrderItem}) + \texttt{orderId} (dall'entità \texttt{Order}) identifica univocamente un \texttt{OrderItem}. \texttt{OrderItem} è un'entità debole rispetto a \texttt{Order}.
+		\end{itemize}
+	\end{itemize}
+	\item Ogni entità deve avere almeno un identificatore.
+	\item Le relazioni di solito non hanno identificatori (se ne hanno bisogno, si promuovono a entità).
+\end{itemize}
+
+\begin{figure}[h]
+	\centering
+	\begin{tikzpicture}[
+		every node/.style={font=\small},
+		entity/.style={rectangle, draw=white, fill=black!80, text=white, minimum width=2cm, minimum height=1cm},
+		weak/.style={
+			rectangle, 
+			draw=white, 
+			fill=black!60, 
+			text=white, 
+			minimum width=2cm, 
+			minimum height=1cm,
+			path picture={
+				\draw[white] 
+				([shift={(0.05cm,0.05cm)}]path picture bounding box.south west) 
+				rectangle 
+				([shift={(-0.05cm,-0.05cm)}]path picture bounding box.north east);
+			}
+		},
+		attribute/.style={ellipse, draw=white, fill=black!60, text=white, minimum width=1.5cm, minimum height=0.8cm},
+		key/.style={attribute, draw=white, ultra thick}
+	]
+		% Strong entity with internal key
+		\node[entity] (ordine) {Order};
+		\node[key] (id) [above=1cm of ordine] {orderId};
+		\draw[white, ultra thick] (ordine) -- (id);
+		
+		% Weak entity with external key
+		\node[weak] (riga) [right=3cm of ordine] {OrderItem};
+		\node[attribute] (num) [above=1cm of riga] {lineId};
+		\node[attribute] (qty) [right=1cm of riga] {quantity};
+		
+		\draw[white] (riga) -- (num);
+		\draw[white] (riga) -- (qty);
+		\draw[white] (ordine) -- node[above, text=white] {(1,1)} (riga);
+		
+		% Dashed line for identifying relationship
+		\draw[white, dashed] (id) -- (num);
+	\end{tikzpicture}
+	\caption{Esempio di entità forte (Order) con identificatore interno e entità debole (OrderItem) con identificatore esterno.}
+\end{figure}
+
+\begin{minted}{graphql}
 // Esempio con Prisma
 model Order {
-  orderId    Int         @id @default(autoincrement())
-  // altri campi dell'ordine
-  orderItems OrderItem[]
+orderId    Int         @id @default(autoincrement())
+// altri campi dell'ordine
+orderItems OrderItem[]
 }
 
 model OrderItem {
-  orderId     Int
-  lineId      Int
-  quantity    Int
-  order       Order  @relation(fields: [orderId], references: [orderId])
-  
-  @@id([orderId, lineId]) // Chiave primaria composta
+orderId     Int
+lineId      Int
+quantity    Int
+order       Order  @relation(fields: [orderId], references: [orderId])
+
+@@id([orderId, lineId]) // Chiave primaria composta
 }
-	\end{minted}
-	
-	\begin{minted}{sql}
+\end{minted}
+
+\begin{minted}{sql}
 -- Definizione SQL dello schema
 CREATE TABLE "Order" (
-  orderId    SERIAL PRIMARY KEY,
-  // altri campi dell'ordine
+orderId    SERIAL PRIMARY KEY,
+// altri campi dell'ordine
 );
 
 CREATE TABLE OrderItem (
-  orderId     INT,
-  lineId      INT,
-  quantity    INT,
-  PRIMARY KEY (orderId, lineId),
-  FOREIGN KEY (orderId) REFERENCES "Order"(orderId) ON DELETE CASCADE
+orderId     INT,
+lineId      INT,
+quantity    INT,
+PRIMARY KEY (orderId, lineId),
+FOREIGN KEY (orderId) REFERENCES "Order"(orderId) ON DELETE CASCADE
 );
-	\end{minted}
-	
-	\subsection{Generalizzazione/Specializzazione (Inheritance)}
-	\begin{itemize}
-		\item Una relazione tra un'entità genitore (superclasse, es. \texttt{Veicolo}) e una o più entità figlie (sottoclassi, es. \texttt{Automobile}, \texttt{Motocicletta}).
-		\item Le figlie sono ``tipi di'' genitore: ereditano attributi e relazioni del genitore e possono averne di propri.
-		\item \textbf{Rappresentazione Grafica:} Freccia (triangolo vuoto) dalle figlie al genitore.
-		\item \textbf{Proprietà:}
-		\begin{itemize}
-			\item \textbf{Ereditarietà:} Le proprietà del genitore sono implicitamente presenti nelle figlie.
-			\item \textbf{Copertura (Total/Partial):}
-			\begin{itemize}
-				\item \textbf{Totale:} Ogni istanza del genitore DEVE essere un'istanza di (almeno) una delle figlie. (Es. \texttt{Persona} -> \texttt{Maschio}, \texttt{Femmina}).
-				\item \textbf{Parziale:} Un'istanza del genitore PUÒ essere un'istanza di una figlia (o solo del tipo genitore). (Es. \texttt{Veicolo} -> \texttt{Automobile}, \texttt{Motocicletta}).
-			\end{itemize}
-			\item \textbf{Disgiunzione (Disjoint/Overlapping):}
-			\begin{itemize}
-				\item \textbf{Disgiunta:} Un'istanza del genitore può essere al massimo un tipo di figlia. (Es. \texttt{Persona} è \texttt{Maschio} O \texttt{Femmina}).
-				\item \textbf{Sovrapposta:} Un'istanza del genitore può essere più tipi di figlia contemporaneamente (raro e più complesso da modellare).
-			\end{itemize}
-			\item Di solito ci si concentra su generalizzazioni \textbf{Disgiunte (Totali o Parziali)}.
-		\end{itemize}
-		\item \textit{Paragone Pratico:}
-		\begin{itemize}
-			\item OOP: \texttt{class Veicolo \{\}}, \texttt{class Automobile extends Veicolo \{\}}.
-			\item SQL: Ci sono diversi pattern per implementare l'ereditarietà.
-			\item Prisma: Può essere modellato con campi discriminatori o modelli separati con relazioni.
-		\end{itemize}
-	\end{itemize}
+\end{minted}
 
-	\begin{figure}[H]
-		\centering
-		\begin{tikzpicture}[
-			every node/.style={font=\small},
-			entity/.style={rectangle, draw=white, fill=black!80, text=white, minimum width=2cm, minimum height=1cm},
-			subclass/.style={rectangle, draw=white, fill=black!70, text=white, minimum width=2cm, minimum height=1cm},
-			attribute/.style={ellipse, draw=white, fill=black!60, text=white, minimum width=1.5cm, minimum height=0.8cm},
-			generalization/.style={white, fill=white, draw=white, line width=1pt, shape=isosceles triangle, shape border rotate=90, isosceles triangle stretches=true, minimum height=0.6cm, minimum width=0.8cm}
-		]
-			% Parent class
-			\node[entity] (veicolo) {Veicolo};
-			\node[attribute] (targa) [above=1cm of veicolo] {Targa};
-			\node[attribute] (anno) [right=1cm of veicolo] {Anno};
-			
-			% Subclasses
-			\node[subclass] (auto) [below=2.5cm of veicolo, xshift=-2cm] {Automobile};
-			\node[subclass] (moto) [below=2.5cm of veicolo, xshift=2cm] {Motocicletta};
-			
-			% Subclass attributes
-			\node[attribute] (porte) [below=0.5cm of auto] {NumPorte};
-			\node[attribute] (cilindrata) [below=0.5cm of moto] {Cilindrata};
-			
-			% Attributes connections
-			\draw[white] (veicolo) -- (targa);
-			\draw[white] (veicolo) -- (anno);
-			\draw[white] (auto) -- (porte);
-			\draw[white] (moto) -- (cilindrata);
-			
-			% Generalization triangle
-			\node[generalization] (gen) at ($(veicolo.south) + (0,-0.5)$) {};
-			
-			% Lines from triangle to subclasses
-			\draw[white] (gen.south) -- ($(gen.south) + (0,-0.2)$) -| (auto);
-			\draw[white] (gen.south) -- ($(gen.south) + (0,-0.2)$) -| (moto);
-			
-			% Line from superclass to triangle
-			\draw[white] (veicolo) -- (gen);
-		\end{tikzpicture}
-		\caption{Esempio di generalizzazione/specializzazione: Veicolo come superclasse e Automobile/Motocicletta come sottoclassi con simbolo di ereditarietà (triangolo vuoto).}
-	\end{figure}
-	
-	\section{Documentazione}
+\subsection{Generalizzazione/Specializzazione (Inheritance)}
+\begin{itemize}
+	\item Una relazione tra un'entità genitore (superclasse, es. \texttt{Veicolo}) e una o più entità figlie (sottoclassi, es. \texttt{Automobile}, \texttt{Motocicletta}).
+	\item Le figlie sono ``tipi di'' genitore: ereditano attributi e relazioni del genitore e possono averne di propri.
+	\item \textbf{Rappresentazione Grafica:} Freccia (triangolo vuoto) dalle figlie al genitore.
+	\item \textbf{Proprietà:}
 	\begin{itemize}
-		\item \textbf{Dizionario dei Dati:} Descrive in dettaglio ogni entità, relazione e attributo.
-		\item \textbf{Vincoli Non Esprimibili:} Alcuni vincoli non possono essere rappresentati graficamente nell'ERD (es. ``Lo stipendio di un impiegato non può superare quello del suo manager''). Vanno documentati a parte.
+		\item \textbf{Ereditarietà:} Le proprietà del genitore sono implicitamente presenti nelle figlie.
+		\item \textbf{Copertura (Total/Partial):}
 		\begin{itemize}
-			\item \textit{Paragone Pratico:} Questi vincoli si implementano spesso con \texttt{CHECK constraints} in SQL, \texttt{triggers}, o a livello applicativo.
+			\item \textbf{Totale:} Ogni istanza del genitore DEVE essere un'istanza di (almeno) una delle figlie. (Es. \texttt{Persona} -> \texttt{Maschio}, \texttt{Femmina}).
+			\item \textbf{Parziale:} Un'istanza del genitore PUÒ essere un'istanza di una figlia (o solo del tipo genitore). (Es. \texttt{Veicolo} -> \texttt{Automobile}, \texttt{Motocicletta}).
 		\end{itemize}
+		\item \textbf{Disgiunzione (Disjoint/Overlapping):}
+		\begin{itemize}
+			\item \textbf{Disgiunta:} Un'istanza del genitore può essere al massimo un tipo di figlia. (Es. \texttt{Persona} è \texttt{Maschio} O \texttt{Femmina}).
+			\item \textbf{Sovrapposta:} Un'istanza del genitore può essere più tipi di figlia contemporaneamente (raro e più complesso da modellare).
+		\end{itemize}
+		\item Di solito ci si concentra su generalizzazioni \textbf{Disgiunte (Totali o Parziali)}.
 	\end{itemize}
-	
-	\section{UML (Unified Modeling Language) come Alternativa}
+	\item \textit{Paragone Pratico:}
 	\begin{itemize}
-		\item UML è un linguaggio di modellazione più ampio, usato per vari aspetti dello sviluppo software.
-		\item Per la modellazione dei dati, si usano principalmente i \textbf{Diagrammi delle Classi (Class Diagrams)}.
-		\item Molti concetti ER hanno un equivalente in UML:
-		\begin{itemize}
-			\item \textbf{Entità} -> \textbf{Classe}
-			\item \textbf{Relazione} -> \textbf{Associazione}
-			\item \textbf{Relazione con attributi} -> \textbf{Classe di Associazione}
-			\item \textbf{Cardinalità:} \texttt{1}, \texttt{0..1}, \texttt{*}, \texttt{1..*}
-			\item \textbf{Identificatori:} \texttt{\{id\}} accanto all'attributo.
-			\item \textbf{Generalizzazione/Specializzazione:} Freccia con triangolo vuoto verso la superclasse.
-			\item \textbf{Concetti specifici UML:} Aggregazione (rombo vuoto), Composizione (rombo pieno).
-		\end{itemize}
+		\item OOP: \texttt{class Veicolo \{\}}, \texttt{class Automobile extends Veicolo \{\}}.
+		\item SQL: Ci sono diversi pattern per implementare l'ereditarietà.
+		\item Prisma: Può essere modellato con campi discriminatori o modelli separati con relazioni.
 	\end{itemize}
+\end{itemize}
 
-	
-	% --- Assicurati che questi pacchetti siano nel tuo preambolo ---
+\begin{figure}[H]
+	\centering
+	\begin{tikzpicture}[
+		every node/.style={font=\small},
+		entity/.style={rectangle, draw=white, fill=black!80, text=white, minimum width=2cm, minimum height=1cm},
+		subclass/.style={rectangle, draw=white, fill=black!70, text=white, minimum width=2cm, minimum height=1cm},
+		attribute/.style={ellipse, draw=white, fill=black!60, text=white, minimum width=1.5cm, minimum height=0.8cm},
+		generalization/.style={white, fill=white, draw=white, line width=1pt, shape=isosceles triangle, shape border rotate=90, isosceles triangle stretches=true, minimum height=0.6cm, minimum width=0.8cm}
+	]
+		% Parent class
+		\node[entity] (veicolo) {Veicolo};
+		\node[attribute] (targa) [above=1cm of veicolo] {Targa};
+		\node[attribute] (anno) [right=1cm of veicolo] {Anno};
+		
+		% Subclasses
+		\node[subclass] (auto) [below=2.5cm of veicolo, xshift=-2cm] {Automobile};
+		\node[subclass] (moto) [below=2.5cm of veicolo, xshift=2cm] {Motocicletta};
+		
+		% Subclass attributes
+		\node[attribute] (porte) [below=0.5cm of auto] {NumPorte};
+		\node[attribute] (cilindrata) [below=0.5cm of moto] {Cilindrata};
+		
+		% Attributes connections
+		\draw[white] (veicolo) -- (targa);
+		\draw[white] (veicolo) -- (anno);
+		\draw[white] (auto) -- (porte);
+		\draw[white] (moto) -- (cilindrata);
+		
+		% Generalization triangle
+		\node[generalization] (gen) at ($(veicolo.south) + (0,-0.5)$) {};
+		
+		% Lines from triangle to subclasses
+		\draw[white] (gen.south) -- ($(gen.south) + (0,-0.2)$) -| (auto);
+		\draw[white] (gen.south) -- ($(gen.south) + (0,-0.2)$) -| (moto);
+		
+		% Line from superclass to triangle
+		\draw[white] (veicolo) -- (gen);
+	\end{tikzpicture}
+	\caption{Esempio di generalizzazione/specializzazione: Veicolo come superclasse e Automobile/Motocicletta come sottoclassi con simbolo di ereditarietà (triangolo vuoto).}
+\end{figure}
+
+\section{Documentazione}
+\begin{itemize}
+	\item \textbf{Dizionario dei Dati:} Descrive in dettaglio ogni entità, relazione e attributo.
+	\item \textbf{Vincoli Non Esprimibili:} Alcuni vincoli non possono essere rappresentati graficamente nell'ERD (es. ``Lo stipendio di un impiegato non può superare quello del suo manager''). Vanno documentati a parte.
+	\begin{itemize}
+		\item \textit{Paragone Pratico:} Questi vincoli si implementano spesso con \texttt{CHECK constraints} in SQL, \texttt{triggers}, o a livello applicativo.
+	\end{itemize}
+\end{itemize}
+
+\section{UML (Unified Modeling Language) come Alternativa}
+\begin{itemize}
+	\item UML è un linguaggio di modellazione più ampio, usato per vari aspetti dello sviluppo software.
+	\item Per la modellazione dei dati, si usano principalmente i \textbf{Diagrammi delle Classi (Class Diagrams)}.
+	\item Molti concetti ER hanno un equivalente in UML:
+	\begin{itemize}
+		\item \textbf{Entità} -> \textbf{Classe}
+		\item \textbf{Relazione} -> \textbf{Associazione}
+		\item \textbf{Relazione con attributi} -> \textbf{Classe di Associazione}
+		\item \textbf{Cardinalità:} \texttt{1}, \texttt{0..1}, \texttt{*}, \texttt{1..*}
+		\item \textbf{Identificatori:} \texttt{\{id\}} accanto all'attributo.
+		\item \textbf{Generalizzazione/Specializzazione:} Freccia con triangolo vuoto verso la superclasse.
+		\item \textbf{Concetti specifici UML:} Aggregazione (rombo vuoto), Composizione (rombo pieno).
+	\end{itemize}
+\end{itemize}
+
+
+% --- Assicurati che questi pacchetti siano nel tuo preambolo ---
 % \usepackage{graphicx}
 % \usepackage{float} % Per l'opzione [H] delle figure
 % \usepackage[section]{placeins} % Opzionale, per un controllo più stretto del float
 % -------------------------------------------------------------
 
-	% --- Continua dalla sezione precedente ---
+% --- Continua dalla sezione precedente ---
 
-	\section{Modellazione Concettuale con UML (Unified Modeling Language)}
+\section{Modellazione Concettuale con UML (Unified Modeling Language)}
 
-	UML è un linguaggio di modellazione standardizzato e ampiamente utilizzato per specificare, visualizzare, costruire e documentare gli artefatti di un sistema software. Sebbene l'ERD sia specifico per i database, UML offre un approccio più generale e può essere utilizzato anche per la modellazione concettuale dei dati, principalmente attraverso i \textbf{Diagrammi delle Classi (Class Diagrams)}.
+UML è un linguaggio di modellazione standardizzato e ampiamente utilizzato per specificare, visualizzare, costruire e documentare gli artefatti di un sistema software. Sebbene l'ERD sia specifico per i database, UML offre un approccio più generale e può essere utilizzato anche per la modellazione concettuale dei dati, principalmente attraverso i \textbf{Diagrammi delle Classi (Class Diagrams)}.
 
-	\subsection{Classi (Classes)}
-	In UML, un'entità del modello ER corrisponde a una \textbf{Classe}. Una classe è rappresentata come un rettangolo, tipicamente diviso in tre sezioni:
-	\begin{enumerate}
-			\item \textbf{Nome della Classe:} In alto, in grassetto.
-			\item \textbf{Attributi (Attributes):} Al centro, elencano le proprietà della classe.
-			\item \textbf{Operazioni (Operations/Methods):} In basso (spesso omessa nella modellazione concettuale dei dati puri, poiché ci si concentra sulla struttura).
-	\end{enumerate}
+\subsection{Classi (Classes)}
+In UML, un'entità del modello ER corrisponde a una \textbf{Classe}. Una classe è rappresentata come un rettangolo, tipicamente diviso in tre sezioni:
+\begin{enumerate}
+		\item \textbf{Nome della Classe:} In alto, in grassetto.
+		\item \textbf{Attributi (Attributes):} Al centro, elencano le proprietà della classe.
+		\item \textbf{Operazioni (Operations/Methods):} In basso (spesso omessa nella modellazione concettuale dei dati puri, poiché ci si concentra sulla struttura).
+\end{enumerate}
 
-	\begin{figure}[H]
-			\centering
-			\includegraphics[width=0.8\textwidth]{uml_images/fig_classes_employee_project.png}
-			\caption{Esempio di Classi UML: Employee e Project.}
-			\label{fig:uml_classes_employee_project}
-	\end{figure}
+\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.8\textwidth]{uml_images/fig_classes_employee_project.png}
+		\caption{Esempio di Classi UML: Employee e Project.}
+		\label{fig:uml_classes_employee_project}
+\end{figure}
 
-	\subsection{Associazioni (Associations)}
-	Le relazioni del modello ER sono chiamate \textbf{Associazioni} in UML. Un'associazione rappresenta una relazione semantica tra due o più classi. È disegnata come una linea continua che connette le classi.
-	\begin{itemize}
-			\item \textbf{Nome dell'Associazione (opzionale):} Può essere scritto vicino alla linea, spesso con una freccetta che indica la direzione di lettura (se il nome è un verbo).
-			\item \textbf{Ruoli (opzionale):} Nomi posti alle estremità della linea di associazione per chiarire il ruolo che una classe gioca nell'associazione.
-			\item \textbf{Molteplicità (Multiplicity):} Equivalente alla cardinalità ER, indica quante istanze di una classe possono essere collegate a un'istanza dell'altra classe. Notazioni comuni:
-			\begin{itemize}
-					\item \texttt{1} (esattamente uno)
-					\item \texttt{0..1} (zero o uno)
-					\item \texttt{*} (zero o molti)
-					\item \texttt{1..*} (uno o molti)
-					\item \texttt{m..n} (da m a n)
-			\end{itemize}
-	\end{itemize}
+\subsection{Associazioni (Associations)}
+Le relazioni del modello ER sono chiamate \textbf{Associazioni} in UML. Un'associazione rappresenta una relazione semantica tra due o più classi. È disegnata come una linea continua che connette le classi.
+\begin{itemize}
+		\item \textbf{Nome dell'Associazione (opzionale):} Può essere scritto vicino alla linea, spesso con una freccetta che indica la direzione di lettura (se il nome è un verbo).
+		\item \textbf{Ruoli (opzionale):} Nomi posti alle estremità della linea di associazione per chiarire il ruolo che una classe gioca nell'associazione.
+		\item \textbf{Molteplicità (Multiplicity):} Equivalente alla cardinalità ER, indica quante istanze di una classe possono essere collegate a un'istanza dell'altra classe. Notazioni comuni:
+		\begin{itemize}
+				\item \texttt{1} (esattamente uno)
+				\item \texttt{0..1} (zero o uno)
+				\item \texttt{*} (zero o molti)
+				\item \texttt{1..*} (uno o molti)
+				\item \texttt{m..n} (da m a n)
+		\end{itemize}
+\end{itemize}
 
-	\begin{figure}[H]
-			\centering
-			\includegraphics[width=0.9\textwidth]{uml_images/fig_associations_examples.png}
-			\caption{Esempi di Associazioni UML con nomi, ruoli e molteplicità.}
-			\label{fig:uml_associations_examples}
-	\end{figure}
+\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.9\textwidth]{uml_images/fig_associations_examples.png}
+		\caption{Esempi di Associazioni UML con nomi, ruoli e molteplicità.}
+		\label{fig:uml_associations_examples}
+\end{figure}
 
-	\subsection{Classe di Associazione (Association Class)}
-	Quando un'associazione stessa ha attributi o operazioni, può essere modellata come una \textbf{Classe di Associazione}. È rappresentata come una classe normale collegata da una linea tratteggiata all'associazione che descrive.
-	\textit{Esempio:} L'associazione "Sostiene Esame" tra \texttt{Student} e \texttt{Course} può avere attributi come \texttt{Date} e \texttt{Degree}. \texttt{Exam} diventa una classe di associazione.
+\subsection{Classe di Associazione (Association Class)}
+Quando un'associazione stessa ha attributi o operazioni, può essere modellata come una \textbf{Classe di Associazione}. È rappresentata come una classe normale collegata da una linea tratteggiata all'associazione che descrive.
+\textit{Esempio:} L'associazione "Sostiene Esame" tra \texttt{Student} e \texttt{Course} può avere attributi come \texttt{Date} e \texttt{Degree}. \texttt{Exam} diventa una classe di associazione.
 
-	\begin{figure}[H]
-			\centering
-			\includegraphics[width=0.6\textwidth]{uml_images/fig_association_class_exam.png}
-			\caption{Esempio di Classe di Associazione UML: Exam.}
-			\label{fig:uml_association_class_exam}
-	\end{figure}
+\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.6\textwidth]{uml_images/fig_association_class_exam.png}
+		\caption{Esempio di Classe di Associazione UML: Exam.}
+		\label{fig:uml_association_class_exam}
+\end{figure}
 
-	\subsection{Associazione N-aria (N-ary Association) e Reificazione}
-	Un'associazione può coinvolgere più di due classi (ternaria, quaternaria, ecc.). Graficamente, si usa un rombo (come in ER) a cui sono collegate le classi. Se l'associazione n-aria ha attributi, una classe di associazione viene collegata al rombo.
-	Le associazioni n-arie (n > 2) sono spesso complesse da gestire e interpretare. Una pratica comune è la \textbf{reificazione} (o "promozione a classe"): l'associazione n-aria viene trasformata in una nuova classe regolare, che viene poi collegata alle classi originariamente coinvolte tramite associazioni binarie.
+\subsection{Associazione N-aria (N-ary Association) e Reificazione}
+Un'associazione può coinvolgere più di due classi (ternaria, quaternaria, ecc.). Graficamente, si usa un rombo (come in ER) a cui sono collegate le classi. Se l'associazione n-aria ha attributi, una classe di associazione viene collegata al rombo.
+Le associazioni n-arie (n > 2) sono spesso complesse da gestire e interpretare. Una pratica comune è la \textbf{reificazione} (o "promozione a classe"): l'associazione n-aria viene trasformata in una nuova classe regolare, che viene poi collegata alle classi originariamente coinvolte tramite associazioni binarie.
 
-	\begin{figure}[H]
-			\centering
-			\includegraphics[width=0.45\textwidth]{uml_images/fig_ternary_association.png}\hfill
-			\includegraphics[width=0.45\textwidth]{uml_images/fig_reification.png}
-			\caption{Associazione Ternaria con classe di associazione (a, sinistra) e sua Reificazione (b, destra) in UML.}
-			\label{fig:uml_nary_reification}
-	\end{figure}
+\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.45\textwidth]{uml_images/fig_ternary_association.png}\hfill
+		\includegraphics[width=0.45\textwidth]{uml_images/fig_reification.png}
+		\caption{Associazione Ternaria con classe di associazione (a, sinistra) e sua Reificazione (b, destra) in UML.}
+		\label{fig:uml_nary_reification}
+\end{figure}
 
-	\subsection{Aggregazione e Composizione (Aggregation and Composition)}
-	Sono tipi speciali di associazione che rappresentano relazioni "parte-di" (whole-part).
-	\begin{itemize}
-			\item \textbf{Aggregazione (Aggregation):} Rappresenta una relazione "ha-un" debole. Le parti possono esistere indipendentemente dal tutto. È indicata da un \textbf{rombo vuoto} dal lato del "tutto" (aggregato).
-			\textit{Esempio:} Un \texttt{Team} è composto da \texttt{Technician}. Un tecnico può esistere anche se il team viene sciolto, o può appartenere a più team (a seconda della molteplicità).
-			\item \textbf{Composizione (Composition):} Rappresenta una relazione "ha-un" forte. Le parti dipendono esistenzialmente dal tutto; se il tutto viene distrutto, anche le parti lo sono. È indicata da un \textbf{rombo pieno} dal lato del "tutto" (composito). La molteplicità dal lato del composito verso la parte è solitamente \texttt{1} o \texttt{0..1} (una parte appartiene a un solo tutto).
-			\textit{Esempio:} Un'automobile (\texttt{Car}) è composta da un motore (\texttt{Engine}). Se l'automobile viene rottamata, anche il suo motore specifico (come parte di quell'auto) cessa di esistere in quel contesto. Una \texttt{Agency} è parte di una \texttt{Firm}.
-	\end{itemize}
+\subsection{Aggregazione e Composizione (Aggregation and Composition)}
+Sono tipi speciali di associazione che rappresentano relazioni "parte-di" (whole-part).
+\begin{itemize}
+		\item \textbf{Aggregazione (Aggregation):} Rappresenta una relazione "ha-un" debole. Le parti possono esistere indipendentemente dal tutto. È indicata da un \textbf{rombo vuoto} dal lato del "tutto" (aggregato).
+		\textit{Esempio:} Un \texttt{Team} è composto da \texttt{Technician}. Un tecnico può esistere anche se il team viene sciolto, o può appartenere a più team (a seconda della molteplicità).
+		\item \textbf{Composizione (Composition):} Rappresenta una relazione "ha-un" forte. Le parti dipendono esistenzialmente dal tutto; se il tutto viene distrutto, anche le parti lo sono. È indicata da un \textbf{rombo pieno} dal lato del "tutto" (composito). La molteplicità dal lato del composito verso la parte è solitamente \texttt{1} o \texttt{0..1} (una parte appartiene a un solo tutto).
+		\textit{Esempio:} Un'automobile (\texttt{Car}) è composta da un motore (\texttt{Engine}). Se l'automobile viene rottamata, anche il suo motore specifico (come parte di quell'auto) cessa di esistere in quel contesto. Una \texttt{Agency} è parte di una \texttt{Firm}.
+\end{itemize}
 
-	\begin{figure}[H]
-			\centering
-			\includegraphics[width=0.7\textwidth]{uml_images/fig_aggregation_composition.png}
-			\caption{Esempio di Aggregazione (Team-Technician) e Composizione (Firm-Agency) in UML.}
-			\label{fig:uml_aggregation_composition}
-	\end{figure}
+\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.7\textwidth]{uml_images/fig_aggregation_composition.png}
+		\caption{Esempio di Aggregazione (Team-Technician) e Composizione (Firm-Agency) in UML.}
+		\label{fig:uml_aggregation_composition}
+\end{figure}
 
-	\subsection{Identificatori (Identifiers)}
-	In UML, gli attributi che compongono l'identificatore (chiave primaria) di una classe possono essere contrassegnati con la proprietà \texttt{\{id\}} o talvolta sottolineati (anche se \texttt{\{id\}} è più comune in UML2).
+\subsection{Identificatori (Identifiers)}
+In UML, gli attributi che compongono l'identificatore (chiave primaria) di una classe possono essere contrassegnati con la proprietà \texttt{\{id\}} o talvolta sottolineati (anche se \texttt{\{id\}} è più comune in UML2).
 
-	\begin{figure}[H]
-			\centering
-			\includegraphics[width=0.8\textwidth]{uml_images/fig_identifiers.png}
-			\caption{Esempio di Identificatori UML con \texttt{\{id\}}.}
-			\label{fig:uml_identifiers}
-	\end{figure}
+\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.8\textwidth]{uml_images/fig_identifiers.png}
+		\caption{Esempio di Identificatori UML con \texttt{\{id\}}.}
+		\label{fig:uml_identifiers}
+\end{figure}
 
-	\subsection{Identificatore Esterno (External Identifier) e Associazioni Qualificate}
-	Un concetto simile all'identificatore esterno ER si ha quando l'identità di una classe (la "debole") dipende parzialmente da un'altra classe attraverso un'associazione. Questo può essere indicato con:
-	\begin{itemize}
-			\item Uno \textbf{stereotipo} sull'associazione, come \texttt{<<identifying>>} (come suggerito nelle slide del prof., anche se non standard UML stretto per questo specifico caso).
-			\item Una \textbf{Associazione Qualificata}: un piccolo rettangolo (il qualificatore) è attaccato alla classe "forte", contenente un attributo della classe "debole" che, insieme all'istanza della classe forte, identifica univocamente l'istanza della classe debole.
-			\item La molteplicità dal lato della classe "debole" verso la "forte" è spesso \texttt{1} in un'associazione identificante.
-	\end{itemize}
-	Nelle slide del Prof. Montesi (slide 100), si usa lo stereotipo \texttt{<<identifiying>>} (probabile typo per \texttt{<<identifying>>}) sull'associazione e \texttt{\{id\}} sugli attributi che compongono la chiave, inclusi quelli della classe "debole" e quelli ereditati implicitamente tramite l'associazione identificante.
+\subsection{Identificatore Esterno (External Identifier) e Associazioni Qualificate}
+Un concetto simile all'identificatore esterno ER si ha quando l'identità di una classe (la "debole") dipende parzialmente da un'altra classe attraverso un'associazione. Questo può essere indicato con:
+\begin{itemize}
+		\item Uno \textbf{stereotipo} sull'associazione, come \texttt{<<identifying>>} (come suggerito nelle slide del prof., anche se non standard UML stretto per questo specifico caso).
+		\item Una \textbf{Associazione Qualificata}: un piccolo rettangolo (il qualificatore) è attaccato alla classe "forte", contenente un attributo della classe "debole" che, insieme all'istanza della classe forte, identifica univocamente l'istanza della classe debole.
+		\item La molteplicità dal lato della classe "debole" verso la "forte" è spesso \texttt{1} in un'associazione identificante.
+\end{itemize}
+Nelle slide del Prof. Montesi (slide 100), si usa lo stereotipo \texttt{<<identifiying>>} (probabile typo per \texttt{<<identifying>>}) sull'associazione e \texttt{\{id\}} sugli attributi che compongono la chiave, inclusi quelli della classe "debole" e quelli ereditati implicitamente tramite l'associazione identificante.
 
-	\begin{figure}[H]
-			\centering
-			\includegraphics[width=0.9\textwidth]{uml_images/fig_identifying_association.png}
-			\caption{Esempio di associazione identificante con stereotipo (come da slide 100).}
-			\label{fig:uml_identifying_association}
-	\end{figure}
-	\textit{Nota:} L'attributo \texttt{Number} di \texttt{Student} è \texttt{\{id\}} nel contesto dell'associazione con \texttt{University}. La vera chiave univoca di \texttt{Student} sarebbe una combinazione di \texttt{Student.Number} e l'identificatore di \texttt{University}.
+\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.9\textwidth]{uml_images/fig_identifying_association.png}
+		\caption{Esempio di associazione identificante con stereotipo (come da slide 100).}
+		\label{fig:uml_identifying_association}
+\end{figure}
+\textit{Nota:} L'attributo \texttt{Number} di \texttt{Student} è \texttt{\{id\}} nel contesto dell'associazione con \texttt{University}. La vera chiave univoca di \texttt{Student} sarebbe una combinazione di \texttt{Student.Number} e l'identificatore di \texttt{University}.
 
-	\subsection{Generalizzazione (Generalization)}
-	Corrisponde alla generalizzazione/specializzazione del modello ER e rappresenta una relazione "è-un-tipo-di" (is-a-kind-of) tra una classe più generale (superclasse) e una classe più specifica (sottoclasse).
-	\begin{itemize}
-			\item \textbf{Rappresentazione Grafica:} Una linea continua con una \textbf{grande freccia triangolare vuota} che punta dalla sottoclasse alla superclasse.
-			\item \textbf{Ereditarietà:} La sottoclasse eredita attributi, operazioni e associazioni della superclasse.
-			\item \textbf{Vincoli:} Simili a ER, si possono specificare vincoli come:
-			\begin{itemize}
-					\item \texttt{\{complete, disjoint\}} o \texttt{\{total, disjoint\}}: Ogni istanza della superclasse è esattamente una delle sottoclassi.
-					\item \texttt{\{incomplete, disjoint\}} o \texttt{\{partial, disjoint\}}: Un'istanza della superclasse può essere una delle sottoclassi o nessuna di esse (solo la superclasse), ma non più di una.
-					\item \texttt{\{overlapping\}}: Una sottoclasse può essere istanza di più sottoclassi (più raro).
-			\end{itemize}
-			Questi vincoli sono scritti vicino alla freccia di generalizzazione.
-	\end{itemize}
+\subsection{Generalizzazione (Generalization)}
+Corrisponde alla generalizzazione/specializzazione del modello ER e rappresenta una relazione "è-un-tipo-di" (is-a-kind-of) tra una classe più generale (superclasse) e una classe più specifica (sottoclasse).
+\begin{itemize}
+		\item \textbf{Rappresentazione Grafica:} Una linea continua con una \textbf{grande freccia triangolare vuota} che punta dalla sottoclasse alla superclasse.
+		\item \textbf{Ereditarietà:} La sottoclasse eredita attributi, operazioni e associazioni della superclasse.
+		\item \textbf{Vincoli:} Simili a ER, si possono specificare vincoli come:
+		\begin{itemize}
+				\item \texttt{\{complete, disjoint\}} o \texttt{\{total, disjoint\}}: Ogni istanza della superclasse è esattamente una delle sottoclassi.
+				\item \texttt{\{incomplete, disjoint\}} o \texttt{\{partial, disjoint\}}: Un'istanza della superclasse può essere una delle sottoclassi o nessuna di esse (solo la superclasse), ma non più di una.
+				\item \texttt{\{overlapping\}}: Una sottoclasse può essere istanza di più sottoclassi (più raro).
+		\end{itemize}
+		Questi vincoli sono scritti vicino alla freccia di generalizzazione.
+\end{itemize}
 
-	\begin{figure}[H]
-			\centering
-			\includegraphics[width=\textwidth]{uml_images/fig_generalization.png}
-			\caption{Esempio di Generalizzazione UML (basato su slide 101).}
-			\label{fig:uml_generalization}
-	\end{figure}
+\begin{figure}[H]
+		\centering
+		\includegraphics[width=\textwidth]{uml_images/fig_generalization.png}
+		\caption{Esempio di Generalizzazione UML (basato su slide 101).}
+		\label{fig:uml_generalization}
+\end{figure}
 
-	\subsection{Esempio Complessivo: Schema Concettuale in UML}
-	La slide 102 del Prof. Montesi mostra un diagramma ER tradotto in UML Class Diagram.
-	Notiamo:
-	\begin{itemize}
-			\item Le entità diventano Classi (\texttt{Employee}, \texttt{Dept}, \texttt{Project}, \texttt{Office}).
-			\item Le relazioni diventano Associazioni (\texttt{Management}, \texttt{Affiliation}, \texttt{Attendance}).
-			\item \texttt{Affiliation} è una classe di associazione perché ha l'attributo \texttt{Date}.
-			\item \texttt{Composition} tra \texttt{Dept} e \texttt{Office} è una composizione forte (rombo pieno) e identificante (\texttt{<<identifying>>}).
-			\item Le cardinalità ER sono tradotte in molteplicità UML.
-			\item Gli identificatori sono marcati con \texttt{\{id\}}.
-			\item Una nota è attaccata alla classe \texttt{Project}.
-	\end{itemize}
+\subsection{Esempio Complessivo: Schema Concettuale in UML}
+La slide 102 del Prof. Montesi mostra un diagramma ER tradotto in UML Class Diagram.
+Notiamo:
+\begin{itemize}
+		\item Le entità diventano Classi (\texttt{Employee}, \texttt{Dept}, \texttt{Project}, \texttt{Office}).
+		\item Le relazioni diventano Associazioni (\texttt{Management}, \texttt{Affiliation}, \texttt{Attendance}).
+		\item \texttt{Affiliation} è una classe di associazione perché ha l'attributo \texttt{Date}.
+		\item \texttt{Composition} tra \texttt{Dept} e \texttt{Office} è una composizione forte (rombo pieno) e identificante (\texttt{<<identifying>>}).
+		\item Le cardinalità ER sono tradotte in molteplicità UML.
+		\item Gli identificatori sono marcati con \texttt{\{id\}}.
+		\item Una nota è attaccata alla classe \texttt{Project}.
+\end{itemize}
 
-	\begin{figure}[H]
-	\centering
-	\includegraphics[width=\textwidth]{uml_images/fig_overall_example_slide102.png}
-	\caption{Diagramma concettuale UML basato sulla slide 102.}
-	\label{fig:uml_overall_example_slide102}
-	\end{figure}
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{uml_images/fig_overall_example_slide102.png}
+\caption{Diagramma concettuale UML basato sulla slide 102.}
+\label{fig:uml_overall_example_slide102}
+\end{figure}
 
-	\textit{Conclusione:} UML offre un set ricco di costrutti per la modellazione concettuale dei dati, con una notazione leggermente diversa ma concettualmente simile a ER. La scelta tra ER e UML Class Diagrams spesso dipende dalle convenzioni del team o dalla necessità di integrare il modello dati con altri modelli UML del sistema.
+\textit{Conclusione:} UML offre un set ricco di costrutti per la modellazione concettuale dei dati, con una notazione leggermente diversa ma concettualmente simile a ER. La scelta tra ER e UML Class Diagrams spesso dipende dalle convenzioni del team o dalla necessità di integrare il modello dati con altri modelli UML del sistema.
 
-\end{document} % Assicurati che questo sia alla fine del tuo file principale

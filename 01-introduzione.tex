@@ -1,183 +1,157 @@
-\input{preambolo_comune.tex}
-
-% --- Hyperlink ---
-\usepackage{hyperref}
-\hypersetup{
-	colorlinks=true,
-	linkcolor=white,
-	filecolor=magenta,
-	urlcolor=cyan,
-	pdftitle={Introduzione ai Database},
-	pdfauthor={Alessandro Amella},
-	pdfpagemode=FullScreen,
-}
-
-% --- Titolo ---
-\title{Introduzione ai Database\\
-  \large Appunti basati sulle dispense del Prof. Danilo Montesi}
-\author{Alessandro Amella, Gemini e Claude}
-\date{\today}
-
-\begin{document}
-	
-	\maketitle
-	\tableofcontents
-	\newpage
-	
-	\section{Informazioni Chiave per il Corso}
-	Per avere successo in questo corso, il professore sottolinea l'importanza di:
+\section{Informazioni Chiave per il Corso}
+Per avere successo in questo corso, il professore sottolinea l'importanza di:
+\begin{itemize}
+	\item \textbf{Studio Autonomo:} Concentrarsi sui concetti fondamentali.
+	\item \textbf{Esperienza Personale:} Cercare di collegare i concetti a proprie esperienze pregresse.
+	\item \textbf{Esercizi:} Svolgere regolarmente gli esercizi proposti.
+	\item \textbf{Progetto/Esercitazioni Pratiche:}
 	\begin{itemize}
-		\item \textbf{Studio Autonomo:} Concentrarsi sui concetti fondamentali.
-		\item \textbf{Esperienza Personale:} Cercare di collegare i concetti a proprie esperienze pregresse.
-		\item \textbf{Esercizi:} Svolgere regolarmente gli esercizi proposti.
-		\item \textbf{Progetto/Esercitazioni Pratiche:}
-		\begin{itemize}
-			\item Sviluppare un progetto.
-			\item OPPURE partecipare attivamente agli esercizi durante le lezioni.
-			\item Utilizzare strumenti concreti come: \texttt{DB2}, \texttt{SQLServer}, \texttt{Oracle}, \texttt{PostgreSQL}, \texttt{MySQL}, \texttt{MS Access}, ecc. (\texttt{PostgreSQL} e \texttt{MySQL} sono ottimi punti di partenza se già conosci SQL).
-		\end{itemize}
+		\item Sviluppare un progetto.
+		\item OPPURE partecipare attivamente agli esercizi durante le lezioni.
+		\item Utilizzare strumenti concreti come: \texttt{DB2}, \texttt{SQLServer}, \texttt{Oracle}, \texttt{PostgreSQL}, \texttt{MySQL}, \texttt{MS Access}, ecc. (\texttt{PostgreSQL} e \texttt{MySQL} sono ottimi punti di partenza se già conosci SQL).
 	\end{itemize}
-	
-	\section{Concetti Fondamentali}
-	
-	\subsection{Cos'è un Database}
+\end{itemize}
+
+\section{Concetti Fondamentali}
+
+\subsection{Cos'è un Database}
+\begin{itemize}
+	\item \textbf{Definizione Generale:} Un insieme organizzato di dati che supporta lo svolgimento di attività specifiche (per un'istituzione, un'azienda, un ufficio, una persona).
 	\begin{itemize}
-		\item \textbf{Definizione Generale:} Un insieme organizzato di dati che supporta lo svolgimento di attività specifiche (per un'istituzione, un'azienda, un ufficio, una persona).
-		\begin{itemize}
-			\item \textit{Esempio pratico:} La tua rubrica telefonica è un piccolo database personale. L'anagrafe comunale è un database istituzionale.
-		\end{itemize}
-		\item \textbf{Definizione Specifica (nel contesto del corso):} Un insieme di dati gestito da un \textbf{DBMS} (DataBase Management System).
+		\item \textit{Esempio pratico:} La tua rubrica telefonica è un piccolo database personale. L'anagrafe comunale è un database istituzionale.
 	\end{itemize}
-	
-	\subsection{Sistema Informativo vs. Sistema IT}
+	\item \textbf{Definizione Specifica (nel contesto del corso):} Un insieme di dati gestito da un \textbf{DBMS} (DataBase Management System).
+\end{itemize}
+
+\subsection{Sistema Informativo vs. Sistema IT}
+\begin{itemize}
+	\item \textbf{Sistema Informativo:} La componente di un'organizzazione che gestisce le informazioni rilevanti per raggiungere gli obiettivi aziendali. Può esistere anche senza computer (pensa agli archivi cartacei di secoli fa). Include:
 	\begin{itemize}
-		\item \textbf{Sistema Informativo:} La componente di un'organizzazione che gestisce le informazioni rilevanti per raggiungere gli obiettivi aziendali. Può esistere anche senza computer (pensa agli archivi cartacei di secoli fa). Include:
-		\begin{itemize}
-			\item Raccolta e acquisizione informazioni.
-			\item Memorizzazione e conservazione.
-			\item Elaborazione, trasformazione, produzione.
-			\item Distribuzione, comunicazione, scambio.
-		\end{itemize}
-		\item \textbf{Sistema IT (Information Technology):} La parte \textit{automatizzata} del sistema informativo che utilizza tecnologie informatiche.
-		\begin{itemize}
-			\item \textit{Gerarchia:} Impresa $>$ Organizzazione $>$ Sistema Informativo $>$ Sistema IT. Un database è una componente chiave del Sistema IT.
-		\end{itemize}
+		\item Raccolta e acquisizione informazioni.
+		\item Memorizzazione e conservazione.
+		\item Elaborazione, trasformazione, produzione.
+		\item Distribuzione, comunicazione, scambio.
 	\end{itemize}
-	
-	\subsection{Informazione vs. Dati}
+	\item \textbf{Sistema IT (Information Technology):} La parte \textit{automatizzata} del sistema informativo che utilizza tecnologie informatiche.
 	\begin{itemize}
-		\item \textbf{Informazione:} Fatti forniti o appresi su qualcosa o qualcuno. Ha un significato intrinseco.
-		\begin{itemize}
-			\item \textit{Esempio:} 'La lezione di Basi di Dati è alle 9:45 in aula N2 con il Prof. Rossi.'
-		\end{itemize}
-		\item \textbf{Dati:} Rappresentazioni grezze dell'informazione, spesso codificate. Un punto di partenza fisso per un'operazione. I dati, da soli, possono non avere significato senza un'interpretazione.
-		\begin{itemize}
-			\item \textit{Esempio (dal cartello stradale):} Il dato \texttt{"8-17"} sul cartello. Da solo non significa nulla. Diventa informazione ('Divieto di sosta dalle 8 alle 17') quando interpretato nel contesto del cartello, del giorno ('Mon-Fri'), e delle regole stradali.
-			\item \textit{Esempio pratico (MongoDB/JSON):}
-			\begin{minted}{json}
+		\item \textit{Gerarchia:} Impresa $>$ Organizzazione $>$ Sistema Informativo $>$ Sistema IT. Un database è una componente chiave del Sistema IT.
+	\end{itemize}
+\end{itemize}
+
+\subsection{Informazione vs. Dati}
+\begin{itemize}
+	\item \textbf{Informazione:} Fatti forniti o appresi su qualcosa o qualcuno. Ha un significato intrinseco.
+	\begin{itemize}
+		\item \textit{Esempio:} 'La lezione di Basi di Dati è alle 9:45 in aula N2 con il Prof. Rossi.'
+	\end{itemize}
+	\item \textbf{Dati:} Rappresentazioni grezze dell'informazione, spesso codificate. Un punto di partenza fisso per un'operazione. I dati, da soli, possono non avere significato senza un'interpretazione.
+	\begin{itemize}
+		\item \textit{Esempio (dal cartello stradale):} Il dato \texttt{"8-17"} sul cartello. Da solo non significa nulla. Diventa informazione ('Divieto di sosta dalle 8 alle 17') quando interpretato nel contesto del cartello, del giorno ('Mon-Fri'), e delle regole stradali.
+		\item \textit{Esempio pratico (MongoDB/JSON):}
+		\begin{minted}{json}
 { "nome": "Mario", "cognome": "Rossi", "eta": 30 }
-			\end{minted}
-			L'informazione è che c'è una persona di nome Mario Rossi di 30 anni.
-		\end{itemize}
-		\item \textbf{Processo:} L'informazione viene organizzata, codificata e memorizzata sotto forma di dati.
+		\end{minted}
+		L'informazione è che c'è una persona di nome Mario Rossi di 30 anni.
 	\end{itemize}
-	
-	\subsection{Perché i Dati sono Importanti?}
+	\item \textbf{Processo:} L'informazione viene organizzata, codificata e memorizzata sotto forma di dati.
+\end{itemize}
+
+\subsection{Perché i Dati sono Importanti?}
+\begin{itemize}
+	\item È difficile rappresentare precisamente informazioni e conoscenze complesse.
+	\item I \textbf{dati sono una risorsa strategica} perché sono più stabili rispetto ad altre rappresentazioni (processi di business, tecnologie, ruoli umani).
 	\begin{itemize}
-		\item È difficile rappresentare precisamente informazioni e conoscenze complesse.
-		\item I \textbf{dati sono una risorsa strategica} perché sono più stabili rispetto ad altre rappresentazioni (processi di business, tecnologie, ruoli umani).
-		\begin{itemize}
-			\item \textit{Esempio:} I dati anagrafici di una persona o i dati di un conto bancario rimangono fondamentalmente gli stessi anche se cambiano le procedure dell'ufficio anagrafe, il software della banca o le persone che ci lavorano.
-		\end{itemize}
+		\item \textit{Esempio:} I dati anagrafici di una persona o i dati di un conto bancario rimangono fondamentalmente gli stessi anche se cambiano le procedure dell'ufficio anagrafe, il software della banca o le persone che ci lavorano.
 	\end{itemize}
-	
-	\subsection{DBMS: DataBase Management System}
-	Un software progettato per creare, gestire e interrogare database. Deve gestire collezioni di dati che sono:
+\end{itemize}
+
+\subsection{DBMS: DataBase Management System}
+Un software progettato per creare, gestire e interrogare database. Deve gestire collezioni di dati che sono:
+\begin{itemize}
+	\item \textbf{Grandi (Big):} Tipicamente più grandi della memoria principale (RAM) del sistema. Si parla di Terabyte, miliardi di record.
+	\item \textbf{Persistenti (Persistent):} La loro durata di vita è indipendente dai processi che li utilizzano. I dati sopravvivono allo spegnimento del computer o alla chiusura dell'applicazione.
 	\begin{itemize}
-		\item \textbf{Grandi (Big):} Tipicamente più grandi della memoria principale (RAM) del sistema. Si parla di Terabyte, miliardi di record.
-		\item \textbf{Persistenti (Persistent):} La loro durata di vita è indipendente dai processi che li utilizzano. I dati sopravvivono allo spegnimento del computer o alla chiusura dell'applicazione.
-		\begin{itemize}
-			\item \textit{Esempio pratico:} Quando la tua app Node.js scrive su un database PostgreSQL usando Prisma, quei dati rimangono nel DB anche se riavvii il server Node.js.
-		\end{itemize}
-		\item \textbf{Condivisi (Shared):} Accessibili e utilizzabili da multiple applicazioni e utenti, spesso contemporaneamente.
-		\begin{itemize}
-			\item Questo porta a problemi di:
-			\begin{itemize}
-				\item \textbf{Ridondanza:} Stessi dati duplicati in più posti.
-				\item \textbf{Inconsistenza:} Se i dati duplicati non vengono aggiornati ovunque, si creano discrepanze.
-			\end{itemize}
-			\item Un DB centralizzato riduce questi problemi.
-		\end{itemize}
+		\item \textit{Esempio pratico:} Quando la tua app Node.js scrive su un database PostgreSQL usando Prisma, quei dati rimangono nel DB anche se riavvii il server Node.js.
 	\end{itemize}
-	Un DBMS deve inoltre garantire:
+	\item \textbf{Condivisi (Shared):} Accessibili e utilizzabili da multiple applicazioni e utenti, spesso contemporaneamente.
 	\begin{itemize}
-		\item \textbf{Privacy/Sicurezza (Privacy):} Controllo degli accessi. Chi può vedere/modificare cosa?
+		\item Questo porta a problemi di:
 		\begin{itemize}
-			\item \textit{Esempio SQL:}
-			\begin{minted}{sql}
+			\item \textbf{Ridondanza:} Stessi dati duplicati in più posti.
+			\item \textbf{Inconsistenza:} Se i dati duplicati non vengono aggiornati ovunque, si creano discrepanze.
+		\end{itemize}
+		\item Un DB centralizzato riduce questi problemi.
+	\end{itemize}
+\end{itemize}
+Un DBMS deve inoltre garantire:
+\begin{itemize}
+	\item \textbf{Privacy/Sicurezza (Privacy):} Controllo degli accessi. Chi può vedere/modificare cosa?
+	\begin{itemize}
+		\item \textit{Esempio SQL:}
+		\begin{minted}{sql}
 GRANT SELECT ON tabella_clienti TO 'utente_marketing';
-			\end{minted}
-		\end{itemize}
-		\item \textbf{Affidabilità (Reliability):} Tolleranza ai guasti (hardware o software). I dati devono essere preservati. La tecnica cruciale è la gestione delle \textbf{Transazioni}.
-		\item \textbf{Efficienza (Efficiency):} Uso ottimale delle risorse (memoria, tempo di CPU, I/O disco) per rispondere rapidamente alle richieste.
-		\begin{itemize}
-			\item \textit{Esempio pratico:} L'uso di indici (\texttt{CREATE INDEX}) su colonne frequentemente interrogate accelera enormemente le ricerche.
-		\end{itemize}
-		\item \textbf{Efficacia (Effectiveness):} Fornire funzionalità potenti e flessibili che migliorino le attività degli utenti.
+		\end{minted}
 	\end{itemize}
-	\textit{Esempi di DBMS:} Oracle, SQLServer, DB2, \textbf{MySQL, PostgreSQL} (Relazionali/SQL), MS Access, SQLite (embedded), BigQuery (cloud data warehouse), \textbf{MongoDB} (NoSQL documentale).
-	
-	\subsection{Transazioni}
-	Una transazione è una sequenza di operazioni sul database che viene trattata come una singola unità logica di lavoro. Deve avere le proprietà \textbf{ACID} (anche se non esplicitamente nominate come acronimo, i concetti ci sono):
+	\item \textbf{Affidabilità (Reliability):} Tolleranza ai guasti (hardware o software). I dati devono essere preservati. La tecnica cruciale è la gestione delle \textbf{Transazioni}.
+	\item \textbf{Efficienza (Efficiency):} Uso ottimale delle risorse (memoria, tempo di CPU, I/O disco) per rispondere rapidamente alle richieste.
 	\begin{itemize}
-		\item \textbf{Atomicità (Atomic):} Le operazioni all'interno di una transazione vengono eseguite \textit{tutte o nessuna}. Se una qualsiasi operazione fallisce, l'intera transazione viene annullata (rollback) e il database torna allo stato precedente.
-		\begin{itemize}
-			\item \textit{Esempio classico:} Trasferimento di denaro da un conto A a un conto B. Deve avvenire sia il prelievo da A SIA il deposito su B. Se uno dei due fallisce, nessuno dei due deve avere effetto.
-		\end{itemize}
-		\item \textbf{Coerenza (Consistency):} Una transazione porta il database da uno stato coerente a un altro stato coerente. Rispetta tutti i vincoli definiti.
-		\item \textbf{Isolamento (Isolation, riferito a "Concurrent"):} Le transazioni concorrenti (eseguite contemporaneamente da più utenti/processi) non devono interferire tra loro. Ogni transazione deve apparire come se fosse l'unica in esecuzione.
-		\begin{itemize}
-			\item \textit{Esempio:} Se due utenti tentano di prenotare l'ultimo posto disponibile su un volo, il sistema deve garantire che solo uno ci riesca, evitando doppie prenotazioni.
-		\end{itemize}
-		\item \textbf{Durabilità (Durability, riferito a "Permanent"):} Una volta che una transazione è stata confermata (\textbf{commit}), i suoi effetti sono permanenti e sopravvivono a guasti del sistema (es. crash del server, mancanza di corrente).
-		\begin{itemize}
-			\item \textit{Esempio SQL:} Dopo un \texttt{COMMIT;}, i dati sono scritti in modo sicuro.
-		\end{itemize}
+		\item \textit{Esempio pratico:} L'uso di indici (\texttt{CREATE INDEX}) su colonne frequentemente interrogate accelera enormemente le ricerche.
 	\end{itemize}
-	\textit{Punti di vista sulla transazione:}
+	\item \textbf{Efficacia (Effectiveness):} Fornire funzionalità potenti e flessibili che migliorino le attività degli utenti.
+\end{itemize}
+\textit{Esempi di DBMS:} Oracle, SQLServer, DB2, \textbf{MySQL, PostgreSQL} (Relazionali/SQL), MS Access, SQLite (embedded), BigQuery (cloud data warehouse), \textbf{MongoDB} (NoSQL documentale).
+
+\subsection{Transazioni}
+Una transazione è una sequenza di operazioni sul database che viene trattata come una singola unità logica di lavoro. Deve avere le proprietà \textbf{ACID} (anche se non esplicitamente nominate come acronimo, i concetti ci sono):
+\begin{itemize}
+	\item \textbf{Atomicità (Atomic):} Le operazioni all'interno di una transazione vengono eseguite \textit{tutte o nessuna}. Se una qualsiasi operazione fallisce, l'intera transazione viene annullata (rollback) e il database torna allo stato precedente.
 	\begin{itemize}
-		\item \textbf{Utente:} Un'operazione di business completa (es. 'registra nuovo cliente', 'paga fattura').
-		\item \textbf{Sistema:} Una sequenza indivisibile di operazioni che garantisce affidabilità.
+		\item \textit{Esempio classico:} Trasferimento di denaro da un conto A a un conto B. Deve avvenire sia il prelievo da A SIA il deposito su B. Se uno dei due fallisce, nessuno dei due deve avere effetto.
 	\end{itemize}
-	
-	\subsection{DBMS vs. File System}
+	\item \textbf{Coerenza (Consistency):} Una transazione porta il database da uno stato coerente a un altro stato coerente. Rispetta tutti i vincoli definiti.
+	\item \textbf{Isolamento (Isolation, riferito a "Concurrent"):} Le transazioni concorrenti (eseguite contemporaneamente da più utenti/processi) non devono interferire tra loro. Ogni transazione deve apparire come se fosse l'unica in esecuzione.
 	\begin{itemize}
-		\item \textbf{File System:} Gestisce file e cartelle. L'accesso ai dati è 'grezzo' (tutto il file o niente).
-		\begin{itemize}
-			\item \textit{Esempio:} Leggere un file CSV riga per riga.
-		\end{itemize}
-		\item \textbf{DBMS:} Estende le funzionalità del file system offrendo:
-		\begin{itemize}
-			\item Accesso granulare ai dati (righe specifiche, colonne, filtri complessi).
-			\item Linguaggi di interrogazione potenti (SQL).
-			\item Controllo della concorrenza, gestione delle transazioni, sicurezza, ecc.
-			\item Indipendenza dei dati (vedi sotto).
-		\end{itemize}
+		\item \textit{Esempio:} Se due utenti tentano di prenotare l'ultimo posto disponibile su un volo, il sistema deve garantire che solo uno ci riesca, evitando doppie prenotazioni.
 	\end{itemize}
-	
-	\section{Architettura e Modelli dei Dati}
-	
-	\subsection{Evoluzione della Gestione dei Dati}
+	\item \textbf{Durabilità (Durability, riferito a "Permanent"):} Una volta che una transazione è stata confermata (\textbf{commit}), i suoi effetti sono permanenti e sopravvivono a guasti del sistema (es. crash del server, mancanza di corrente).
 	\begin{itemize}
-		\item \textbf{Anni '70:} Applicazioni gestivano i propri file. Logica dei dati e logica applicativa mescolate. Alta ridondanza.
-		\item \textbf{Anni '80:} Primi DBMS. Separazione tra dati e applicazioni. Nascono le 'tabelle dati'.
-		\item \textbf{Anni '90 (Comportamento Procedurale):} Introduzione di logica condivisa (procedure) all'interno del DBMS.
+		\item \textit{Esempio SQL:} Dopo un \texttt{COMMIT;}, i dati sono scritti in modo sicuro.
+	\end{itemize}
+\end{itemize}
+\textit{Punti di vista sulla transazione:}
+\begin{itemize}
+	\item \textbf{Utente:} Un'operazione di business completa (es. 'registra nuovo cliente', 'paga fattura').
+	\item \textbf{Sistema:} Una sequenza indivisibile di operazioni che garantisce affidabilità.
+\end{itemize}
+
+\subsection{DBMS vs. File System}
+\begin{itemize}
+	\item \textbf{File System:} Gestisce file e cartelle. L'accesso ai dati è 'grezzo' (tutto il file o niente).
+	\begin{itemize}
+		\item \textit{Esempio:} Leggere un file CSV riga per riga.
+	\end{itemize}
+	\item \textbf{DBMS:} Estende le funzionalità del file system offrendo:
+	\begin{itemize}
+		\item Accesso granulare ai dati (righe specifiche, colonne, filtri complessi).
+		\item Linguaggi di interrogazione potenti (SQL).
+		\item Controllo della concorrenza, gestione delle transazioni, sicurezza, ecc.
+		\item Indipendenza dei dati (vedi sotto).
+	\end{itemize}
+\end{itemize}
+
+\section{Architettura e Modelli dei Dati}
+
+\subsection{Evoluzione della Gestione dei Dati}
+\begin{itemize}
+	\item \textbf{Anni '70:} Applicazioni gestivano i propri file. Logica dei dati e logica applicativa mescolate. Alta ridondanza.
+	\item \textbf{Anni '80:} Primi DBMS. Separazione tra dati e applicazioni. Nascono le 'tabelle dati'.
+	\item \textbf{Anni '90 (Comportamento Procedurale):} Introduzione di logica condivisa (procedure) all'interno del DBMS.
+	\begin{itemize}
+		\item \textbf{Stored Procedures:} Blocchi di codice (spesso SQL esteso) memorizzati nel DB ed eseguibili.
+		\item \textbf{Trigger:} Procedure speciali eseguite automaticamente dal DBMS in risposta a determinati eventi (INSERT, UPDATE, DELETE su una tabella).
 		\begin{itemize}
-			\item \textbf{Stored Procedures:} Blocchi di codice (spesso SQL esteso) memorizzati nel DB ed eseguibili.
-			\item \textbf{Trigger:} Procedure speciali eseguite automaticamente dal DBMS in risposta a determinati eventi (INSERT, UPDATE, DELETE su una tabella).
-			\begin{itemize}
-				\item \textit{Esempio SQL (concettuale):}
-				\begin{minted}{sql}
+			\item \textit{Esempio SQL (concettuale):}
+			\begin{minted}{sql}
 CREATE TRIGGER aggiorna_quantita_magazzino
 AFTER INSERT ON ordini
 FOR EACH ROW
@@ -186,189 +160,187 @@ UPDATE prodotti
 SET quantita = quantita - NEW.quantita_ordinata
 WHERE id = NEW.prodotto_id;
 END;
-				\end{minted}
-			\end{itemize}
-		\end{itemize}
-		\item \textbf{Anni 2000 (Web):} Architetture a più livelli (Client con Javascript, Server Applicativo con Java/Node.js, DBMS).
-		\item \textbf{Anni 2010 (Mobile):} Simile all'architettura web, ma con client mobile.
-	\end{itemize}
-	
-	\subsection{Descrizione dei Dati e Data Model}
-	\begin{itemize}
-		\item \textbf{Senza DBMS:} Ogni software descrive internamente la struttura dei file che processa. Molteplici descrizioni possono portare a inconsistenza.
-		\item \textbf{Con DBMS:} Esiste un \textbf{catalogo} o \textbf{dizionario dei dati} (una porzione del database stesso) che contiene una descrizione centralizzata dei dati (lo schema). Questa descrizione è condivisa tra tutte le applicazioni.
-		\item \textbf{Data Model:} Un insieme di costrutti usati per organizzare e descrivere il comportamento dei dati.
-		\begin{itemize}
-			\item Componente cruciale: fornire \textbf{struttura} ai dati (tramite 'costruttori di tipo').
-			\item Il \textbf{modello relazionale} (usato da SQL) fornisce il costruttore 'relazione' (tabella), che permette di definire insiemi di record omogenei.
+			\end{minted}
 		\end{itemize}
 	\end{itemize}
-	
-	\subsection{Schema e Istanza}
+	\item \textbf{Anni 2000 (Web):} Architetture a più livelli (Client con Javascript, Server Applicativo con Java/Node.js, DBMS).
+	\item \textbf{Anni 2010 (Mobile):} Simile all'architettura web, ma con client mobile.
+\end{itemize}
+
+\subsection{Descrizione dei Dati e Data Model}
+\begin{itemize}
+	\item \textbf{Senza DBMS:} Ogni software descrive internamente la struttura dei file che processa. Molteplici descrizioni possono portare a inconsistenza.
+	\item \textbf{Con DBMS:} Esiste un \textbf{catalogo} o \textbf{dizionario dei dati} (una porzione del database stesso) che contiene una descrizione centralizzata dei dati (lo schema). Questa descrizione è condivisa tra tutte le applicazioni.
+	\item \textbf{Data Model:} Un insieme di costrutti usati per organizzare e descrivere il comportamento dei dati.
 	\begin{itemize}
-		\item \textbf{Schema (Intensionale):} La descrizione della struttura del database. È (relativamente) invariante nel tempo. Definisce 'come sono fatti' i dati.
-		\begin{itemize}
-			\item \textit{Esempio SQL:}
-			\begin{minted}{sql}
+		\item Componente cruciale: fornire \textbf{struttura} ai dati (tramite 'costruttori di tipo').
+		\item Il \textbf{modello relazionale} (usato da SQL) fornisce il costruttore 'relazione' (tabella), che permette di definire insiemi di record omogenei.
+	\end{itemize}
+\end{itemize}
+
+\subsection{Schema e Istanza}
+\begin{itemize}
+	\item \textbf{Schema (Intensionale):} La descrizione della struttura del database. È (relativamente) invariante nel tempo. Definisce 'come sono fatti' i dati.
+	\begin{itemize}
+		\item \textit{Esempio SQL:}
+		\begin{minted}{sql}
 CREATE TABLE Utenti (
 ID INT PRIMARY KEY,
 Nome VARCHAR(100),
 Email VARCHAR(100) UNIQUE
 );
-			\end{minted}
-			definisce lo schema della tabella \texttt{Utenti}. Include nomi delle colonne, tipi di dato, chiavi, vincoli. Corrisponde agli 'headers' delle tabelle.
-		\end{itemize}
-		\item \textbf{Istanza (Estensionale):} I valori effettivi contenuti nel database in un dato momento. Cambia rapidamente con le operazioni di inserimento, modifica, cancellazione. Corrisponde al 'corpo' delle tabelle (le righe).
+		\end{minted}
+		definisce lo schema della tabella \texttt{Utenti}. Include nomi delle colonne, tipi di dato, chiavi, vincoli. Corrisponde agli 'headers' delle tabelle.
 	\end{itemize}
-	
-	\subsection{Livelli di Modellazione}
+	\item \textbf{Istanza (Estensionale):} I valori effettivi contenuti nel database in un dato momento. Cambia rapidamente con le operazioni di inserimento, modifica, cancellazione. Corrisponde al 'corpo' delle tabelle (le righe).
+\end{itemize}
+
+\subsection{Livelli di Modellazione}
+\begin{itemize}
+	\item \textbf{Modellazione Concettuale:}
 	\begin{itemize}
-		\item \textbf{Modellazione Concettuale:}
+		\item Rappresenta i dati in modo indipendente da sistemi specifici.
+		\item Descrive concetti del mondo reale.
+		\item Usata nella fase preparatoria di un progetto (analisi dei requisiti).
+		\item Il linguaggio più diffuso è \textbf{Entity-Relationship (E-R)}.
 		\begin{itemize}
-			\item Rappresenta i dati in modo indipendente da sistemi specifici.
-			\item Descrive concetti del mondo reale.
-			\item Usata nella fase preparatoria di un progetto (analisi dei requisiti).
-			\item Il linguaggio più diffuso è \textbf{Entity-Relationship (E-R)}.
-			\begin{itemize}
-				\item \textit{Esempio:} In un sistema universitario, identifichiamo entità come 'Studente', 'Corso', 'Docente' e relazioni come 'Studente SI ISCRIVE A Corso', 'Docente TIENE Corso'.
-			\end{itemize}
-		\end{itemize}
-		\item \textbf{Modelli Logici:}
-		\begin{itemize}
-			\item Usati dai DBMS per memorizzare e organizzare i dati.
-			\item Sono indipendenti dalla rappresentazione fisica.
-			\item Esempi: \textbf{Relazionale (SQL)}, gerarchico (antenato di JSON/XML), a oggetti, XML.
-			\begin{itemize}
-				\item \textit{Esempio:} Il diagramma E-R viene tradotto in uno schema di tabelle relazionali (\texttt{CREATE TABLE...}).
-			\end{itemize}
+			\item \textit{Esempio:} In un sistema universitario, identifichiamo entità come 'Studente', 'Corso', 'Docente' e relazioni come 'Studente SI ISCRIVE A Corso', 'Docente TIENE Corso'.
 		\end{itemize}
 	\end{itemize}
-	
-	\subsection{Architettura di un DBMS}
-	Architettura standard ANSI/SPARC a tre livelli per garantire l'\textbf{indipendenza dei dati}:
-	\begin{enumerate}
-		\item \textbf{Schema Interno (o Fisico):}
+	\item \textbf{Modelli Logici:}
+	\begin{itemize}
+		\item Usati dai DBMS per memorizzare e organizzare i dati.
+		\item Sono indipendenti dalla rappresentazione fisica.
+		\item Esempi: \textbf{Relazionale (SQL)}, gerarchico (antenato di JSON/XML), a oggetti, XML.
 		\begin{itemize}
-			\item Descrive come i dati sono fisicamente memorizzati (file, indici, puntatori).
-			\item È il livello più basso, nascosto agli utenti e alla maggior parte degli sviluppatori.
-			\item \textit{Esempio:} Il DBMS decide di memorizzare una tabella in un certo file su disco e di creare un B-Tree index su una colonna.
+			\item \textit{Esempio:} Il diagramma E-R viene tradotto in uno schema di tabelle relazionali (\texttt{CREATE TABLE...}).
 		\end{itemize}
-		\item \textbf{Schema Logico (o Concettuale, ma qui 'logico' è il termine usato per il modello del DBMS):}
-		\begin{itemize}
-			\item Descrive la struttura dell'intero database usando un modello logico (es. il modello relazionale).
-			\item È la visione completa di tutte le tabelle, le relazioni tra esse, i vincoli, ecc.
-			\item È il livello a cui lavorano i DBA e gli sviluppatori backend (es. quando definisci le tabelle con \texttt{CREATE TABLE} o usi Prisma per definire i tuoi model).
-		\end{itemize}
-		\item \textbf{Schema Esterno (o Viste):}
-		\begin{itemize}
-			\item Descrive una porzione del database per specifici utenti o applicazioni.
-			\item Può essere una 'vista' parziale dei dati (alcune colonne, alcune righe filtrate) o una combinazione di dati da più tabelle.
-			\item \textit{Esempio SQL:}
-			\begin{minted}{sql}
+	\end{itemize}
+\end{itemize}
+
+\subsection{Architettura di un DBMS}
+Architettura standard ANSI/SPARC a tre livelli per garantire l'\textbf{indipendenza dei dati}:
+\begin{enumerate}
+	\item \textbf{Schema Interno (o Fisico):}
+	\begin{itemize}
+		\item Descrive come i dati sono fisicamente memorizzati (file, indici, puntatori).
+		\item È il livello più basso, nascosto agli utenti e alla maggior parte degli sviluppatori.
+		\item \textit{Esempio:} Il DBMS decide di memorizzare una tabella in un certo file su disco e di creare un B-Tree index su una colonna.
+	\end{itemize}
+	\item \textbf{Schema Logico (o Concettuale, ma qui 'logico' è il termine usato per il modello del DBMS):}
+	\begin{itemize}
+		\item Descrive la struttura dell'intero database usando un modello logico (es. il modello relazionale).
+		\item È la visione completa di tutte le tabelle, le relazioni tra esse, i vincoli, ecc.
+		\item È il livello a cui lavorano i DBA e gli sviluppatori backend (es. quando definisci le tabelle con \texttt{CREATE TABLE} o usi Prisma per definire i tuoi model).
+	\end{itemize}
+	\item \textbf{Schema Esterno (o Viste):}
+	\begin{itemize}
+		\item Descrive una porzione del database per specifici utenti o applicazioni.
+		\item Può essere una 'vista' parziale dei dati (alcune colonne, alcune righe filtrate) o una combinazione di dati da più tabelle.
+		\item \textit{Esempio SQL:}
+		\begin{minted}{sql}
 CREATE VIEW StudentiMarketing AS
 SELECT Matricola, Nome, Cognome
 FROM Studenti
 WHERE CorsoLaurea = 'Marketing';
-			\end{minted}
-			Questa vista mostra solo alcuni dati degli studenti di marketing, nascondendo altre informazioni o altri studenti.
-		\end{itemize}
-	\end{enumerate}
-	
-	\subsection{Indipendenza dei Dati}
-	È la capacità di modificare la definizione dello schema a un livello senza influenzare la definizione dello schema al livello superiore. È una conseguenza diretta dell'architettura a livelli.
-	\begin{itemize}
-		\item \textbf{Indipendenza Fisica dei Dati:}
-		\begin{itemize}
-			\item La rappresentazione logica ed esterna è indipendente da quella fisica.
-			\item Si possono fare modifiche allo schema interno (es. cambiare algoritmi di accesso, aggiungere indici, spostare file su dischi diversi) senza dover modificare lo schema logico o le applicazioni che interrogano il DB.
-			\item \textit{Esempio:} Il DBA aggiunge un indice a una tabella per migliorare le prestazioni. Le query SQL delle applicazioni continuano a funzionare come prima, senza modifiche.
-		\end{itemize}
-		\item \textbf{Indipendenza Logica dei Dati:}
-		\begin{itemize}
-			\item Lo schema esterno (viste) è indipendente dallo schema logico.
-			\item Si possono fare modifiche allo schema logico (es. aggiungere una colonna a una tabella, dividere una tabella in due mantenendo la possibilità di ricostruire l'originale) senza dover modificare le applicazioni che usano le viste, purché le viste possano ancora essere derivate dal nuovo schema logico.
-			\item È più difficile da ottenere pienamente rispetto a quella fisica.
-			\item \textit{Esempio:} Se una tabella \texttt{Dipendenti} viene divisa in \texttt{DipendentiInfoPersonali} e \texttt{DipendentiInfoLavorative}, una vista \texttt{DipendentiCompleto} che fa il join delle due nuove tabelle può permettere alle vecchie applicazioni di funzionare senza modifiche.
-		\end{itemize}
+		\end{minted}
+		Questa vista mostra solo alcuni dati degli studenti di marketing, nascondendo altre informazioni o altri studenti.
 	\end{itemize}
-	
-	\subsection{Linguaggi per Database}
-	I DBMS offrono diverse modalità di interazione:
+\end{enumerate}
+
+\subsection{Indipendenza dei Dati}
+È la capacità di modificare la definizione dello schema a un livello senza influenzare la definizione dello schema al livello superiore. È una conseguenza diretta dell'architettura a livelli.
+\begin{itemize}
+	\item \textbf{Indipendenza Fisica dei Dati:}
 	\begin{itemize}
-		\item \textbf{Linguaggi testuali 'interattivi' (es. SQL):} L'utente scrive query direttamente in un client.
-		\item \textbf{Statement SQL 'iniettati' in un linguaggio ospite (Host Language):} Comandi SQL incorporati in linguaggi di programmazione come Java, C, Python, Node.js.
-		\begin{itemize}
-			\item \textit{Esempio Node.js (con \texttt{pg} driver per PostgreSQL):}
-			\begin{minted}{javascript}
+		\item La rappresentazione logica ed esterna è indipendente da quella fisica.
+		\item Si possono fare modifiche allo schema interno (es. cambiare algoritmi di accesso, aggiungere indici, spostare file su dischi diversi) senza dover modificare lo schema logico o le applicazioni che interrogano il DB.
+		\item \textit{Esempio:} Il DBA aggiunge un indice a una tabella per migliorare le prestazioni. Le query SQL delle applicazioni continuano a funzionare come prima, senza modifiche.
+	\end{itemize}
+	\item \textbf{Indipendenza Logica dei Dati:}
+	\begin{itemize}
+		\item Lo schema esterno (viste) è indipendente dallo schema logico.
+		\item Si possono fare modifiche allo schema logico (es. aggiungere una colonna a una tabella, dividere una tabella in due mantenendo la possibilità di ricostruire l'originale) senza dover modificare le applicazioni che usano le viste, purché le viste possano ancora essere derivate dal nuovo schema logico.
+		\item È più difficile da ottenere pienamente rispetto a quella fisica.
+		\item \textit{Esempio:} Se una tabella \texttt{Dipendenti} viene divisa in \texttt{DipendentiInfoPersonali} e \texttt{DipendentiInfoLavorative}, una vista \texttt{DipendentiCompleto} che fa il join delle due nuove tabelle può permettere alle vecchie applicazioni di funzionare senza modifiche.
+	\end{itemize}
+\end{itemize}
+
+\subsection{Linguaggi per Database}
+I DBMS offrono diverse modalità di interazione:
+\begin{itemize}
+	\item \textbf{Linguaggi testuali 'interattivi' (es. SQL):} L'utente scrive query direttamente in un client.
+	\item \textbf{Statement SQL 'iniettati' in un linguaggio ospite (Host Language):} Comandi SQL incorporati in linguaggi di programmazione come Java, C, Python, Node.js.
+	\begin{itemize}
+		\item \textit{Esempio Node.js (con \texttt{pg} driver per PostgreSQL):}
+		\begin{minted}{javascript}
 const { rows } = await client.query('SELECT * FROM users WHERE id = $1', [userId]);
-			\end{minted}
-			\item ORM come Prisma astraggono ulteriormente questo, permettendo di scrivere:
-			\begin{minted}{typescript}
+		\end{minted}
+		\item ORM come Prisma astraggono ulteriormente questo, permettendo di scrivere:
+		\begin{minted}{typescript}
 prisma.user.findUnique({ where: { id: userId } });
-			\end{minted}
-		\end{itemize}
-		\item \textbf{Linguaggi Ad Hoc (es. PL/SQL di Oracle, T-SQL di SQL Server):} Estensioni procedurali di SQL specifiche del DBMS.
-		\item \textbf{Interfacce Utente Grafiche (GUI):} Strumenti visuali per interagire con il DB (es. pgAdmin, MySQL Workbench, MongoDB Compass).
+		\end{minted}
 	\end{itemize}
-	
-	\subsection{DDL e DML (Separazione dati da software)}
-	Due categorie principali di comandi SQL:
+	\item \textbf{Linguaggi Ad Hoc (es. PL/SQL di Oracle, T-SQL di SQL Server):} Estensioni procedurali di SQL specifiche del DBMS.
+	\item \textbf{Interfacce Utente Grafiche (GUI):} Strumenti visuali per interagire con il DB (es. pgAdmin, MySQL Workbench, MongoDB Compass).
+\end{itemize}
+
+\subsection{DDL e DML (Separazione dati da software)}
+Due categorie principali di comandi SQL:
+\begin{itemize}
+	\item \textbf{DDL (Data Definition Language):}
 	\begin{itemize}
-		\item \textbf{DDL (Data Definition Language):}
-		\begin{itemize}
-			\item Usato per definire e modificare gli \textbf{schemi} (logico, esterno, fisico) e altre operazioni sulla struttura.
-			\item Comandi: \texttt{CREATE TABLE}, \texttt{ALTER TABLE}, \texttt{DROP TABLE}, \texttt{CREATE INDEX}, \texttt{CREATE VIEW}, \texttt{DROP VIEW}.
-			\item \textit{Esempio:}
-			\begin{minted}{sql}
+		\item Usato per definire e modificare gli \textbf{schemi} (logico, esterno, fisico) e altre operazioni sulla struttura.
+		\item Comandi: \texttt{CREATE TABLE}, \texttt{ALTER TABLE}, \texttt{DROP TABLE}, \texttt{CREATE INDEX}, \texttt{CREATE VIEW}, \texttt{DROP VIEW}.
+		\item \textit{Esempio:}
+		\begin{minted}{sql}
 CREATE TABLE hours (
 course CHAR(20),
 teacher CHAR(20),
 room CHAR(4),
 hour CHAR(5)
 );
-			\end{minted}
-		\end{itemize}
-		\item \textbf{DML (Data Manipulation Language):}
-		\begin{itemize}
-			\item Usato per interrogare e aggiornare le \textbf{istanze} (i dati effettivi) del database.
-			\item Comandi: \texttt{SELECT}, \texttt{INSERT}, \texttt{UPDATE}, \texttt{DELETE}.
-		\end{itemize}
+		\end{minted}
 	\end{itemize}
-	
-	\section{Attori e Ruoli}
-	Diverse figure interagiscono con i database:
+	\item \textbf{DML (Data Manipulation Language):}
 	\begin{itemize}
-		\item \textbf{Progettisti e sviluppatori di DBMS:} Creano il software DBMS stesso.
-		\item \textbf{Progettisti e sviluppatori di Database:} Disegnano lo schema del database per una specifica applicazione, scrivono query, stored procedure.
-		\item \textbf{Amministratori di Database (DBA):}
-		\begin{itemize}
-			\item Responsabili del controllo e della gestione centralizzata del database.
-			\item Si occupano di: efficienza (tuning prestazioni), affidabilità (backup, recovery), sicurezza (gestione permessi), installazione, aggiornamenti.
-			\item Spesso progettano anche il database, tranne in progetti molto complessi.
-		\end{itemize}
-		\item \textbf{Progettisti e sviluppatori di applicazioni end-user:} Creano le applicazioni (web, mobile, desktop) che usano il database.
-		\item \textbf{Utenti:}
-		\begin{itemize}
-			\item \textbf{Utenti finali (operatori terminali):} Eseguono operazioni predefinite (transazioni di business, es. un cassiere in un supermercato).
-			\item \textbf{Utenti occasionali/casual:} Eseguono operazioni non definite a priori, usando linguaggi interattivi (es. un analista che esplora i dati con SQL).
-		\end{itemize}
+		\item Usato per interrogare e aggiornare le \textbf{istanze} (i dati effettivi) del database.
+		\item Comandi: \texttt{SELECT}, \texttt{INSERT}, \texttt{UPDATE}, \texttt{DELETE}.
 	\end{itemize}
-	
-	\section{Vantaggi e Svantaggi dei DBMS}
-	
-	\subsection{Pro (Vantaggi)}
+\end{itemize}
+
+\section{Attori e Ruoli}
+Diverse figure interagiscono con i database:
+\begin{itemize}
+	\item \textbf{Progettisti e sviluppatori di DBMS:} Creano il software DBMS stesso.
+	\item \textbf{Progettisti e sviluppatori di Database:} Disegnano lo schema del database per una specifica applicazione, scrivono query, stored procedure.
+	\item \textbf{Amministratori di Database (DBA):}
 	\begin{itemize}
-		\item Dati come risorsa condivisa, modellano l'ambiente reale.
-		\item Gestione centralizzata dei dati, standardizzabile e scalabile.
-		\item Fornisce servizi integrati (query, sicurezza, backup, recovery).
-		\item Riduce ridondanze e inconsistente.
-		\item \textbf{Indipendenza dei dati:} Supporta lo sviluppo e la gestione delle applicazioni software (le app non devono preoccuparsi di come i dati sono memorizzati fisicamente).
+		\item Responsabili del controllo e della gestione centralizzata del database.
+		\item Si occupano di: efficienza (tuning prestazioni), affidabilità (backup, recovery), sicurezza (gestione permessi), installazione, aggiornamenti.
+		\item Spesso progettano anche il database, tranne in progetti molto complessi.
 	\end{itemize}
-	
-	\subsection{Contro (Svantaggi)}
+	\item \textbf{Progettisti e sviluppatori di applicazioni end-user:} Creano le applicazioni (web, mobile, desktop) che usano il database.
+	\item \textbf{Utenti:}
 	\begin{itemize}
-		\item I prodotti DBMS (specialmente quelli commerciali enterprise) possono essere costosi, così come l'adozione di tali soluzioni (richiede personale specializzato).
-		\item Le funzionalità integrate possono a volte ridurre l'efficienza specifica per compiti molto particolari, rispetto a soluzioni custom altamente ottimizzate (ma questo è un caso limite).
+		\item \textbf{Utenti finali (operatori terminali):} Eseguono operazioni predefinite (transazioni di business, es. un cassiere in un supermercato).
+		\item \textbf{Utenti occasionali/casual:} Eseguono operazioni non definite a priori, usando linguaggi interattivi (es. un analista che esplora i dati con SQL).
 	\end{itemize}
-	
-\end{document}
+\end{itemize}
+
+\section{Vantaggi e Svantaggi dei DBMS}
+
+\subsection{Pro (Vantaggi)}
+\begin{itemize}
+	\item Dati come risorsa condivisa, modellano l'ambiente reale.
+	\item Gestione centralizzata dei dati, standardizzabile e scalabile.
+	\item Fornisce servizi integrati (query, sicurezza, backup, recovery).
+	\item Riduce ridondanze e inconsistente.
+	\item \textbf{Indipendenza dei dati:} Supporta lo sviluppo e la gestione delle applicazioni software (le app non devono preoccuparsi di come i dati sono memorizzati fisicamente).
+\end{itemize}
+
+\subsection{Contro (Svantaggi)}
+\begin{itemize}
+	\item I prodotti DBMS (specialmente quelli commerciali enterprise) possono essere costosi, così come l'adozione di tali soluzioni (richiede personale specializzato).
+	\item Le funzionalità integrate possono a volte ridurre l'efficienza specifica per compiti molto particolari, rispetto a soluzioni custom altamente ottimizzate (ma questo è un caso limite).
+\end{itemize}

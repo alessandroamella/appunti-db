@@ -1,33 +1,5 @@
-\input{preambolo_comune.tex}
-
-% --- Hyperlink ---
-\usepackage{hyperref}
-\hypersetup{
-	colorlinks=true,
-	linkcolor=white,
-	filecolor=magenta,
-	urlcolor=cyan,
-	pdftitle={Algebra Relazionale},
-	pdfauthor={Alessandro Amella},
-	pdfpagemode=FullScreen,
-}
-
-% --- Titolo ---
-\title{Algebra Relazionale
-  \large Appunti basati sulle dispense del Dott. Magistrale Flavio Bertini}
-\author{Alessandro Amella, Gemini e Claude}
-\date{\today}
-
-\begin{document}
-
-\maketitle
-\tableofcontents
-\newpage
-
 \section{Introduzione all'Algebra Relazionale}
-L'algebra relazionale è un linguaggio procedurale formale per interrogare i database relazionali. Ogni operazione prende una o più relazioni (tabelle) come input e produce una nuova relazione come output. Questo permette di annidare le operazioni.
-
-\section{Operatori Fondamentali dell'Algebra Relazionale}
+L'algebra relazionale è un linguaggio procedurale formale per interrogare i database relazionali. Ogni operazione prende una o più relazioni (tabelle) come input e produce una nuova relazione come output. Questo permette di annidare le operazioni.\section{Operatori Fondamentali dell'Algebra Relazionale}
 
 \subsection{Selezione (\texorpdfstring{$\sigma$}{sigma} - Sigma)}
 \begin{itemize}
@@ -181,9 +153,7 @@ INTERSECT
 SELECT ... FROM Relazione2;
 \end{minted}
     \item \textbf{Nota:} L'intersezione può essere espressa usando la differenza: $A \cap B = A - (A - B)$.
-\end{itemize}
-
-\section{Concetti e Pattern Comuni Illustrati negli Esercizi}
+\end{itemize}\section{Concetti e Pattern Comuni Illustrati negli Esercizi}
 
 \subsection{Self-Join (Slide 8, 29, 61)}
 Quando una query richiede di confrontare tuple all'interno della stessa tabella. Richiede quasi sempre la ridenominazione ($\rho$) di almeno una "copia" della tabella per distinguere gli attributi. Esempio: Trovare treni con un interscambio, fornitori che forniscono almeno due prodotti diversi.
@@ -220,9 +190,7 @@ $R_{\text{NonPrimeDate}} := \pi_{\text{Student,Date1}}(\sigma_{\text{Date} < \te
 $R_{\text{PrimeDatePerStudente}} := R2 - R_{\text{NonPrimeDate}}$
 Poi si rinomina $Date1$ in $Date$ per il join finale con STUDENT:
 $R3 := \rho_{\text{Date} \leftarrow \text{Date1}}(R_{\text{PrimeDatePerStudente}})$
-Risultato: $\pi_{\text{Name,Surname,Date}}(\text{STUDENT} \Join_{\text{Id}=\text{Student}} R3)$
-
-\section{Appendix: Notazione per Esame Remoto (Slide 62-64)}
+Risultato: $\pi_{\text{Name,Surname,Date}}(\text{STUDENT} \Join_{\text{Id}=\text{Student}} R3)$\section{Appendix: Notazione per Esame Remoto (Slide 62-64)}
 Notazione testuale alternativa per gli operatori dell'algebra relazionale.
 \begin{itemize}
     \item \textbf{Rename:} \texttt{RID[(<new A1>,<old A1>),...]R}
@@ -271,4 +239,3 @@ DIF
 \end{verbatim}
 \end{itemize}
 
-\end{document}

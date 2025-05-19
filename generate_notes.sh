@@ -41,13 +41,6 @@ if [ "$MISSING" = true ]; then
   exit 1
 fi
 
-# Verifica che fix_minted_indent.sh sia presente
-if [ ! -f "fix_minted_indent.sh" ]; then
-  echo "⚠️ File mancante: fix_minted_indent.sh"
-  echo "Lo script per correggere l'indentazione dei blocchi minted non è disponibile."
-  exit 1
-fi
-
 echo "✅ Tutti i file necessari sono presenti."
 
 # 1. Crea il documento master
@@ -104,52 +97,52 @@ Sentiti libero di utilizzare, condividere o contribuire a questi appunti attrave
 \clearpage
 
 \chapter{Introduzione ai Database}
-\input{01-introduzione-content}
+\input{01-introduzione}
 
 \chapter{Modello Relazionale dei Dati}
-\input{02-relazioni-content}
+\input{02-relazioni}
 
 \chapter{Algebra Relazionale e Calcolo Relazionale}
-\input{03-algebra-relazionale-content}
+\input{03-algebra-relazionale}
 
 \chapter{SQL Base}
-\input{04-sql-content}
+\input{04-sql}
 
 \chapter{SQL Avanzato}
-\input{05-sql-avanzato-content}
+\input{05-sql-avanzato}
 
 \chapter{Modellazione Concettuale dei Dati}
-\input{06-db-design-content}
+\input{06-db-design}
 
 \chapter{Progettazione Concettuale di Basi di Dati}
-\input{07-modello-concettuale-content}
+\input{07-modello-concettuale}
 
 \chapter{Progettazione Logica dei Database}
-\input{08-modello-logico-content}
+\input{08-modello-logico}
 
 \chapter{Normalizzazione dei Database}
-\input{09-normalizzazione-content}
+\input{09-normalizzazione}
 
 \chapter{Database Attivi}
-\input{10-db-attivi-content}
+\input{10-db-attivi}
 
 \chapter{Laboratorio 1: Algebra Relazionale}
-\input{lab-01-algebra-content}
+\input{lab-01-algebra}
 
 \chapter{Laboratorio 2: SQL}
-\input{lab-02-sql-content}
+\input{lab-02-sql}
 
 \chapter{Laboratorio 3 e 4: Architettura e Transazioni}
-\input{lab-03-04-architettura-transazioni-content}
+\input{lab-03-04-architettura-transazioni}
 
 \chapter{Laboratorio 5: Progettazione}
-\input{lab-05-progettazione-content}
+\input{lab-05-progettazione}
 
 \chapter{Laboratorio 6: Indici e B+ Alberi}
-\input{lab-06-indici-content}
+\input{lab-06-indici}
 
 \chapter{Laboratorio 7: Hash Table e Indici Invertiti}
-\input{lab-07-hash-content}
+\input{lab-07-hash}
 
 \end{document}
 EOT
@@ -161,36 +154,7 @@ echo "Creando preambolo_comune_modificato.tex..."
 sed '/\\documentclass/d' preambolo_comune.tex >preambolo_comune_modificato.tex
 echo "✅ preambolo_comune_modificato.tex creato."
 
-# 3. Per ogni file .tex, estrai il contenuto e correggi l'indentazione minted
-echo "Estraendo contenuto dai file e correggendo l'indentazione minted..."
-
-for FILE in "${FILES[@]}"; do
-  # Skip preambolo_comune.tex as it doesn't have a document environment
-  if [[ "$FILE" == "preambolo_comune.tex" ]]; then
-    continue
-  fi
-  CONTENT_FILE="${FILE%.tex}-content.tex"
-  TEMP_FILE="${FILE%.tex}-temp.tex"
-  echo "Elaborazione di $FILE -> $CONTENT_FILE"
-
-  # Estrai contenuto tra \begin{document} e \end{document}
-  sed -n '/\\begin{document}/,/\\end{document}/p' "$FILE" |
-    # Rimuovi righe specifiche
-    grep -v '\\begin{document}\|\\end{document}\|\\maketitle\|\\tableofcontents\|\\newpage' >"$TEMP_FILE"
-
-  # Correggi l'indentazione dei blocchi minted
-  echo "Correggendo l'indentazione minted in $TEMP_FILE..."
-  ./fix_minted_indent.sh "$TEMP_FILE" >"$CONTENT_FILE"
-
-  # Rimuovi il file temporaneo
-  rm "$TEMP_FILE"
-
-  echo "✅ $CONTENT_FILE creato con indentazione minted corretta."
-done
-
-echo "✅ Estrazione e correzione completate."
-
-# 4. Compila il documento automaticamente
+# 3. Compila il documento automaticamente
 echo
 echo "==================================================================="
 echo "Compilando il documento..."
@@ -201,11 +165,6 @@ pdflatex -shell-escape appunti_completi.tex
 
 echo "✅ Compilazione completata."
 echo "Il documento PDF è stato generato come 'appunti_completi.pdf'"
-
-# 5. Rimuovi il file preambolo_comune.tex dopo la compilazione
-# echo "Rimuovo il file preambolo_comune_modificato.tex..."
-# rm preambolo_comune_modificato.tex
-# echo "✅ File preambolo_comune_modificato.tex rimosso."
 
 echo "==================================================================="
 echo "Processo completato con successo!"
