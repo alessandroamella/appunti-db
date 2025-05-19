@@ -181,24 +181,24 @@ Come tradurre i termini identificati nei costrutti del modello Entità-Relazione
 		\item Quando un termine \textbf{collega altri termini} (entità).
 		\item \textit{Esempio}: "Studente \textit{si iscrive a} Corso".
 		\item \textit{Prisma/SQL}: Spesso implementate con chiavi esterne e tabelle di join.
-		\begin{minted}{graphql}
+		\begin{minted}{rust}
 model Student {
-id          Int      @id @default(autoincrement())
-// ... altri attributi
-enrollments Enrollment[]
+	id          Int      @id @default(autoincrement())
+	// ... altri attributi
+	enrollments Enrollment[]
 }
 model Course {
-id          Int      @id @default(autoincrement())
-// ... altri attributi
-enrollments Enrollment[]
+	id          Int      @id @default(autoincrement())
+	// ... altri attributi
+	enrollments Enrollment[]
 }
 model Enrollment { // Tabella di join
-studentId Int
-courseId  Int
-student   Student @relation(fields: [studentId], references: [id])
-course    Course  @relation(fields: [courseId], references: [id])
-enrollmentDate DateTime
-@@id([studentId, courseId])
+	studentId Int
+	courseId  Int
+	student   Student @relation(fields: [studentId], references: [id])
+	course    Course  @relation(fields: [courseId], references: [id])
+	enrollmentDate DateTime
+	@@id([studentId, courseId])
 }
 		\end{minted}
 		\item \textit{MongoDB}: Spesso implementate con DBRefs, array di ID, o embedding (se la relazione è 1-a-pochi e i dati sono strettamente legati).
@@ -239,18 +239,18 @@ Sono "best practices" per risolvere problemi comuni di modellazione.
 	\begin{itemize}
 		\item \textit{Prima}: \texttt{model Employee \{ id Int @id; name String; companyName String; \}}
 		\item \textit{Dopo}:
-		\begin{minted}{graphql}
+		\begin{minted}{rust}
 model Employee {
-id        Int     @id
-name      String
-companyId Int
-company   Company @relation(fields: [companyId], references: [id])
+	id        Int     @id
+	name      String
+	companyId Int
+	company   Company @relation(fields: [companyId], references: [id])
 }
 model Company {
-id        Int     @id
-name      String
-address   String? // Company ha i suoi attributi
-employees Employee[]
+	id        Int     @id
+	name      String
+	address   String? // Company ha i suoi attributi
+	employees Employee[]
 }
 		\end{minted}
 	\end{itemize}
@@ -343,20 +343,20 @@ employees Employee[]
 		\end{itemize}
 	\end{itemize}
 	\item \textit{Esempio Pratico}: Per tracciare lo storico degli indirizzi di un cliente:
-	\begin{minted}{graphql}
+	\begin{minted}{rust}
 model Customer {
-id             Int       @id
-// ...
-addressHistory Address[]
+	id             Int       @id
+	// ...
+	addressHistory Address[]
 }
 model Address {
-id         Int       @id
-street     String
-city       String
-customerId Int
-customer   Customer  @relation(fields: [customerId], references: [id])
-startDate  DateTime
-endDate    DateTime? // Null se è l'indirizzo corrente
+	id         Int       @id
+	street     String
+	city       String
+	customerId Int
+	customer   Customer  @relation(fields: [customerId], references: [id])
+	startDate  DateTime
+	endDate    DateTime? // Null se è l'indirizzo corrente
 }
 	\end{minted}
 \end{itemize}

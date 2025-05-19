@@ -60,12 +60,12 @@ colonna2 TIPO_DATI [vincoli],
 	\end{minted}
 	\item Definisce una nuova tabella (relazione) con le sue colonne (attributi), i tipi di dato per ciascuna colonna e i vincoli iniziali.
 	\item \textit{Esempio Pratico (corrispettivo User con Prisma):}
-	\begin{minted}{graphql}
+	\begin{minted}{rust}
 // Prisma Schema
 model User {
-id        Int      @id @default(autoincrement())
-email     String   @unique
-name      String?
+	id        Int      @id @default(autoincrement())
+	email     String   @unique
+	name      String?
 }
 	\end{minted}
 	Equivalente a:
@@ -136,16 +136,16 @@ Servono a garantire l'integrità e la coerenza dei dati.
 	\item \texttt{FOREIGN KEY (colonna\_fk) REFERENCES tabella\_riferita (colonna\_pk\_riferita)}
 	\item Garantisce che i valori nella \texttt{colonna\_fk} esistano nella \texttt{colonna\_pk\_riferita} della \texttt{tabella\_riferita}.
 	\item \textit{Esempio Pratico (Relazione Post-User con Prisma):}
-	\begin{minted}{graphql}
+	\begin{minted}{rust}
 // Prisma Schema
 model User {
-id    Int     @id @default(autoincrement())
-posts Post[]
+	id    Int     @id @default(autoincrement())
+	posts Post[]
 }
 model Post {
-id        Int     @id @default(autoincrement())
-author    User    @relation(fields: [authorId], references: [id])
-authorId  Int // Foreign Key
+	id        Int     @id @default(autoincrement())
+	author    User    @relation(fields: [authorId], references: [id])
+	authorId  Int // Foreign Key
 }
 	\end{minted}
 \end{itemize}

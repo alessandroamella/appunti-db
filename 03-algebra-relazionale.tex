@@ -191,175 +191,6 @@ SELECT Nome, Cognome FROM ImpiegatiIT WHERE Stipendio > 60000;
 \end{minted}
 Il DBMS traduce la query sulla vista in una query sulle tabelle base (es. $\myselectop{\Attr{Stipendio} > 60000}{(\myselectop{\Attr{Dipartimento} = \text{'IT'}}{(\Rel{Impiegati})})}$ ).
 
-\section{Esempi Completi di Algebra Relazionale}
-
-In questa sezione presentiamo esempi completi di espressioni in algebra relazionale, simili a quelli che potrebbero apparire negli esercizi d'esame. Utilizzeremo uno schema di database di esempio relativo a concerti ed eventi musicali.
-
-\subsection{Schema di Esempio}
-
-\begin{table}[htbp]
-	\centering
-	\begin{tabular}{|l|l|}
-		\hline
-		\multicolumn{2}{|c|}{\textbf{PERSONA}} \\
-		\hline
-		\textbf{IDPersona} & Chiave primaria \\
-		\textbf{Nome} & Nome della persona \\
-		\textbf{Cognome} & Cognome della persona \\
-		\textbf{DataNascita} & Data di nascita \\
-		\hline
-	\end{tabular}
-	\hspace{1cm}
-	\begin{tabular}{|l|l|}
-		\hline
-		\multicolumn{2}{|c|}{\textbf{CONCERTO}} \\
-		\hline
-		\textbf{IDConcerto} & Chiave primaria \\
-		\textbf{Titolo} & Titolo del concerto \\
-		\textbf{DataEvento} & Data del concerto \\
-		\textbf{Genere} & Genere musicale \\
-		\textbf{Citta} & Città dove si svolge \\
-		\hline
-	\end{tabular}
-	
-	\vspace{0.5cm}
-	
-	\begin{tabular}{|l|l|}
-		\hline
-		\multicolumn{2}{|c|}{\textbf{BIGLIETTO}} \\
-		\hline
-		\textbf{IDBiglietto} & Chiave primaria \\
-		\textbf{IDConcerto} & Chiave esterna $\rightarrow$ CONCERTO \\
-		\textbf{IDPersona} & Chiave esterna $\rightarrow$ PERSONA \\
-		\textbf{Prezzo} & Prezzo del biglietto \\
-		\textbf{Settore} & Settore del posto \\
-		\hline
-	\end{tabular}
-	\hspace{1cm}
-	\begin{tabular}{|l|l|}
-		\hline
-		\multicolumn{2}{|c|}{\textbf{ARTISTA}} \\
-		\hline
-		\textbf{IDArtista} & Chiave primaria \\
-		\textbf{Nome} & Nome dell'artista/band \\
-		\textbf{Nazionalita} & Nazionalità dell'artista \\
-		\hline
-	\end{tabular}
-	
-	\vspace{0.5cm}
-	
-	\begin{tabular}{|l|l|}
-		\hline
-		\multicolumn{2}{|c|}{\textbf{PARTECIPAZIONE}} \\
-		\hline
-		\textbf{IDArtista} & Chiave esterna $\rightarrow$ ARTISTA \\
-		\textbf{IDConcerto} & Chiave esterna $\rightarrow$ CONCERTO \\
-		\textbf{Cachet} & Compenso dell'artista \\
-		\hline
-	\end{tabular}
-	\caption{Schema del database dei concerti}
-\end{table}
-
-\subsection{Esempi di Query in Algebra Relazionale}
-
-\subsubsection{Esempio 1: Persone che hanno acquistato biglietti per concerti pop a Berlino}
-
-\noindent Vogliamo trovare i nominativi (nome e cognome) delle persone che hanno acquistato biglietti per concerti pop tenutisi a Berlino.
-
-\begin{align*}
-	& \text{Step 1: Selezionare i concerti pop a Berlino} \\
-	& \text{ConcertiPopBerlino} \leftarrow \myselectop{\Attr{Genere} = \text{'Pop'} \mylandop \Attr{Citta} = \text{'Berlino'}}{(\Rel{CONCERTO})} \\
-	& \\
-	& \text{Step 2: Trovare i biglietti per questi concerti} \\
-	& \text{BigliettiPopBerlino} \leftarrow \Rel{BIGLIETTO} \mynaturaljoin \text{ConcertiPopBerlino} \\
-	& \\
-	& \text{Step 3: Trovare le persone che hanno acquistato questi biglietti} \\
-	& \text{PersonePopBerlino} \leftarrow \text{BigliettiPopBerlino} \mynaturaljoin \Rel{PERSONA} \\
-	& \\
-	& \text{Step 4: Proiettare solo nome e cognome} \\
-	& \text{Risultato} \leftarrow \myproject{\Attr{Nome}, \Attr{Cognome}}{(\text{PersonePopBerlino})}
-\end{align*}
-
-\noindent Oppure, in un'unica espressione compatta:
-
-\begin{align*}
-	\text{Risultato} \leftarrow \myproject{\Attr{Nome}, \Attr{Cognome}}{( \Rel{PERSONA} \mynaturaljoin (\Rel{BIGLIETTO} \mynaturaljoin \myselectop{\Attr{Genere} = \text{'Pop'} \mylandop \Attr{Citta} = \text{'Berlino'}}{(\Rel{CONCERTO})} ))}
-\end{align*}
-
-\subsubsection{Esempio 2: Città che non hanno mai ospitato un concerto rock}
-
-\noindent Vogliamo trovare i nomi delle città che non hanno mai ospitato un concerto rock. Per questo abbiamo bisogno di una tabella aggiuntiva $\Rel{CITTA}$ con tutte le città.
-
-\begin{align*}
-	& \text{Step 1: Trovare le città che hanno ospitato concerti rock} \\
-	& \text{CittaRock} \leftarrow \myproject{\Attr{Citta}}{(\myselectop{\Attr{Genere} = \text{'Rock'}}{(\Rel{CONCERTO})})} \\
-	& \\
-	& \text{Step 2: Trovare le città che non sono in CittaRock} \\
-	& \text{Risultato} \leftarrow \myproject{\Attr{Nome}}{(\Rel{CITTA})} \mydifference \text{CittaRock}
-\end{align*}
-
-\noindent Alternativamente, assumendo che non abbiamo una tabella $\Rel{CITTA}$ separata, possiamo usare la differenza con l'insieme di tutte le città presenti nella tabella $\Rel{CONCERTO}$:
-
-\begin{align*}
-	\text{Risultato} \leftarrow \myproject{\Attr{Citta}}{(\Rel{CONCERTO})} \mydifference \myproject{\Attr{Citta}}{(\myselectop{\Attr{Genere} = \text{'Rock'}}{(\Rel{CONCERTO})})}
-\end{align*}
-
-\subsubsection{Esempio 3: Artisti che hanno partecipato a tutti i concerti in Italia}
-
-\noindent Questo è un esempio di divisione relazionale (implementata con differenza e proiezione).
-
-\begin{align*}
-	& \text{Step 1: Trovare tutti i concerti in Italia} \\
-	& \text{ConcertiItalia} \leftarrow \myproject{\Attr{IDConcerto}}{(\myselectop{\Attr{Citta} \text{ in } \{\text{'Roma'}, \text{'Milano'}, \text{'Napoli'}, ...\}}{(\Rel{CONCERTO})})} \\
-	& \\
-	& \text{Step 2: Per ogni artista, trovare le coppie (artista, concerto) che NON esistono in PARTECIPAZIONE} \\
-	& \text{TutteCombinazioniPossibili} \leftarrow \myproject{\Attr{IDArtista}}{(\Rel{ARTISTA})} \mycartesian \text{ConcertiItalia} \\
-	& \text{CombinazioniMancanti} \leftarrow \text{TutteCombinazioniPossibili} \mydifference \myproject{\Attr{IDArtista}, \Attr{IDConcerto}}{(\Rel{PARTECIPAZIONE})} \\
-	& \\
-	& \text{Step 3: Trovare gli artisti che non hanno combinazioni mancanti (hanno partecipato a tutti i concerti)} \\
-	& \text{ArtistiConMancanze} \leftarrow \myproject{\Attr{IDArtista}}{(\text{CombinazioniMancanti})} \\
-	& \text{Risultato} \leftarrow \myproject{\Attr{IDArtista}, \Attr{Nome}}{(\Rel{ARTISTA})} \mydifference \myproject{\Attr{IDArtista}, \Attr{Nome}}{(\Rel{ARTISTA} \mynaturaljoin \text{ArtistiConMancanze})}
-\end{align*}
-
-\subsubsection{Esempio 4: Persone che hanno acquistato biglietti per tutti gli artisti di nazionalità francese}
-
-\begin{align*}
-	& \text{Step 1: Trovare tutti gli artisti francesi} \\
-	& \text{ArtistiFrancesi} \leftarrow \myproject{\Attr{IDArtista}}{(\myselectop{\Attr{Nazionalita} = \text{'Francese'}}{(\Rel{ARTISTA})})} \\
-	& \\
-	& \text{Step 2: Trovare i concerti dove si esibiscono artisti francesi} \\
-	& \text{ConcertiFrancesi} \leftarrow \myproject{\Attr{IDConcerto}}{(\Rel{PARTECIPAZIONE} \mynaturaljoin \text{ArtistiFrancesi})} \\
-	& \\
-	& \text{Step 3: Trovare tutte le combinazioni possibili (persona, artista francese)} \\
-	& \text{TutteCombinazioniPossibili} \leftarrow \myproject{\Attr{IDPersona}}{(\Rel{PERSONA})} \mycartesian \text{ArtistiFrancesi} \\
-	& \\
-	& \text{Step 4: Trovare le persone che hanno visto ciascun artista francese} \\
-	& \text{PersoneArtistiFrancesi} \leftarrow \myproject{\Attr{IDPersona}, \Attr{IDArtista}}{(
-		\Rel{PERSONA} \mynaturaljoin \Rel{BIGLIETTO} \mynaturaljoin \Rel{CONCERTO} \mynaturaljoin \Rel{PARTECIPAZIONE} \mynaturaljoin \myselectop{\Attr{Nazionalita} = \text{'Francese'}}{(\Rel{ARTISTA})}
-	)} \\
-	& \\
-	& \text{Step 5: Trovare le combinazioni mancanti} \\
-	& \text{CombinazioniMancanti} \leftarrow \text{TutteCombinazioniPossibili} \mydifference \text{PersoneArtistiFrancesi} \\
-	& \\
-	& \text{Step 6: Trovare le persone senza combinazioni mancanti} \\
-	& \text{PersoneConMancanze} \leftarrow \myproject{\Attr{IDPersona}}{(\text{CombinazioniMancanti})} \\
-	& \text{Risultato} \leftarrow \myproject{\Attr{Nome}, \Attr{Cognome}}{(\Rel{PERSONA})} \mydifference \myproject{\Attr{Nome}, \Attr{Cognome}}{(\Rel{PERSONA} \mynaturaljoin \text{PersoneConMancanze})}
-\end{align*}
-
-\subsubsection{Esempio 5: Concerti con prezzo medio dei biglietti superiore alla media generale}
-
-Nota: Questo esempio illustra un limite dell'algebra relazionale standard, che non supporta funzioni di aggregazione. In pratica, si userebbero estensioni dell'algebra relazionale o SQL.
-
-\begin{align*}
-	& \text{In SQL questa query sarebbe:} \\
-	& \text{SELECT C.IDConcerto, C.Titolo, AVG(B.Prezzo) as PrezzoMedio} \\
-	& \text{FROM CONCERTO C JOIN BIGLIETTO B ON C.IDConcerto = B.IDConcerto} \\
-	& \text{GROUP BY C.IDConcerto, C.Titolo} \\
-	& \text{HAVING AVG(B.Prezzo) > (SELECT AVG(Prezzo) FROM BIGLIETTO)}
-\end{align*}
-
-\noindent Quest'ultimo esempio evidenzia perché SQL, con il suo supporto per aggregazioni e costrutti come GROUP BY e HAVING, è spesso più conveniente dell'algebra relazionale pura per query complesse.
-
 \section{Calcolo Relazionale}
 Il calcolo relazionale è un linguaggio di query formale, \textbf{dichiarativo}, basato sulla logica dei predicati del primo ordine. Specifica \textit{cosa} si vuole ottenere, non \textit{come}.
 Esistono due forme principali:
@@ -386,18 +217,16 @@ dove:
 Il risultato è l'insieme di tuple $(\Attr{A}_1:v_1, \dots, \Attr{A}_k:v_k)$ tali che, quando le variabili $x_i$ assumono i valori $v_i$, la Formula è vera.
 
 \textbf{Esempio DRC:} Trovare numero, nome, età e salario degli impiegati che guadagnano più di 40.
-\begin{verbatim}
-	{ Numero:m, Nome:n, Eta:a, Salario:w |
-		IMPIEGATO(Numero:m, Nome:n, Eta:a, Salario:w)  w > 40 }
-\end{verbatim}
-Se vogliamo solo nome ed età:
-\begin{verbatim}
-	{ Nome:n, Eta:a |
-		existsop w (IMPIEGATO(Numero:m, Nome:n, Eta:a, Salario:w)  w > 40) }
-\end{verbatim}
-(Il `Numero:m` nella seconda query è una variabile libera nella formula `IMPIEGATO`, ma non nella target list, quindi la sua esistenza è implicitamente richiesta. Le slide mostrano `EMPLOYEE(Number:m, Name:n, Age:a, Wage:w)` anche quando `m` non è nella target list; questo significa che deve esistere una tupla con qualche `m` che soddisfi il resto. Per essere più precisi, si quantificherebbero le variabili non nella target list).
+\begin{align*}
+    \{ \text{Numero}:m, \text{Nome}:n, \text{Eta}:a, \text{Salario}:w \mid \text{IMPIEGATO}(\text{Numero}:m, \text{Nome}:n, \text{Eta}:a, \text{Salario}:w) \land w > 40 \}
+\end{align*}
 
-\subsection{Tuple Relational Calculus (TRC) with Range Declarations}
+Se vogliamo solo nome ed età:
+\begin{align*}
+    \{ \text{Nome}:n, \text{Eta}:a \mid \exists w (\text{IMPIEGATO}(\text{Numero}:m, \text{Nome}:n, \text{Eta}:a, \text{Salario}:w) \land w > 40) \}
+\end{align*}
+
+\subsection{Tuple Relational Calculus (TRC) con Range Declarations}
 Una query TRC ha la forma:
 $\{ \text{TargetList} \mid \text{RangeList} \mid \text{Formula} \}$
 dove:
@@ -409,13 +238,14 @@ dove:
 Le variabili variano sull'insieme delle tuple della relazione specificata.
 
 \textbf{Esempio TRC:} Trovare tutte le informazioni sugli impiegati che guadagnano più di 40.
-\begin{verbatim}
-	{ e.* | e(IMPIEGATO) | e.Salario > 40 }
-\end{verbatim}
+\begin{align*}
+    \{ e.* \mid e(\text{IMPIEGATO}) \mid e.\text{Salario} > 40 \}
+\end{align*}
+
 Trovare nome ed età degli impiegati che guadagnano più di 40:
-\begin{verbatim}
-	{ e.Nome, e.Eta | e(IMPIEGATO) | e.Salario > 40 }
-\end{verbatim}
+\begin{align*}
+    \{ e.\text{Nome}, e.\text{Eta} \mid e(\text{IMPIEGATO}) \mid e.\text{Salario} > 40 \}
+\end{align*}
 Il TRC è spesso considerato più vicino a come si pensa in SQL, poiché si ragiona in termini di "tuple che soddisfano certe condizioni".
 
 \subsection{Equivalenza tra Algebra e Calcolo}
@@ -426,6 +256,128 @@ Nonostante la loro potenza, l'algebra e il calcolo relazionale standard hanno de
 \begin{itemize}
 	\item \textbf{No Calcoli Aritmetici/Nuovi Valori:} Non possono calcolare nuovi valori (es. stipendio + bonus) o eseguire aggregazioni (somma, media, conteggio). SQL estende queste capacità con funzioni aritmetiche e di aggregazione (`SUM()`, `AVG()`, `COUNT()`, `GROUP BY`).
 	\item \textbf{No Chiusura Transitiva (Recursion):} Non possono esprimere query ricorsive, come trovare tutti i superiori di un impiegato (il capo, il capo del capo, ecc.) o tutte le tratte aeree possibili tra due città (dirette e indirette). Questo richiederebbe un numero potenzialmente illimitato di join.
+\end{itemize}
+
+\section{Comparazione dei formalismi relazionali}
+
+Presentiamo un esempio di query espressa nei diversi formalismi relazionali: SQL, Algebra Relazionale, Calcolo Relazionale su Tuple e Calcolo Relazionale su Domini.
+
+\subsection{Schema relazionale}
+Consideriamo il seguente schema relazionale:
+
+\begin{table}[htbp]
+    \centering
+    \begin{tabular}{|l|}
+        \hline
+        \multicolumn{1}{|c|}{\textbf{STUDENTI}} \\
+        \hline
+        \underline{Matricola} \\
+        Nome \\
+        Cognome \\
+        AnnoNascita \\
+        CorsoDiLaurea \\
+        \hline
+    \end{tabular}
+    \hspace{1cm}
+    \begin{tabular}{|l|l|}
+        \hline
+        \multicolumn{2}{|c|}{\textbf{ESAMI}} \\
+        \hline
+        \underline{Codice} & \\
+        Nome & \\
+        CFU & \\
+        DocenteID & FK $\rightarrow$ DOCENTI \\
+        \hline
+    \end{tabular}
+
+    \vspace{0.5cm}
+
+    \begin{tabular}{|l|l|}
+        \hline
+        \multicolumn{2}{|c|}{\textbf{VOTI}} \\
+        \hline
+        \underline{Matricola} & FK $\rightarrow$ STUDENTI \\
+        \underline{CodiceEsame} & FK $\rightarrow$ ESAMI \\
+        Voto & \\
+        Data & \\
+        \hline
+    \end{tabular}
+    \hspace{1cm}
+    \begin{tabular}{|l|}
+        \hline
+        \multicolumn{1}{|c|}{\textbf{DOCENTI}} \\
+        \hline
+        \underline{ID} \\
+        Nome \\
+        Cognome \\
+        Dipartimento \\
+        \hline
+    \end{tabular}
+\end{table}
+
+\subsection{Query di esempio}
+Query da implementare: ``Trovare nome e cognome degli studenti del corso di laurea in Informatica che hanno superato l'esame di 'Basi di Dati' con un voto maggiore di 27''.
+
+\subsubsection{SQL}
+\begin{minted}{sql}
+SELECT S.Nome, S.Cognome
+FROM STUDENTI S, ESAMI E, VOTI V
+WHERE S.Matricola = V.Matricola
+  AND E.Codice = V.CodiceEsame
+  AND S.CorsoDiLaurea = 'Informatica'
+  AND E.Nome = 'Basi di Dati'
+  AND V.Voto > 27;
+\end{minted}
+
+\subsubsection{Algebra Relazionale}
+\begin{align}
+\pi_{\text{Nome}, \text{Cognome}} \left(
+  \sigma_{\text{CorsoDiLaurea} = \text{'Informatica'} \wedge \text{Nome\_Esame} = \text{'Basi di Dati'} \wedge \text{Voto} > 27} \left(
+    \text{STUDENTI} \bowtie (\text{VOTI} \bowtie \text{ESAMI})
+  \right)
+\right)
+\end{align}
+
+Oppure in forma più dettagliata:
+\begin{align}
+\pi_{\text{Nome}, \text{Cognome}} \left(
+  \sigma_{\text{CorsoDiLaurea} = \text{'Informatica'}} (\text{STUDENTI}) \bowtie 
+  \sigma_{\text{Voto} > 27} (\text{VOTI}) \bowtie 
+  \sigma_{\text{Nome} = \text{'Basi di Dati'}} (\text{ESAMI})
+\right)
+\end{align}
+
+\subsubsection{Calcolo Relazionale su Tuple}
+\begin{align}
+\{s.\text{Nome}, s.\text{Cognome} \mid \text{STUDENTI}(s) \wedge \exists v \exists e (\\
+  \text{VOTI}(v) \wedge \text{ESAMI}(e) \wedge\\
+  s.\text{Matricola} = v.\text{Matricola} \wedge\\
+  v.\text{CodiceEsame} = e.\text{Codice} \wedge\\
+  s.\text{CorsoDiLaurea} = \text{'Informatica'} \wedge\\
+  e.\text{Nome} = \text{'Basi di Dati'} \wedge\\
+  v.\text{Voto} > 27
+)\}
+\end{align}
+
+\subsubsection{Calcolo Relazionale su Domini}
+\begin{align}
+\{\langle n, c \rangle \mid \exists m \exists a \exists \text{cdl} \exists \text{ce} \exists \text{ne} \exists \text{cfu} \exists d \exists v \exists \text{da} (\\
+  \text{STUDENTI}(m, n, c, a, \text{cdl}) \wedge\\
+  \text{VOTI}(m, \text{ce}, v, \text{da}) \wedge\\
+  \text{ESAMI}(\text{ce}, \text{ne}, \text{cfu}, d) \wedge\\
+  \text{cdl} = \text{'Informatica'} \wedge\\
+  \text{ne} = \text{'Basi di Dati'} \wedge\\
+  v > 27
+)\}
+\end{align}
+
+\subsection{Osservazioni}
+La query presentata mostra come lo stesso problema possa essere espresso nei diversi formalismi relazionali. Si nota come:
+\begin{itemize}
+  \item SQL rappresenta un linguaggio più vicino all'implementazione pratica
+  \item L'algebra relazionale adotta un approccio procedurale, specificando le operazioni da compiere
+  \item Il calcolo relazionale è invece dichiarativo, concentrandosi sul risultato finale
+  \item Il calcolo su domini risulta più verboso ma potenzialmente più espressivo, sebbene possa generare risultati infiniti in alcuni casi
 \end{itemize}
 
 \section{Datalog}

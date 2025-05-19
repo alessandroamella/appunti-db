@@ -447,21 +447,21 @@ Specifica il numero minimo e massimo di istanze di un'entità che possono partec
 	\caption{Esempio di entità forte (Order) con identificatore interno e entità debole (OrderItem) con identificatore esterno.}
 \end{figure}
 
-\begin{minted}{graphql}
+\begin{minted}{rust}
 // Esempio con Prisma
 model Order {
-orderId    Int         @id @default(autoincrement())
-// altri campi dell'ordine
-orderItems OrderItem[]
+	orderId    Int         @id @default(autoincrement())
+	// altri campi dell'ordine
+	orderItems OrderItem[]
 }
 
 model OrderItem {
-orderId     Int
-lineId      Int
-quantity    Int
-order       Order  @relation(fields: [orderId], references: [orderId])
+	orderId     Int
+	lineId      Int
+	quantity    Int
+	order       Order  @relation(fields: [orderId], references: [orderId])
 
-@@id([orderId, lineId]) // Chiave primaria composta
+	@@id([orderId, lineId]) // Chiave primaria composta
 }
 \end{minted}
 
