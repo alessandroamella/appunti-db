@@ -1,0 +1,276 @@
+\input{preambolo_comune.tex}
+
+% --- Hyperlink ---
+\usepackage{hyperref}
+\hypersetup{
+	colorlinks=true,
+	linkcolor=white,
+	filecolor=magenta,
+	urlcolor=cyan,
+	pdftitle={Architettura, Transazioni, Concorrenza e Ripristino nei DBMS Relazionali},
+	pdfauthor={Alessandro Amella},
+	pdfpagemode=FullScreen,
+}
+
+% --- Titolo ---
+\title{Architettura, Transazioni, Concorrenza e Ripristino nei DBMS Relazionali\\
+  \large Appunti basati sulle dispense del Dott. Magistrale Flavio Bertini}
+\author{Alessandro Amella, Gemini e Claude}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+\section{Architettura di un DBMS}
+
+\subsection{Cos'è un DataBase Management System (DBMS)?}
+Un DBMS è un software progettato per \textbf{creare e gestire database}. Il suo scopo principale è fornire un modo \textbf{efficiente e persistente} per creare, recuperare, aggiornare e gestire enormi quantità di dati.
+\begin{itemize}
+    \item \textbf{Efficienza:} Deve rispondere rapidamente alle interrogazioni.
+    \item \textbf{Persistenza:} I dati devono sopravvivere allo spegnimento del sistema o a crash.
+    \item \textbf{Gestione di grandi quantità di dati:} Ottimizzato per moli di dati che non entrerebbero in memoria RAM.
+\end{itemize}
+
+\textit{Esempio pratico:} Pensa a Prisma (per database SQL) o Mongoose (per MongoDB). Quando esegui un comando come:
+\begin{minted}{javascript}
+// Con Prisma
+const users = await prisma.user.findMany();
+
+// Con Mongoose
+const users = await User.find();
+\end{minted}
+è il DBMS sottostante (es. PostgreSQL, MySQL, MongoDB Server) che esegue il lavoro pesante di trovare i dati sul disco, filtrarli e restituirli.
+
+\subsection{Implementare un DBMS Relazionale}
+Se volessimo costruire un DBMS relazionale da zero, dovrebbe essere in grado di:
+\begin{enumerate}
+    \item \textbf{Memorizzare relazioni come tabelle:} Ad esempio, tabelle $R(A,B,C)$, $S(A,B)$, $T(A,B)$. Ogni riga è una tupla (record), ogni colonna un attributo.
+    \item \textbf{Eseguire query SQL:} Come:
+    \begin{minted}{sql}
+SELECT A, B FROM R WHERE B = 2000;
+    \end{minted}
+    o query più complesse con JOIN:
+    \begin{minted}{sql}
+SELECT R.A, T.B FROM R, S, T WHERE R.B = S.A AND S.B = T.A;
+    \end{minted}
+\end{enumerate}
+
+\subsection{Funzioni Chiave di un DBMS}
+Un DBMS deve gestire efficientemente diverse operazioni e scenari:
+\begin{itemize}
+    \item Ricerca e aggiornamento tuple.
+    \item Ordine di esecuzione delle query SQL (ottimizzazione).
+    \item Accessi ripetuti alle stesse locazioni su disco (caching).
+    \item Operazioni concorrenti di lettura e scrittura (Controllo della Concorrenza).
+    \item Controllo degli accessi (permessi).
+    \item Disaster recovery (Ripristino dopo guasti).
+    \item API (Application Programming Interfaces) per l'interazione con le applicazioni.
+\end{itemize}
+
+\subsection{Architettura di un DBMS Relazionale (Componenti Principali)}
+L'architettura di un DBMS è complessa e modulare. I componenti principali possono essere raggruppati in tre macro-aree:
+
+\begin{enumerate}
+    \item \textbf{Query Processor (Processore delle Query):} Responsabile della trasformazione e dell'esecuzione delle query.
+    \begin{itemize}
+        \item \textbf{DDL Compiler:} Interpreta comandi DDL (Data Definition Language, es. \texttt{CREATE TABLE}, \texttt{ALTER TABLE}) e aggiorna i metadati (lo schema del database).
+        \item \textbf{Query Compiler:}
+        \begin{itemize}
+            \item \textit{Parsing:} Analisi sintattica della query SQL. Costruisce un albero di parsing.
+            \item \textit{Preprocessing (Validazione Semantica):} Verifica che tabelle e colonne esistano, tipi di dati compatibili. Trasforma l'albero in un albero di operazioni algebriche (algebra relazionale).
+            \item \textit{Optimization:} Trasforma la query originale nella sequenza di operazioni più efficiente. Decide l'ordine dei join, l'uso degli indici, ecc.
+        \end{itemize}
+        \item \textbf{Execution Engine (Motore di Esecuzione):} Esegue il piano di query scelto dall'ottimizzatore, interagendo con gli altri componenti.
+    \end{itemize}
+
+    \item \textbf{Resource Manager (Gestore delle Risorse):} Gestisce l'accesso ai dati su disco e in memoria.
+    \begin{itemize}
+        \item \textbf{Storage Manager (Gestore della Memoria Secondaria):} Tiene traccia della posizione dei file sul disco. Recupera blocchi di dati dal disco.
+        \item \textbf{Buffer Manager (Gestore del Buffer):} Gestisce una porzione della memoria RAM (il buffer pool) per memorizzare temporaneamente le pagine di dati lette dal disco. Se una pagina richiesta è già nel buffer (cache hit), l'accesso è veloce. Altrimenti (cache miss), la pagina viene caricata dal disco.
+        \item \textbf{Index/File/Record Manager:} Conosce lo schema del database e le strutture dati (come indici B-Tree) per un accesso efficiente ai dati.
+    \end{itemize}
+
+    \item \textbf{Transaction Manager (Gestore delle Transazioni):} Assicura le proprietà ACID delle transazioni.
+    \begin{itemize}
+        \item \textbf{Transaction Manager (componente specifico):} Supervisiona le transazioni.
+        \item \textbf{Logging and Recovery Manager:}
+        \begin{itemize}
+            \item \textit{Logging:} Registra tutte le modifiche al database in un file di log (Write-Ahead Logging - WAL).
+            \item \textit{Recovery:} In caso di crash, usa il log per ripristinare il database a uno stato consistente.
+        \end{itemize}
+        \item \textbf{Concurrency Control Manager:} Gestisce l'accesso concorrente ai dati da parte di più transazioni, usando meccanismi come i lock. Mantiene una \textbf{Lock Table}.
+    \end{itemize}
+\end{enumerate}
+Gli utenti e le applicazioni interagiscono con il DBMS, così come l'amministratore per le operazioni DDL.
+
+\subsection{Il Percorso di una Query (Esempio Semplificato)}
+Consideriamo la query:
+\begin{minted}{sql}
+SELECT A, B FROM R1, R2 WHERE C = D AND C = 'c';
+\end{minted}
+
+\begin{enumerate}
+    \item \textbf{Query Compiler:}
+    \begin{itemize}
+        \item Parsing e validazione.
+        \item Trasformazione in algebra relazionale (forma logica), ad esempio:\\
+        $\pi_{A,B} ( \sigma_{C=D \land C='c'} (R1 \bowtie R2) )$
+        \item Ottimizzazione (piano di esecuzione fisico), ad esempio, potrebbe decidere di eseguire:\\
+        $\pi_{A,B}(\sigma_{C=D}( (\sigma_{C='c'}(R1)) \bowtie R2 ))$\\
+        (prima si filtra $R1$, poi si fa il join con $R2$, poi si applica l'altro filtro e infine la proiezione).
+    \end{itemize}
+    
+    \item \textbf{Execution Engine:}
+    \begin{itemize}
+        \item Richiede al Resource Manager i blocchi di $R1$ necessari per calcolare $\sigma_{C='c'}(R1)$.
+        \item Il \textbf{Resource Manager} (tramite Storage Manager e Buffer Manager) carica i blocchi di $R1$ dal disco al buffer.
+        \item L'Execution Engine (o l'Index/File/Record Manager) applica il filtro $C='c'$ sui dati di $R1$ nel buffer. Il risultato intermedio resta nel buffer.
+        \item Richiede i blocchi di $R2$. Vengono caricati nel buffer.
+        \item Esegue il join tra il risultato intermedio di $R1$ e $R2$, applica il filtro $C=D$ e la proiezione $\pi_{A,B}$, operando sui dati nel buffer.
+        \item Restituisce il risultato finale.
+    \end{itemize}
+\end{enumerate}
+Durante tutte le operazioni di modifica, il Transaction Manager è coinvolto per il logging e il controllo della concorrenza.
+
+\section{Transazioni e Controllo della Concorrenza}
+
+\subsection{Transazioni}
+Le operazioni su un database raramente coinvolgono una singola istruzione SQL. Spesso, una singola "azione logica" richiede una serie di query.
+\textit{Esempio:} Un trasferimento bancario da conto A123 a B456 di 100€.
+\begin{minted}{sql}
+START TRANSACTION;
+UPDATE Conto SET Saldo = Saldo - 100 WHERE NumeroConto = 'A123';
+UPDATE Conto SET Saldo = Saldo + 100 WHERE NumeroConto = 'B456';
+COMMIT; -- oppure ROLLBACK in caso di errore
+\end{minted}
+Queste due operazioni devono avvenire insieme. O entrambe hanno successo, o nessuna delle due. Questo gruppo di operazioni è una \textbf{transazione}. Una transazione è l'esecuzione di un programma utente (una o più operazioni di lettura/scrittura) vista dal DBMS come un'unità atomica.
+
+\textbf{Problemi principali da risolvere:}
+\begin{enumerate}
+    \item Esecuzione Concorrente di Transazioni.
+    \item Crash Recovery (Ripristino dopo guasti).
+\end{enumerate}
+
+\subsection{Motivazioni per la Concorrenza}
+\begin{itemize}
+    \item Gli accessi al disco sono lenti; la CPU non dovrebbe attendere passivamente.
+    \item Per migliorare le prestazioni, più transazioni vengono eseguite in modo \textbf{concorrente} (i loro passi si mescolano, \textit{interleaving}), mantenendo la CPU occupata.
+    \item \textbf{Problema:} L'utente non deve percepire questa "mescolanza". Ogni transazione deve apparire come se fosse eseguita da sola, in isolamento.
+\end{itemize}
+
+\subsection{Motivazioni per il Crash Recovery}
+\begin{itemize}
+    \item Una transazione potrebbe non terminare come previsto a causa di un evento imprevisto (errore software, crash hardware).
+    \item \textbf{Problema:} Il DBMS deve assicurare che le altre transazioni non siano affette dall'esecuzione incorretta e che il database rimanga in uno \textbf{stato consistente}.
+\end{itemize}
+
+\subsection{Proprietà ACID delle Transazioni}
+Per garantire un'esecuzione sicura e concorrente, ogni transazione deve avere le seguenti proprietà:
+\begin{itemize}
+    \item \textbf{A - Atomicity (Atomicità):} Una transazione è un'unità atomica. O tutte le sue operazioni vengono eseguite, o nessuna. Non ci deve essere uno stato intermedio parziale persistente. In caso di fallimento, le modifiche parziali vengono annullate (rollback).
+    \item \textbf{C - Consistency (Consistenza):} Una transazione porta il database da uno stato consistente a un altro stato consistente. Le \textit{regole di integrità} del database (es. chiavi primarie, foreign key, vincoli \texttt{CHECK}) devono essere soddisfatte alla fine della transazione.
+    \item \textbf{I - Isolation (Isolamento):} Ogni transazione deve apparire come se fosse eseguita in isolamento, senza interferenze da altre transazioni concorrenti. Il risultato finale dell'esecuzione concorrente deve essere equivalente a quello che si otterrebbe eseguendole una dopo l'altra in una qualche sequenza (serializzazione).
+    \item \textbf{D - Durability (Durabilità):} Una volta che una transazione è stata "commessa" (\texttt{COMMIT}), le sue modifiche sono permanenti e devono sopravvivere a fallimenti successivi.
+\end{itemize}
+
+\subsection{Schedule (Pianificazione)}
+\begin{itemize}
+    \item Una transazione è una sequenza di operazioni di lettura (read) e scrittura (write) su oggetti del database.
+    \item Ogni transazione specifica la sua azione finale: \texttt{commit} (successo) o \texttt{abort} (fallimento, con annullamento delle azioni).
+    \item Uno \textbf{schedule} è una sequenza di azioni (read, write, commit, abort) prese da un insieme di transazioni, preservando l'ordine delle azioni \textit{all'interno} di ciascuna transazione.
+    \item \textbf{Schedule Seriale:} Le transazioni sono eseguite una dopo l'altra, senza interleaving.
+\end{itemize}
+
+\subsection{Schedule Serializzabile}
+Uno schedule è \textbf{serializzabile} se il suo effetto su un'istanza consistente del database è \textbf{identico} a quello di un qualche schedule seriale completo. Questo è l'obiettivo del controllo di concorrenza: permettere l'interleaving per le performance, garantendo la correttezza.
+
+\subsection{Anomalie dell'Esecuzione Interleaved (Conflitti)}
+L'interleaving non controllato può portare a stati inconsistenti. Tipi di conflitti (secondo le slide):
+\begin{itemize}
+    \item \textbf{Write-Read Conflict (Dirty Read):} $T_2$ legge un oggetto scritto da $T_1$, ma $T_1$ non ha ancora fatto \texttt{commit}. Se $T_1$ fa \texttt{abort}, $T_2$ ha letto dati "sporchi".
+    \item \textbf{Read-Write Conflict (Unrepeatable Read):} $T_2$ scrive un oggetto letto da $T_1$, prima che $T_1$ faccia \texttt{commit}. Se $T_1$ legge di nuovo lo stesso oggetto, ottiene un valore diverso.
+    \item \textbf{Write-Write Conflict (Lost Update):} $T_2$ scrive un oggetto anch'esso scritto da $T_1$. Una delle due scritture potrebbe andare persa.
+    \item \textbf{Phantom Anomalies (Anomalie Fantasma):} Una transazione esegue una query che restituisce un insieme di righe. Un'altra transazione inserisce o cancella righe che soddisfano i criteri della query. Se la prima transazione riesegue la query, ottiene un insieme diverso di righe ("fantasmi" appaiono o scompaiono).
+\end{itemize}
+
+\subsection{Livelli di Isolamento delle Transazioni}
+SQL definisce diversi livelli di isolamento, che offrono un compromesso tra correttezza e performance.
+\begin{itemize}
+    \item \textbf{READ UNCOMMITTED:} Permette Dirty Reads, Unrepeatable Reads, Phantoms. Massime performance, minima consistenza.
+    \item \textbf{READ COMMITTED:} Previene Dirty Reads. Permette Unrepeatable Reads, Phantoms. La transazione legge solo dati committati.
+    \item \textbf{REPEATABLE READS:} Previene Dirty Reads, Unrepeatable Reads. Permette Phantoms. Garantisce che rileggendo un dato si ottenga lo stesso valore, ma nuove righe ("fantasmi") possono apparire.
+    \item \textbf{SERIALIZABLE:} Previene Dirty Reads, Unrepeatable Reads, Phantoms. Massima consistenza.
+\end{itemize}
+
+\textbf{Tabella Riepilogativa (da slide 26):}
+\begin{center}
+\begin{tabular}{|l|c|c|c|c|}
+\hline
+\textbf{Level} & \textbf{Dirty read (Write-Read)} & \textbf{Lost update (Read-Write)} & \textbf{Unrepeatable read (Write-Write)} & \textbf{Phantom} \\ \hline
+READ UNCOMMITTED   & may occur & may occur         & may occur               & may occur \\ \hline
+READ COMMITTED     & don't occur& may occur         & may occur               & may occur \\ \hline
+REPEATABLE READS   & don't occur& don't occur       & don't occur             & may occur \\ \hline
+SERIALIZABLE       & don't occur& don't occur       & don't occur             & don't occur \\ \hline
+\end{tabular}
+\end{center}
+\textit{Nota: Le definizioni dei conflitti tra parentesi nella tabella sopra sono riportate come dalle slide. Potrebbero esserci delle interpretazioni diverse della terminologia standard dei conflitti "Lost Update" e "Unrepeatable Read" rispetto ai tipi di interazione Read/Write indicati.}
+
+\subsection{Approcci al Controllo della Concorrenza}
+\begin{itemize}
+    \item \textbf{Restrittivo (Pessimistico):} Previene i conflitti prima che accadano, tipicamente usando \textbf{lock}.
+    \begin{itemize}
+        \item \textbf{Strict Two-Phase Locking (Strict 2PL):}
+        \begin{enumerate}
+            \item Fase di crescita: La transazione acquisisce lock (condivisi S per lettura, esclusivi X per scrittura).
+            \item Fase di decrescita: La transazione rilascia i lock. In 2PL "stretto", tutti i lock vengono rilasciati solo al \texttt{commit} o \texttt{abort}. Una volta rilasciato un lock, non se ne possono acquisire altri.
+        \end{enumerate}
+        Garantisce la serializzabilità. Il Lock Manager gestisce i lock in una Lock Table.
+    \end{itemize}
+    \item \textbf{Ottimistico:} Assume conflitti rari. Le transazioni procedono senza lock. Prima del \texttt{commit}, una fase di \textbf{validazione} verifica conflitti. Se presenti, la transazione abortisce e riparte.
+    Fasi: Read (in area privata), Validation, Write (se validazione OK).
+    \item \textbf{Timestamping:} Ad ogni transazione è assegnato un timestamp. Il DBMS usa i timestamp per imporre un ordine seriale. Se un'operazione viola l'ordine, la transazione abortisce.
+\end{itemize}
+
+\subsection{Deadlock (Stallo)}
+Con il locking pessimistico, può verificarsi un deadlock: $T_1$ ha lock su $A$ e aspetta $B$, $T_2$ ha lock su $B$ e aspetta $A$.
+\begin{itemize}
+    \item \textbf{Prevenzione Deadlock:} Assegnare priorità (es. timestamp) e usare politiche come Wait-Die o Wound-Wait.
+    \item \textbf{Rilevamento e Risoluzione Deadlock:} Permettere i deadlock, rilevarli (es. con un waits-for graph) e risolverli abortendo una transazione ("vittima"). Oppure, usare un timeout.
+\end{itemize}
+
+\subsection{Crash Recovery}
+Il Logging and Recovery Manager deve assicurare Atomicità e Durabilità.
+\textbf{ARIES (Advanced Recovery and Integrated Extraction System):} Algoritmo di recovery comune.
+\begin{itemize}
+    \item \textbf{Principi ARIES:}
+    \begin{enumerate}
+        \item \textbf{Write-Ahead Logging (WAL):} Modifiche scritte nel log \textit{prima} della scrittura della pagina dati su disco. Record di log con info per Undo/Redo.
+        \item \textbf{Repeating History During Redo:} Al riavvio dopo crash, ARIES riapplica modifiche dal log (da ultimo checkpoint) per riportare DB allo stato del crash (incluse transazioni non committate).
+        \item \textbf{Logging Changes During Undo:} L'annullamento di un'operazione è loggato con un \textbf{Compensation Log Record (CLR)}. I CLR non vengono mai annullati.
+    \end{enumerate}
+    \item \textbf{Log File:} Traccia tutte le azioni. Record con \textbf{Log Sequence Number (LSN)} univoco.
+    Record di Log: \texttt{<LSN, TransactionID, PageID, RedoInfo, UndoInfo, PreviousLSN\_for\_this\_TX>}.
+    \item \textbf{Strutture Dati per Logging (in memoria):}
+    \begin{itemize}
+        \item \textbf{Dirty Page Table (DPT):} Pagine modificate in buffer ma non su disco.
+        \item \textbf{Transaction Table:} Transazioni attive, stato, ultimo LSN.
+    \end{itemize}
+    \item \textbf{Checkpoint (in ARIES è "Fuzzy"):} Snapshot dello stato per ridurre tempo di recovery.
+    \begin{enumerate}
+        \item Scrive record \texttt{begin\_checkpoint}.
+        \item Scrive record \texttt{end\_checkpoint} con DPT e Transaction Table.
+        \item Scrive LSN del \texttt{begin\_checkpoint} in un Master Record su disco.
+    \end{enumerate}
+    Non interrompe le operazioni normali e non forza la scrittura di tutte le dirty pages.
+    \item \textbf{Fasi di Recovery ARIES dopo un Crash:}
+    \begin{enumerate}
+        \item \textbf{Analysis Phase:} Scansiona log da ultimo checkpoint. Ricostruisce DPT e Transaction Table al momento del crash. Identifica transazioni "perdenti" (attive al crash).
+        \item \textbf{Redo Phase:} Scansiona log in avanti. Riapplica modifiche (Redo) per le pagine sporche se necessario, per portare il DB allo stato esatto del crash.
+        \item \textbf{Undo Phase:} Scansiona log all'indietro. Annulla operazioni delle transazioni "perdenti", scrivendo CLR per ogni operazione annullata.
+    \end{enumerate}
+\end{itemize}
+
+\end{document}

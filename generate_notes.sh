@@ -19,6 +19,12 @@ FILES=(
   "08-modello-logico.tex"
   "09-normalizzazione.tex"
   "10-db-attivi.tex"
+  "lab-01-algebra.tex"
+  "lab-02-sql.tex"
+  "lab-03-04-architettura-transazioni.tex"
+  "lab-05-progettazione.tex"
+  "lab-06-indici.tex"
+  "lab-07-hash.tex"
   "preambolo_comune.tex"
 )
 
@@ -127,6 +133,24 @@ Sentiti libero di utilizzare, condividere o contribuire a questi appunti attrave
 \chapter{Database Attivi}
 \input{10-db-attivi-content}
 
+\chapter{Laboratorio 1: Algebra Relazionale}
+\input{lab-01-algebra-content}
+
+\chapter{Laboratorio 2: SQL}
+\input{lab-02-sql-content}
+
+\chapter{Laboratorio 3 e 4: Architettura e Transazioni}
+\input{lab-03-04-architettura-transazioni-content}
+
+\chapter{Laboratorio 5: Progettazione}
+\input{lab-05-progettazione-content}
+
+\chapter{Laboratorio 6: Indici e B+ Alberi}
+\input{lab-06-indici-content}
+
+\chapter{Laboratorio 7: Hash Table e Indici Invertiti}
+\input{lab-07-hash-content}
+
 \end{document}
 EOT
 
@@ -140,7 +164,11 @@ echo "✅ preambolo_comune_modificato.tex creato."
 # 3. Per ogni file .tex, estrai il contenuto e correggi l'indentazione minted
 echo "Estraendo contenuto dai file e correggendo l'indentazione minted..."
 
-for FILE in "${FILES[@]:0:10}"; do
+for FILE in "${FILES[@]}"; do
+  # Skip preambolo_comune.tex as it doesn't have a document environment
+  if [[ "$FILE" == "preambolo_comune.tex" ]]; then
+    continue
+  fi
   CONTENT_FILE="${FILE%.tex}-content.tex"
   TEMP_FILE="${FILE%.tex}-temp.tex"
   echo "Elaborazione di $FILE -> $CONTENT_FILE"

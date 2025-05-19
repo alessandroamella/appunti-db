@@ -1,0 +1,274 @@
+\input{preambolo_comune.tex}
+
+% --- Hyperlink ---
+\usepackage{hyperref}
+\hypersetup{
+	colorlinks=true,
+	linkcolor=white,
+	filecolor=magenta,
+	urlcolor=cyan,
+	pdftitle={Algebra Relazionale},
+	pdfauthor={Alessandro Amella},
+	pdfpagemode=FullScreen,
+}
+
+% --- Titolo ---
+\title{Algebra Relazionale
+  \large Appunti basati sulle dispense del Dott. Magistrale Flavio Bertini}
+\author{Alessandro Amella, Gemini e Claude}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+\section{Introduzione all'Algebra Relazionale}
+L'algebra relazionale è un linguaggio procedurale formale per interrogare i database relazionali. Ogni operazione prende una o più relazioni (tabelle) come input e produce una nuova relazione come output. Questo permette di annidare le operazioni.
+
+\section{Operatori Fondamentali dell'Algebra Relazionale}
+
+\subsection{Selezione (\texorpdfstring{$\sigma$}{sigma} - Sigma)}
+\begin{itemize}
+    \item \textbf{Scopo:} Filtra le tuple (righe) di una relazione che soddisfano una certa condizione (predicato).
+    \item \textbf{Notazione:} $\sigma_{\text{condizione}}(\text{Relazione})$
+    \item \textbf{Esempio (Slide 4):} Trovare le città con più di 1.000.000 di abitanti.
+          \[ \sigma_{\text{Population}>1000000}(\text{CITY}) \]
+    \item \textbf{Equivalente SQL (concettuale):}
+\begin{minted}{sql}
+SELECT *
+FROM CITY
+WHERE Population > 1000000;
+\end{minted}
+    \item \textbf{Spiegazione:} La condizione può coinvolgere confronti tra attributi e costanti (es. $\text{Age} > 30$, $\text{Name} = \text{'Mario'}$), o tra attributi (es. $\text{Price} > \text{Cost}*1.1$). Le condizioni possono essere combinate con operatori logici AND ($\wedge$), OR ($\vee$), NOT ($\neg$).
+\end{itemize}
+
+\subsection{\texorpdfstring{Proiezione ($\pi$ - Pi)}{Proiezione (pi - Pi)}}
+\begin{itemize}
+    \item \textbf{Scopo:} Seleziona determinati attributi (colonne) da una relazione, eliminando le tuple duplicate nella relazione risultante.
+    \item \textbf{Notazione:} $\pi_{\text{attributo1, attributo2, \dots}}(\text{Relazione})$
+    \item \textbf{Esempio (Slide 6):} Ottenere solo i nomi delle regioni.
+          \[ \pi_{\text{Region}}(\text{RisultatoJoinPrecedente}) \]
+    \item \textbf{Equivalente SQL (concettuale):}
+\begin{minted}{sql}
+SELECT DISTINCT Region
+FROM RisultatoJoinPrecedente;
+\end{minted}
+    \item \textbf{Spiegazione:} È importante ricordare che la proiezione elimina automaticamente i duplicati.
+\end{itemize}
+
+\subsection{\texorpdfstring{Ridenominazione ($\rho$ - Rho)}{Ridenominazione (rho - Rho)}}
+\begin{itemize}
+    \item \textbf{Scopo:} Cambia il nome di una relazione e/o dei suoi attributi. È cruciale per:
+    \begin{itemize}
+        \item Confrontare una relazione con se stessa (self-join).
+        \item Rendere compatibili per nome gli attributi per un natural join.
+        \item Evitare ambiguità quando si combinano relazioni con attributi omonimi ma con significati diversi.
+    \end{itemize}
+    \item \textbf{Notazione:}
+    \begin{itemize}
+        \item Ridenominare la relazione: $\rho_{\text{NuovoNomeRelazione}}(\text{RelazioneOriginale})$
+        \item Ridenominare attributi: $\rho_{\text{nuovoNomeAttr1} \leftarrow \text{vecchioNomeAttr1, \dots}}(\text{Relazione})$
+        \item Entrambi: $\rho_{\text{NuovoNomeRelazione}(\text{nuovoNomeAttr1} \leftarrow \text{vecchioNomeAttr1, \dots})}(\text{RelazioneOriginale})$
+    \end{itemize}
+    \item \textbf{Esempio (Slide 5):} Ridenominare l'attributo \texttt{City} in \texttt{BELONGING} a \texttt{Code}.
+          \[ \rho_{\text{Code} \leftarrow \text{City}}(\text{BELONGING}) \]
+    \item \textbf{Esempio (Slide 9):} Per un self-join su \texttt{TRAIN}.
+          \[ T1 := \rho_{\text{Code1, Switch, Miles1} \leftarrow \text{Code, End, Miles}}(\text{TRAIN}) \]
+          \[ T2 := \rho_{\text{Code2, Switch, Miles2} \leftarrow \text{Code, Start, Miles}}(\text{TRAIN}) \]
+    \item \textbf{Equivalente SQL (concettuale):}
+    \begin{itemize}
+        \item Alias di colonna:
+\begin{minted}{sql}
+SELECT City AS Code FROM BELONGING;
+\end{minted}
+        \item Alias di tabella:
+\begin{minted}{sql}
+SELECT T1.Code, T2.Code
+FROM TRAIN AS T1
+JOIN TRAIN AS T2 ON T1.End = T2.Start;
+\end{minted}
+    \end{itemize}
+\end{itemize}
+
+\subsection{Join (Vari Tipi)}
+
+\subsubsection{\texorpdfstring{Natural Join ($\Join$)}{Natural Join (Join)}}
+\begin{itemize}
+    \item \textbf{Scopo:} Combina tuple da due relazioni che hanno valori uguali su tutti gli attributi con lo stesso nome. Gli attributi comuni appaiono una sola volta nel risultato.
+    \item \textbf{Notazione:} $\text{Relazione1} \Join \text{Relazione2}$
+    \item \textbf{Esempio (Slide 5, dopo ridenominazione):}
+          \[ \text{BELONGING\_CON\_CODE} \Join (\sigma_{\text{Population}>1000000}(\text{CITY})) \]
+          Il join avviene sull'attributo comune \texttt{Code}.
+    \item \textbf{Equivalente SQL (concettuale):}
+\begin{minted}{sql}
+-- Dopo ridenominazione mentale o esplicita di BELONGING.City a Code
+SELECT Region, B.Code, Name, Population
+FROM (SELECT Region, City AS Code FROM BELONGING) AS B
+NATURAL JOIN (SELECT * FROM CITY WHERE Population > 1000000) AS C;
+
+-- Oppure, più comunemente con Theta Join:
+SELECT ...
+FROM BELONGING B JOIN CITY C ON B.City = C.Code
+WHERE C.Population > 1000000;
+\end{minted}
+    \item \textbf{Spiegazione:} Se non ci sono attributi comuni, il natural join diventa un prodotto cartesiano.
+\end{itemize}
+
+\subsubsection{\texorpdfstring{Theta Join ($\Join_{\text{condizione}}$)}{Theta Join (Join[condizione])}}
+\begin{itemize}
+    \item \textbf{Scopo:} Combina tuple da due relazioni basandosi su una condizione specificata ($\theta$). Include l'equi-join se la condizione usa solo l'uguaglianza.
+    \item \textbf{Notazione:} $\text{Relazione1} \Join_{\text{condizione}} \text{Relazione2}$
+    \item \textbf{Esempio (Slide 25):} Unire \texttt{STUDENT} ed \texttt{EXAM}.
+          \[ \text{STUDENT} \Join_{\text{Id}=\text{Student}} (\sigma_{\text{Mark}=30}(\text{EXAM})) \]
+    \item \textbf{Equivalente SQL (concettuale):}
+\begin{minted}{sql}
+SELECT *
+FROM STUDENT S JOIN (SELECT * FROM EXAM WHERE Mark=30) E
+ON S.Id = E.Student;
+\end{minted}
+\end{itemize}
+
+\subsubsection{\texorpdfstring{Prodotto Cartesiano ($\times$)}{Prodotto Cartesiano (x)}}
+\begin{itemize}
+    \item \textbf{Scopo:} Produce una relazione che contiene tutte le possibili combinazioni di tuple dalle due relazioni di input.
+    \item \textbf{Notazione:} $\text{Relazione1} \times \text{Relazione2}$
+    \item \textbf{Spiegazione:} Se $\text{Relazione1}$ ha $n$ tuple e $m$ attributi, e $\text{Relazione2}$ ha $p$ tuple e $q$ attributi, il risultato avrà $n \times p$ tuple e $m+q$ attributi. Di solito seguito da una selezione per implementare un join: $\sigma_{\text{condizione}}(\text{Relazione1} \times \text{Relazione2})$ è equivalente a $\text{Relazione1} \Join_{\text{condizione}} \text{Relazione2}$.
+\end{itemize}
+
+\subsection{Operatori Insiemistici}
+Questi operatori richiedono che le relazioni siano \textit{union-compatibili}, cioè abbiano lo stesso numero di attributi e i domini (tipi) degli attributi corrispondenti siano compatibili.
+
+\subsubsection{\texorpdfstring{Unione ($\cup$)}{Unione (unione)}}
+\begin{itemize}
+    \item \textbf{Scopo:} Produce una relazione contenente tutte le tuple che appaiono in $\text{Relazione1}$ o in $\text{Relazione2}$ (o in entrambe), eliminando i duplicati.
+    \item \textbf{Notazione:} $\text{Relazione1} \cup \text{Relazione2}$
+    \item \textbf{Esempio (Slide 55):} Pizzerie frequentate solo da femmine O solo da maschi.
+          \[ \text{PizzerieSoloFemmine} \cup \text{PizzerieSoloMaschi} \]
+    \item \textbf{Equivalente SQL (concettuale):}
+\begin{minted}{sql}
+SELECT ... FROM Relazione1
+UNION
+SELECT ... FROM Relazione2;
+\end{minted}
+\end{itemize}
+
+\subsubsection[Differenza (-)]{Differenza ($-$)}
+\begin{itemize}
+    \item \textbf{Scopo:} Produce una relazione contenente tutte le tuple che sono in $\text{Relazione1}$ ma non in $\text{Relazione2}$.
+    \item \textbf{Notazione:} $\text{Relazione1} - \text{Relazione2}$
+    \item \textbf{Esempio (Slide 31):} Studenti che non hanno MAI preso 30.
+          \[ \text{TuttiStudenti}(\text{Nome,Cognome,Id}) - \text{StudentiCon30}(\text{Nome,Cognome,Id}) \]
+    \item \textbf{Equivalente SQL (concettuale):}
+\begin{minted}{sql}
+SELECT ... FROM Relazione1
+EXCEPT -- (o MINUS in Oracle)
+SELECT ... FROM Relazione2;
+\end{minted}
+\end{itemize}
+
+\subsubsection[Intersezione (intersezione)]{Intersezione ($\cap$)}
+\begin{itemize}
+    \item \textbf{Scopo:} Produce una relazione contenente tutte le tuple che appaiono sia in $\text{Relazione1}$ sia in $\text{Relazione2}$.
+    \item \textbf{Notazione:} $\text{Relazione1} \cap \text{Relazione2}$
+    \item \textbf{Esempio (Slide 51):} Negozi di vino che hanno sia rosé SIA vini rossi.
+          \[ \text{NegoziConRosé}(\text{CodiceNegozio}) \cap \text{NegoziConViniRossi}(\text{CodiceNegozio}) \]
+    \item \textbf{Equivalente SQL (concettuale):}
+\begin{minted}{sql}
+SELECT ... FROM Relazione1
+INTERSECT
+SELECT ... FROM Relazione2;
+\end{minted}
+    \item \textbf{Nota:} L'intersezione può essere espressa usando la differenza: $A \cap B = A - (A - B)$.
+\end{itemize}
+
+\section{Concetti e Pattern Comuni Illustrati negli Esercizi}
+
+\subsection{Self-Join (Slide 8, 29, 61)}
+Quando una query richiede di confrontare tuple all'interno della stessa tabella. Richiede quasi sempre la ridenominazione ($\rho$) di almeno una "copia" della tabella per distinguere gli attributi. Esempio: Trovare treni con un interscambio, fornitori che forniscono almeno due prodotti diversi.
+
+\subsection{Query "Solo" / "Tutti" (Quantificazione Universale)}
+\begin{itemize}
+    \item \textbf{"Solo X":} Per trovare entità che sono associate \textit{esclusivamente} a X.
+        Pattern: $(\text{Entità associate a X}) - (\text{Entità associate a NON X})$.
+        Esempio (Slide 35): Utenti che hanno preso in prestito \textit{solo} libri di Fleming.
+        \[ \text{UtentiConLibriFleming} - \text{UtentiConLibriNonFleming} \]
+    \item \textbf{"Tutti Y che soddisfano X":} Spesso si traduce in "non esiste nessun Y che NON soddisfa X".
+        Esempio (Slide 57): Riviste che \textit{non hanno mai} pubblicato articoli di motociclismo.
+        \[ \text{TutteLeRiviste} - \text{RivisteCheHannoPubblicatoMotociclismo} \]
+\end{itemize}
+
+\subsection{Condizioni Complesse e Ordine delle Operazioni (Slide 12, 23)}
+La selezione $\sigma_{\text{Price} > \text{Age}*10}$ (Slide 23) può essere applicata solo \textit{dopo} aver unito le tabelle necessarie. L'ordine è importante. "Spingere" le selezioni e le proiezioni il più presto possibile è una tecnica di ottimizzazione. L'esempio della "extended edition" (Slide 12) mostra come selezionare dopo il join o, se possibile e più efficiente, selezionare prima del join.
+
+\subsection{Trovare Minimi/Massimi (Slide 38-45)}
+L'algebra relazionale non ha operatori aggregati diretti come \texttt{MIN()}/\texttt{MAX()} di SQL. Per trovare il minimo (es. la prima data per uno studente), si usa un pattern che coinvolge la differenza insiemistica:
+\begin{enumerate}
+    \item Si selezionano tutte le coppie $<$studente, data$>$ di interesse ($R1$).
+    \item Si crea una copia $R2$ di $R1$ rinominando l'attributo data (es. $Date1$).
+    \item Si trovano le tuple $(s, d)$ in $R1$ per le quali esiste una tupla $(s, d')$ in $R2$ tale che $d > d'$. Queste sono le date che \textit{non} sono minime per quello studente.
+          Formalmente: $\pi_{\text{Student,Date}}(\sigma_{\text{Date}>\text{Date1}}(R1 \Join \rho_{\text{Student,Date1} \leftarrow \text{Student,Date}}(R1)))$.
+          Le slide usano un approccio leggermente diverso (Slide 44): si considerano tutte le date possibili da $R2$ e si sottraggono quelle che sono "successive" a una data in $R1$ (dopo un join e selezione $Date < Date1$).
+          $R_{\text{minime}} := R2 - \pi_{\text{Student,Date1}}(\sigma_{\text{Date}<\text{Date1}}(R1 \Join R2))$ (assumendo $R1$ ha $Date$ e $R2$ ha $Date1$, e $R1, R2$ sono create da $\pi_{\text{Student,Date}}(\sigma_{\dots}(\text{EXAM}))$).
+    \item L'idea generale è isolare le tuple che non hanno "predecessori" secondo il criterio di ordinamento.
+\end{enumerate}
+La sequenza completa (slide 45) per la prima data è:
+$R1 := \pi_{\text{Student,Date}}(\sigma_{\text{Mark}=30}(\text{EXAM}))$
+$R2 := \rho_{\text{Date1} \leftarrow \text{Date}}(R1)$
+$R_{\text{NonPrimeDate}} := \pi_{\text{Student,Date1}}(\sigma_{\text{Date} < \text{Date1}}(R1 \Join R2))$
+$R_{\text{PrimeDatePerStudente}} := R2 - R_{\text{NonPrimeDate}}$
+Poi si rinomina $Date1$ in $Date$ per il join finale con STUDENT:
+$R3 := \rho_{\text{Date} \leftarrow \text{Date1}}(R_{\text{PrimeDatePerStudente}})$
+Risultato: $\pi_{\text{Name,Surname,Date}}(\text{STUDENT} \Join_{\text{Id}=\text{Student}} R3)$
+
+\section{Appendix: Notazione per Esame Remoto (Slide 62-64)}
+Notazione testuale alternativa per gli operatori dell'algebra relazionale.
+\begin{itemize}
+    \item \textbf{Rename:} \texttt{RID[(<new A1>,<old A1>),...]R}
+    \item \textbf{Select:} \texttt{SEL[C]R}
+    \item \textbf{Projection:} \texttt{PRO[A1, A2, ...]R}
+    \item \textbf{Join:}
+    \begin{itemize}
+        \item Natural Join: \texttt{R1 JOIN R2}
+        \item Theta Join: \texttt{R1 JOIN[condizione] R2}
+    \end{itemize}
+    \item \textbf{Set Operations:}
+    \begin{itemize}
+        \item Union: \texttt{R1 UNI R2}
+        \item Intersection: \texttt{R1 INT R2}
+        \item Difference: \texttt{R1 DIF R2}
+    \end{itemize}
+    \item \textbf{Condizioni Booleane:} \texttt{NOT C}, \texttt{C1 OR C2}, \texttt{C1 AND C2}.
+\end{itemize}
+
+\textbf{Esempio Combinato (dalla Slide 64):}
+\begin{itemize}
+    \item \textbf{Query Standard (parte della differenza):}
+    \[
+    \begin{split}
+    ( & \pi_{\text{idModello,nome}} (\sigma_{\text{categoria='Berlina'} \wedge \text{nazionalità='Francia'}} (\text{Modello} \Join \rho_{\text{nomeM}\leftarrow\text{nome}} \text{Marca}))) \\
+    - ( & \pi_{\text{idModello,nome}} (\sigma_{\text{anno='2007'}} (\text{Modello} \Join \text{Valutazione})))
+    \end{split}
+    \]
+    \item \textbf{Query in Notazione Remota (per la parte della differenza):}
+\begin{verbatim}
+(PRO[idModello,nome](
+    SEL[categoria='Berlina' AND nazionalita='Francia'](
+        Modello JOIN RID[(nomeM,nome)]Marca
+    )
+))
+DIF
+(PRO[idModello,nome](
+    SEL[anno='2007'](
+        Modello JOIN Valutazione
+    )
+))
+\end{verbatim}
+    E l'eventuale join finale:
+\begin{verbatim}
+... JOIN[idModello=modello] Valutazione
+\end{verbatim}
+\end{itemize}
+
+\end{document}
